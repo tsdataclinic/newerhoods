@@ -1,0 +1,131 @@
+---
+title: "Clusering Visualization"
+author: "Kaushik Mohan"
+date: "11/6/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(stringsAsFactors = FALSE)
+```
+
+
+```{r}
+load("../data/sales_features_2017.RData")
+sales_features <- sales_features[match(census_tracts@data$boro_ct201,sales_features$boro_ct201),]
+```
+
+```{r}
+#### Price Map
+shades = auto.shading(sales_features$avg_price_1y)
+choropleth(census_tracts,sales_features$avg_price_1y)
+choro.legend(-74.455,40.93,shades,fmt="$%4.0f",cex=0.8,title='Avg. price per sq. ft')
+
+shades = auto.shading(sales_features$avg_price_3y)
+choropleth(census_tracts,sales_features$avg_price_3y)
+choro.legend(-74.455,40.93,shades,fmt="$%4.0f",cex=0.75,
+             title='3y moving average \n price per sq. ft')
+
+shades = auto.shading(sales_features$avg_price_5y)
+choropleth(census_tracts,sales_features$avg_price_5y)
+choro.legend(-74.455,40.93,shades,fmt="$%4.0f",cex=0.75,
+             title='5y moving average \n price per sq. ft')
+
+```
+
+# Clustering
+
+```{r}
+tracts_to_exclude <- c(census_pop$boro_ct201[census_pop$pop_2010 <= 500],"1023802") ##Rosevelt Island
+
+reduced_tracts <- census_tracts[!(census_tracts$boro_ct201 %in% tracts_to_exclude),]
+
+sales_features <- sales_features[!(sales_features$boro_ct201 %in% tracts_to_exclude),]
+### geographical clustering
+features_to_use <- !grepl("year|lon|lat|boro_ct201",colnames(sales_features))
+features_to_use <- grepl("avg|sd|age|res",colnames(sales_features))
+
+D0 <- dist(scale(sales_features[,features_to_use]))
+
+list.nb <- poly2nb(reduced_tracts)
+A <- nb2mat(list.nb,style = "B",zero.policy = TRUE)
+diag(A) <- 1
+D1 <- as.dist(1-A)
+```
+
+
+## Reshaped Boroughs
+
+5 cluster solution
+
+```{r}
+K <- 5
+colours <- rainbow(K)
+tree <- hclustgeo(D0,D1,alpha=0.2)
+clusters <- data.frame(cl=cutree(tree,K))
+clusters$boro_ct201 <- sales_features$boro_ct201
+clusters <- left_join(data.frame(boro_ct201=as.character(census_tracts$boro_ct201)),
+                      clusters,by="boro_ct201")
+clusters$cl[is.na(clusters$cl)] <- K+1
+colours <- c(colours,"#A9A9A9A9") ## grey for excluded tracts
+plot(census_tracts,col=colours[clusters$cl])
+
+#table(clusters$cl)
+
+```
+
+
+## Reshaped Neighborhoods
+
+55 cluster solution. 55 is the number of Public Use Microdata Areas (PUMA).
+
+```{r}
+K <- 55
+colours <- distinctColorPalette(K)
+tree <- hclustgeo(D0,D1,alpha=0.1)
+clusters <- data.frame(cl=cutree(tree,K))
+clusters$boro_ct201 <- sales_features$boro_ct201
+clusters <- left_join(data.frame(boro_ct201=as.character(census_tracts$boro_ct201)),
+                      clusters,by="boro_ct201")
+clusters$cl[is.na(clusters$cl)] <- K+1
+colours <- c(colours,"#A9A9A9A9") ## grey for excluded tracts
+plot(census_tracts,col=colours[clusters$cl])
+
+```
+
+## Optimal solution 
+
+Need to evaluate optimal number of clusters somehow. Around 100 seems reasonable?
+
+```{r}
+K <- 100
+colours <- distinctColorPalette(K)
+colours <- rainbow(K)
+tree <- hclustgeo(D0,D1,alpha=0.1)
+clusters <- data.frame(cl=cutree(tree,K))
+clusters$boro_ct201 <- sales_features$boro_ct201
+clusters <- left_join(data.frame(boro_ct201=as.character(census_tracts$boro_ct201)),
+                      clusters,by="boro_ct201")
+clusters$cl[is.na(clusters$cl)] <- K+1
+colours <- c(colours,"#A9A9A9A9") ## grey for excluded tracts
+plot(census_tracts,col=colours[clusters$cl])
+
+```
+
+Ideas:
+- gganimate 5-100 clusters
+
+To Do:
+- shiny app
+- add facilities db
+- make map bigger
+- showing features used
+- new neighborhoood (without tract boundaries) on current PUMA map
+
+Upload -> Merge -> select columns -> choose number of clusters -> run -> visualize
+
+
+
+
+

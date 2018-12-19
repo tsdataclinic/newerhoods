@@ -1,0 +1,192 @@
+---
+title: "Loading and Cleaning Sales Data"
+author: "Kaushik Mohan"
+date: "11/6/2018"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+## Data Munging packages
+library(tidyverse)
+library(dplyr)
+library(lubridate)
+library(readxl)
+library(stringr)
+library(utils)
+library(Hmisc)
+```
+
+Looking at NYC Annualized Real-Estate sales data from 2012 onwards. All the files downloaded from https://www1.nyc.gov/site/finance/taxes/property-annualized-sales-update.page
+
+## Loading Data
+
+```{r}
+boroughs <- c("manhattan","bronx","brooklyn","queens","statenisland")
+years <- c("2017","2016","2015","2014","2013","2012")
+
+boro_year <- expand.grid(boroughs,years)
+colnames(boro_year) <- c("borough","year")
+boro_year$file <- paste0(boro_year$year,"_",boro_year$borough,".xls")
+```
+
+```{r, warning=FALSE}
+full_sales_data <- data.frame(matrix(NA,1,23))
+error_cases <- NULL
+
+
+for(i in c(1:dim(boro_year)[1])){
+  
+  tryCatch(
+    {
+      tmp <- read_excel(paste0("../data/annualized_sales/",boro_year$file[i]),skip=4)
+      ## standardizing column names to lowercase and removing spaces and escape characters
+      colnames(tmp) <- gsub(" ","_",gsub("\n|\r","",tolower(colnames(tmp)))) 
+      
+      ## adding building class
+      tmp$building_class <- substr(tmp$building_class_at_time_of_sale,1,1)
+      
+      ## Subsetting classes A,B,C,D,R,S as these are the 
+      ## only ones coming under residential tax class
+      tmp <- tmp %>% filter(building_class %in% c("A","B","C","D","R","S"))
+      
+      ## adding year
+      tmp$year <- year(ymd(tmp$sale_date))
+      
+      colnames(full_sales_data) <- colnames(tmp)
+      full_sales_data <- rbind(full_sales_data,tmp)
+    }, 
+    error=function(cond){
+      error_cases <<- append(error_cases,paste0("../data/annualized_sales/",boro_year$file[i]))
+      print(paste0("../data/annualized_sales/",boro_year$file[i]))
+    }
+  )
+}
+
+full_sales_data <- full_sales_data[-1,] ## removing first row of NAs
+
+```
+
+We note 9 cases where there is an error reading in the file. Looks like it's an issue with the size (correspondingly number of rows) and how .xls files deal with it. Saving them as `.xlsx` and reading them in seems to do the trick. 
+
+```{r, warning=FALSE}
+error_cases <- gsub(".xls",".xlsx",error_cases)
+
+for(i in c(1:length(error_cases))){
+
+    tmp <- read_excel(error_cases[i],skip=4)
+    ## standardizing column names to lowercase and removing spaces and escape characters
+    colnames(tmp) <- gsub(" ","_",gsub("\n|\r","",tolower(colnames(tmp)))) 
+    
+    ## adding building class
+    tmp$building_class <- substr(tmp$building_class_at_time_of_sale,1,1)
+    
+    ## Subsetting classes A,B,C,D,R,S as these are the 
+    ## only ones coming under residential tax class
+    tmp <- tmp %>% filter(building_class %in% c("A","B","C","D","R","S"))
+    
+    ## adding year
+    tmp$year <- year(ymd(tmp$sale_date))
+    
+    colnames(full_sales_data) <- colnames(tmp)
+    full_sales_data <- rbind(full_sales_data,tmp)
+}
+
+
+```
+
+
+## Merging with MapPluto Data
+
+MapPLUTO Data has more detailed information about each building including their exact geospatial location. 
+
+```{r}
+load("../data/bbl_coords.RData")
+merged_sales_data <- merge(full_sales_data,bbl_coords,by.x=c("borough","block","lot"),by.y=c("boro","Block","Lot"))
+
+unmerged_sales_data <- anti_join(full_sales_data,bbl_coords,by=c("borough"="boro","block"="Block","lot"="Lot"))
+
+round(dim(unmerged_sales_data)[1]*100/dim(full_sales_data)[1],2)
+round(table(unmerged_sales_data$building_class)*100/table(full_sales_data$building_class),2)
+round(table(unmerged_sales_data$building_class)*100/dim(full_sales_data)[1],2)
+```
+
+We note that we have several cases not merged properly with the MapPluto data. Closer inspection reveals that majority of these are building class R which are Condos. We'll deal with them separately. 
+
+We use the GeoClient API to get the locations for the Condos. Details in script `03_geoclientAPI_data.R`. 
+
+```{r}
+## loading data merged with GeoClient API
+load("../missing_sales_data.RData")
+```
+
+
+
+```{r}
+
+missing_sales_data$BBL <- as.numeric(missing_sales_data$BBL)
+missing_sales_data <- merge(missing_sales_data,bbl_coords,by="BBL") 
+
+# sales_data <- 
+missing_sales_data <- missing_sales_data[,names(merged_sales_data)]
+
+
+unmerged_missing_sales_data <- anti_join(missing_sales_data,bbl_coords,by="BBL") 
+
+# sum(table(unmerged_missing_sales_data$building_class))/dim(unmerged_sales_data)[1]
+```
+
+
+```{r}
+sales_data <- rbind(merged_sales_data,missing_sales_data)
+```
+
+
+## Merging with Property Assessment Roll Data
+
+Lastly, we merge Property Assessment Roll archives data for more accurate information on apartment square footage. This is particularly essential as it corrects for condo unit square footage and also reduces the amount of missing data. We use the latest version of the assessment data FY18 for all the tax classes. The link to the data is below:
+https://www1.nyc.gov/site/finance/taxes/property-assessment-roll-archives.page 
+
+```{r}
+assessment_tc1 <- mdb.get("../data/assessment/tc1.mdb",tables="tc1")
+assessment_tc234 <- mdb.get("../data/assessment/TC234.mdb",tables="tc234")
+assessment_data <- rbind(assessment_tc1,assessment_tc234)
+
+cols_needed <- c("BBLE","BORO","BLOCK","LOT","EASE","TOT.UNIT","RES.UNIT","LND.AREA","GR.SQFT",
+"CONDO.NM","CONDO.S1","CONDO.S2","CONDO.S3","CONDO.A","COMINT.L","COMINT.B",
+"APTNO","AP.BORO","AP.BLOCK","AP.LOT","AP.EASE","GEO.RC","COOP.NUM")
+
+assessment_data <- assessment_data[,cols_needed]
+colnames(assessment_data)[1] <- "BBL"
+
+# assessment_data$new_BBL <- as.numeric(paste0(assessment_data$BORO,
+#                                   str_pad(assessment_data$BLOCK,5,side="left",pad="0"),
+#                                   str_pad(assessment_data$LOT,4,side="left",pad="0")))
+
+## removing easements
+assessment_data <- assessment_data[assessment_data$EASE == "",]
+
+```
+
+
+```{r, warning=FALSE}
+  
+unmerged_sales_data <- anti_join(sales_data,assessment_data,by=c("borough"="BORO","block"="BLOCK","lot"="LOT"))
+
+round(dim(unmerged_sales_data)[1]*100/dim(full_sales_data)[1],2)
+round(table(unmerged_sales_data$building_class)*100/table(full_sales_data$building_class),2)
+round(table(unmerged_sales_data$building_class)*100/dim(full_sales_data)[1],2)
+
+sales_data <- merge(sales_data,assessment_data,
+                                 by.x=c("borough","block","lot"),
+                                 by.y=c("BORO","BLOCK","LOT"))
+
+```
+
+
+```{r}
+# save(sales_data,file="../data/pre_cleaning_sales_data.RData")
+```
+
