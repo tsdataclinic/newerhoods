@@ -41,7 +41,7 @@ reduced_tracts <- census_tracts[!(census_tracts$boro_ct201 %in% tracts_to_exclud
 sales_features <- sales_features[!(sales_features$boro_ct201 %in% tracts_to_exclude),]
 ### geographical clustering
 features_to_use <- !grepl("year|lon|lat|boro_ct201",colnames(sales_features))
-features_to_use <- grepl("avg|sd|age",colnames(sales_features))
+features_to_use <- grepl("age",colnames(sales_features))
 
 D0 <- dist(scale(sales_features[,features_to_use]))
 
@@ -54,7 +54,7 @@ range.alpha <- seq(0,1,0.1)
 cr <- choicealpha(D0,D1,range.alpha,55,graph=TRUE)
 cr$Qnorm
 
-K <- 100
+K <- 55
 colours <- distinctColorPalette(K)
 tree <- hclustgeo(D0,D1,alpha=0.1)
 clusters <- data.frame(cl=cutree(tree,K))

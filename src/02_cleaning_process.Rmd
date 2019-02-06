@@ -3,6 +3,7 @@ title: "Cleaning"
 author: "Kaushik Mohan"
 date: "11/14/2018"
 output:
+  word_document: default
   html_document:
     df_print: paged
 ---
@@ -10,6 +11,7 @@ output:
 
 ```{r setup, include=FALSE, echo=FALSE}
 ## Data Munging packages
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE)
 library(tidyverse)
 library(dplyr)
 library(lubridate)
@@ -125,7 +127,6 @@ plot(density(log10(sales_data$price_per_sqft)),main="Log(base 10) Price per sq. 
 abline(v=log10(50),col=2)
 ```
 
-Majority of the ones with prices lower than $\$50$ per sq. ft are Condos and Co-ops (Class R and D respectively). This seems highly odd as we would expect these to be the most expensive.  
 ```{r}
 s2 <- sales_data$building_class[sales_data$price_per_sqft <= 50]
 table(sales_data$building_class)
@@ -143,7 +144,7 @@ N_prev <- (1-(dim(sales_data)[1]/N))*100
 
 #### 4.1 Checking Price Distributions
 
-Below are the marginals by Borough and Building class and distributions of price per square feet by building class. It is a bit odd that Condo (Building Class R) and Coop Apartment (Building Class D) prices have a very different distribution compared to the rest. Also, the scale is completely off with respect to price estimates for New York City. Zillow suggests the Median price per sq. ft of a condo in Manhattan is closer to $1800. 
+Below are the marginals by Borough and Building class and distributions of price per square feet by building class. 
 
 ```{r}
 

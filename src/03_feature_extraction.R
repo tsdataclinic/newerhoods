@@ -70,13 +70,13 @@ sales_features <- get_moving_features_for_year(sales_data,for_year=2017,windows=
 
 bbl_coords$UnitsRes <- as.numeric(bbl_coords$UnitsRes)
 bbl_coords$ResArea <- as.numeric(bbl_coords$ResArea)
-bbl_coords$YearBuilt[bbl_coords$YearBuilt == 0] <- NA ## Removing 0 YearBuilt
+bbl_coords$YearBuilt[bbl_coords$YearBuilt == 0] <- NA ## Removing 0 YearBuilt 5% missing
 
 bbl_coords$boro_ct201 <- paste0(bbl_coords$boro,str_pad(bbl_coords$Tract2010,6,side="right",pad="0"))
 overall_features <- bbl_coords %>% group_by(boro_ct201) %>% summarise(n_bldgs = n(), 
                                                   res_units = sum(UnitsRes), 
                                                   res_area=sum(ResArea),
-                                                  bldg_age = mean((2017 - YearBuilt),na.rm=TRUE))
+                                                  bldg_age = mean((2019 - YearBuilt),na.rm=TRUE))
 
 
 sales_features <- merge(sales_features,overall_features,by="boro_ct201")
@@ -92,4 +92,6 @@ sales_features$year[sales_features$year == 0] <- 2017
 
 
 save(sales_features,file="./data/sales_features_2017.RData")
+
+
 
