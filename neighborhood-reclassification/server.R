@@ -5,28 +5,32 @@
 # Find out more about building applications with Shiny here:
 # 
 #    http://shiny.rstudio.com/
-#
 
-library(shiny)
-library(cluster)
-library(rgdal)
-library(fpc)
-library(dplyr)
-library(ClustGeo)
-library(sp)
-library(spdep)
-library(randomcoloR)
-library(leaflet)
-library(readxl)
-library(htmltools)
+require(shiny)
+require(shinyWidgets)
+require(shinyjs)
+require(cluster)
+require(rgdal)
+require(fpc)
+require(dplyr)
+require(ClustGeo)
+require(sp)
+require(spdep)
+require(leaflet)
+require(readxl)
+require(htmltools)
+
+source("support_functions.R")
 
 ### Loading data
 load("../data/sales_features_2017.RData")
 load("../data/crime_rates_17.RData")
+load("../data/nyc311_animals.RData")
 # 
 # sales_features <- merge(sales_features,crime_rates,by="boro_ct201")
 
 sales_features <- left_join(sales_features,crime_rates,by="boro_ct201")
+sales_features <- left_join(sales_features,nyc311_rates,by="boro_ct201")
 
 ### This line takes the most time leading to slow intial load
 # census_tracts <- readOGR("../data/shapefiles/2010 Census Tracts/geo_export_4d4ca7d0-0c46-467e-8dee-99c93361f914.shp",stringsAsFactors = FALSE)
@@ -59,20 +63,32 @@ sales_features <- sales_features[!(sales_features$boro_ct201 %in% tracts_to_excl
 
 # ['#67001f','#b2182b','#d6604d','#f4a582','#fddbc7','#f7f7f7','#d1e5f0','#92c5de','#4393c3','#2166ac','#053061']
 
-map_cols <- palette(c('#7f3b08','#b35806','#e08214','#fdb863','#fee0b6','#f7f7f7','#d8daeb','#b2abd2','#8073ac','#542788','#2d004b'))
+# map_cols <- palette(c('#b7e882','#f4f062','#8fe2b4','#237de0','#8dcd5c','#a327ad','#d30000','#f9158d',
+#                       '#44b244','#2d5ead','#e8a0ea','#3ec8ed','#ea0a0a','#ef3fca','#efe8ab','#d87430'))
+
+# map_cols <- palette(c('#7f3b08','#b35806','#e08214','#fdb863','#fee0b6','#f7f7f7','#d8daeb','#b2abd2','#8073ac','#542788','#2d004b'))
 
 function(input, output) {
   
+  observe({
+    if (is.null(input$housing_features) && is.null(input$crime_features) && is.null(input$call_features)) {
+      shinyjs::disable("select")
+    } else {
+      shinyjs::enable("select")
+    }
+  })
   
   user_selection <- eventReactive(input$select,{
-    paste0(input$feature_selection,collapse = "|")},ignoreNULL = FALSE)
+    paste0(c(input$crime_features,input$housing_features,input$call_features),collapse = "|")}
+    ,ignoreNULL = TRUE) # change to false for initial load
   
   clus_res <- reactive({
     
     ### Subset data based on user selection of features
     # user_selection <- paste0(input$feature_selection,collapse = "|")
     features_to_use <- grepl(user_selection(),colnames(sales_features))
-    
+    feature_set <- unlist(strsplit(user_selection(),"\\|"))
+    plot_type <- input$plot_type
     ### Clustering the data based on selected features
     D0 <- dist(scale(sales_features[,features_to_use]))
     
@@ -87,10 +103,13 @@ function(input, output) {
     tree <- hclustgeo(D0,D1,alpha=0.1)
     clusters <- data.frame(cl=cutree(tree,K))
     
-    # cluster_vals <- cbind(clusters,sales_features[,features_to_use])
-    # cluster_vals <- cluster_vals %>% group_by(cl) %>% summarise_if(is.numeric,mean)
-    # clusters <- left_join(clusters,cluster_vals,by="cl")
-    # 
+    cluster_vals <- cbind(clusters,sales_features[,features_to_use])
+    cluster_vals <- cluster_vals %>% group_by(cl) %>% summarise_if(is.numeric,median)
+    
+    colnames(cluster_vals) <- c("cl",paste0(feature_set,"_median"))
+    cluster_vals$dist <- eucd_dist(cluster_vals)
+    clusters <- left_join(clusters,cluster_vals,by="cl")
+
     clusters$boro_ct201 <- as.character(sales_features$boro_ct201)
     clusters <- left_join(data.frame(boro_ct201=census_tracts$boro_ct201,
                                      stringsAsFactors = FALSE),
@@ -102,26 +121,35 @@ function(input, output) {
     # census_tracts@data$ordered_cl <- census_tracts$cl
     
     # pal <- colorNumeric(map_cols,c(0:(length(map_cols)-1)),na.color = "#A9A9A9A9")
+    # if(input$plot_type == TRUE){
+      # pal <- colorQuantile(map_cols,clusters[,paste0(feature_set,"_median")],n=length(map_cols),na.color = "#A9A9A9A9")
+      # census_tracts@data$cl_cols <- pal(clusters[match(census_tracts$boro_ct201,clusters$boro_ct201),paste0(feature_set,"_median")])
     
-    if(K<12){
-      census_tracts@data$ordered_cl <- census_tracts$cl
-      pal <- colorNumeric(map_cols[ceiling(seq(1,length(map_cols),by=length(map_cols)/K))],c(1:K),na.color = "#A9A9A9A9")
+    heatmap_palette <- c('#b35806','#f1a340','#fee0b6','#f7f7f7','#d8daeb','#998ec3','#542788')
+    pal_heatmap <- colorQuantile(heatmap_palette,clusters$dist,n=length(heatmap_palette),na.color = "#A9A9A9A9")
+    census_tracts@data$hm_cols <- pal_heatmap(clusters[match(census_tracts$boro_ct201,clusters$boro_ct201),"dist"])
+    # }else{
+    census_tracts@data$ordered_cl <- census_tracts$cl
+        
+        # for(b in c(1:5)){
+        #   ct <- census_tracts[census_tracts$boro_code == b & is.na(census_tracts$ordered_cl),]
+        #   unique_cl <- unique(ct$cl)
+        #   unique_cl <- unique_cl[!is.na(unique_cl)]
+        #   # census_tracts@data$ordered_cl[census_tracts$boro_code == b] <- match(ct$cl,unique_cl)
+        #   census_tracts@data$ordered_cl[census_tracts$cl %in% unique_cl] <-
+        #     match(census_tracts$cl[census_tracts$cl %in% unique_cl],unique_cl)
+        # }
+    map_cols <- c('#b7e882','#f4f062','#8fe2b4','#237de0','#8dcd5c','#a327ad','#d30000','#f9158d','#44b244','#2d5ead','#e8a0ea','#3ec8ed','#ea0a0a','#ef3fca','#efe8ab','#d87430')
+    
+    pal <- colorNumeric(map_cols,c(0:(length(map_cols)-1)),na.color = "#A9A9A9A9")
+    census_tracts$cl_cols <- pal(census_tracts@data$ordered_cl%%length(map_cols))
+    # }
+    if(plot_type=="heat_map"){
+      census_tracts$colour <- census_tracts$hm_cols
     }else{
-      census_tracts@data$ordered_cl <- NA
-
-      for(b in c(1:5)){
-        ct <- census_tracts[census_tracts$boro_code == b & is.na(census_tracts$ordered_cl),]
-        unique_cl <- unique(ct$cl)
-        unique_cl <- unique_cl[!is.na(unique_cl)]
-        # census_tracts@data$ordered_cl[census_tracts$boro_code == b] <- match(ct$cl,unique_cl)
-        census_tracts@data$ordered_cl[census_tracts$cl %in% unique_cl] <-
-          match(census_tracts$cl[census_tracts$cl %in% unique_cl],unique_cl)
-      }
-
-      pal <- colorNumeric(map_cols,c(0:(length(map_cols)-1)),na.color = "#A9A9A9A9")
+      census_tracts$colour <- census_tracts$cl_cols
     }
 
-    census_tracts@data$cl_cols <- pal(census_tracts@data$ordered_cl%%length(map_cols))
     census_tracts
   })
 
@@ -143,11 +171,11 @@ function(input, output) {
         id= "mapbox.dark",
         accessToken = Sys.getenv('MAPBOX_ACCESS_TOKEN'))) %>% 
       addPolygons(data=clus_res(),
-        fillColor = clus_res()$cl_cols,
+        fillColor = clus_res()$colour,
         weight = 0.5,
         opacity = 0.25,
         color = "white",
-        fillOpacity = 0.8) %>%
+        fillOpacity = 0.7) %>%
       addPolygons(data=baseline_map(), 
                   fillColor = "black",
                   weight = 0.75,
