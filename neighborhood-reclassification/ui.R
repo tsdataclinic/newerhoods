@@ -89,7 +89,13 @@ tagList(
              # shinyWidgets::materialSwitch(inputId="heatmap",label="Plot Type",value=FALSE,status="primary"),
              radioGroupButtons(inputId = "plot_type",label="Plot type",
                                choices = list("Cluster Map"="cluster_map","Heatmap"="heat_map"),
-                               justified = TRUE,status="primary"),
+                               justified = TRUE,status="primary") 
+             
+              %>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_attach_modal(id_modal = "modal_features")
+               ),
              
              selectInput('baseline',label='Compare against',
                          choices=list("Community Districts"="cds",
