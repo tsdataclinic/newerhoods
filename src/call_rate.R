@@ -2,21 +2,28 @@
 library("RSocrata")
 library(readxl)
 
+source("./neighborhood-reclassification/support_functions.R")
+nyc311_complaints <- read.socrata(
+  "https://data.cityofnewyork.us/resource/fhrw-4uyv.csv?$where=complaint_type like '%25Noise%25'",
+  app_token = "G1jXll4MFa1CUAPu4EgNdxL9K")
 
-nyc311_bees <- read.socrata(
-  "https://data.cityofnewyork.us/resource/fhrw-4uyv.csv?$where=complaint_type='Harboring Bees/Wasps'",
-  #where=created_date>='2018-01-01T00:00:00.000'",
-  app_token = "G1jXll4MFa1CUAPu4EgNdxL9K"
-)
+party_desc <- c("Loud Music/Party","Noise: Loud Music/Nighttime(Mark Date And Time) (NP1)",
+                       "Noise: Loud Music/Daytime (Mark Date And Time) (NN1)")
+animal_desc <- c("Noise, Other Animals (NR6)","Noise, Barking Dog (NR5)")
+ice_cream_desc <- c("Noise, Ice Cream Truck (NR4)")
 
-nyc311_animals <- read.socrata(
-  "https://data.cityofnewyork.us/resource/fhrw-4uyv.csv?$where=complaint_type like '%25Illegal Animal%25'",
-  #where=created_date>='2018-01-01T00:00:00.000'",
-  app_token = "G1jXll4MFa1CUAPu4EgNdxL9K"
-)
+nyc_noise_party <- nyc311_complaints[nyc311_complaints$descriptor %in% party_desc,]
+nyc_noise_animals <- nyc311_complaints[nyc311_complaints$descriptor %in% animal_desc,]
+nyc_noise_ice_cream <- nyc311_complaints[nyc311_complaints$descriptor %in% ice_cream_desc,]
+  
+nyc311_rates <- points_to_feature(nyc_noise_party,"latitude","longitude","party_rate")
 
-nyc311_animals <- rbind(nyc311_animals,nyc311_bees)
+nyc311_rates <- merge(nyc311_rates,
+                      points_to_feature(nyc_noise_animals,"latitude","longitude","animal_rate"),
+                      by="boro_ct201")
 
-nyc311_rates <- points_to_feature(nyc311_animals,"latitude","longitude")
-colnames(nyc311_rates) <- c("boro_ct201","call_rate")
-save(nyc311_rates,file="./data/nyc311_animals.RData")
+nyc311_rates <- merge(nyc311_rates,
+                      points_to_feature(nyc_noise_ice_cream,"latitude","longitude","icecream_rate"),
+                      by="boro_ct201")
+
+save(nyc311_rates,file="./data/nyc311_rates.RData")

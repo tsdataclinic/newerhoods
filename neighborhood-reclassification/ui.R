@@ -15,6 +15,7 @@ require(bsplus)
 require(shinythemes)
 require(shinyWidgets)
 require(leaflet)
+require(plotly)
 require(markdown)
 
 modal_features <- 
@@ -25,6 +26,15 @@ modal_features <-
     size="medium"
 )
 
+modal_plots <- 
+  bs_modal(
+    id = "modal_plots",
+    title="Plots",
+    body= includeMarkdown("plots.md"),
+    size="medium"
+  )
+
+
 tagList(
   navbarPage(
   theme = shinytheme("cerulean"),
@@ -34,7 +44,7 @@ tagList(
            
            ## add modals
            modal_features,
-           
+           modal_plots,
            
            sidebarPanel(
              ## try out selectInput(multiple=TRUE, selectize=TRUE) with option groups
@@ -55,29 +65,27 @@ tagList(
                    ),
              
              pickerInput(inputId = 'crime_features',#label=h6("Crime"),
-                         choices=list("Crime Rates"="crime_rate"),
-                         options=list(title="Crime Characteristics"),
+                         choices=list("Violations"="violation_rate",
+                                      "Felonies"="felony_rate",
+                                      "Misdemeanors"="misdemeanor_rate"),
+                         options=list(`actions-box`=TRUE,title="Crime Characteristics"),
                          multiple=TRUE),
              
              pickerInput(inputId = 'call_features',#label=h6("311 Complaints"),
-                         choices=list("Complaints about animals"="call_rate"),
-                         options=list(title="311 Complaints"),
+                         choices=list("Ice Cream truck"="icecream_rate",
+                                      "Barking Dog"="animal_rate",
+                                      "Loud Music/party"="party_rate"),
+                         options=list(`actions-box`=TRUE,title="311 Noise Complaints"),
                          multiple=TRUE),
              
-             # checkboxGroupInput("feature_selection",label=h5("Features to use"),
-             #                    choices=list("1y Sale Price per sq. ft"="med_price_1y|sd_price_1y",
-             #                                 "3y Sale Price per sq. ft"="med_price_3y|sd_price_3y",
-             #                                 "5y Sale Price per sq. ft"="med_price_5y|sd_price_5y",
-             #                                 "No. of Residential units"="res_units",
-             #                                 "Avg. age of buildings"="age",
-             #                                 "Crime Rates"="crime_rate"),
-             #                    selected = "med_price_1y|sd_price_1y"),
+             
              actionButton("select","Select Features",class="btn-primary") ,
              # actionButton(,class="btn-primary"),
              bsTooltip("select", "Click to select or update features to be used for clustering",
                        "right", options = list(container = "body")),
              # p("Click to update the features"),
-             
+             br(),
+             br(),
              # chooseSliderSkin("Shiny",color="#67daff"),
              # setSliderColor("DeepSkyBlue",1),
              sliderInput("num_clusters",
@@ -89,20 +97,19 @@ tagList(
              # shinyWidgets::materialSwitch(inputId="heatmap",label="Plot Type",value=FALSE,status="primary"),
              radioGroupButtons(inputId = "plot_type",label="Plot type",
                                choices = list("Cluster Map"="cluster_map","Heatmap"="heat_map"),
-                               justified = TRUE,status="primary") 
-             
-              %>%
+                               justified = TRUE,status="primary") %>%
                shinyInput_label_embed(
                  shiny_iconlink() %>%
-                   bs_attach_modal(id_modal = "modal_features")
+                   bs_attach_modal(id_modal = "modal_plots")
                ),
              
              selectInput('baseline',label='Compare against',
                          choices=list("Community Districts"="cds",
                                       "Public Use Microdata Areas (PUMA)"="pumas",
                                       "Neighborhood Tabulation Areas (NTA)"="ntas",
-                                      "Police Precincts"="precincts"),
-                         selected = "cds")
+                                      "Police Precincts"="precincts",
+                                      "Scool Districts"="school_dists")
+                         )
            ),
            mainPanel(
              leafletOutput("map",height = 565)

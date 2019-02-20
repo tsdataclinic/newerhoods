@@ -16,3 +16,8 @@ save(cds,file="../data/cds.RData")
 precincts <- readOGR("../data/shapefiles/Police Precincts/geo_export_e7d15636-2d89-486a-bd6d-41a7dfa67b3d.shp")
 precincts <- spTransform(precincts,CRS("+proj=longlat +ellps=WGS84 +no_defs"))
 save(precincts,file="../data/precincts.RData")
+
+school_dists <- readOGR("../data/shapefiles/School Districts/geo_export_af10107a-e4ca-45b9-a03e-0717947ea03b.shp")
+school_dists <- spTransform(school_dists,CRS("+proj=longlat +ellps=WGS84 +no_defs"))
+save(school_dists,file="../data/school_dists.RData")
+

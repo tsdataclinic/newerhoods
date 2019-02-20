@@ -1,4 +1,4 @@
-points_to_feature <- function(df,col1,col2){
+points_to_feature <- function(df,col1,col2,colname){
   ## function to take a data frame with lat and lon columns and convert to a rate of
   ## counts for each census tract.
   ## Spatial columns need to be lat and lon, transformations not supported as yet. 
@@ -33,7 +33,7 @@ points_to_feature <- function(df,col1,col2){
   df_rates <- merge(census_tracts@data,df_rates,by="boro_ct201",all.x=TRUE)
   df_rates <- df_rates[,c("boro_ct201","var_rate")]
   df_rates$var_rate[is.na(df_rates$var_rate)] <- 0
-
+  colnames(df_rates) <- c("boro_ct201",colname)
   return(df_rates)
 }
 
