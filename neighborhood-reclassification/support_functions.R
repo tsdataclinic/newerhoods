@@ -51,3 +51,40 @@ eucd_dist <- function(df){
 }
 
 
+get_labels <- function(df){
+
+  stats_selected <- colnames(df)[grepl("_mean",colnames(df))]
+  stats_names <- gsub("_mean","",stats_selected)
+  
+  pretty_names <- c("<strong>2017 Median Sale Price: </strong> $%g /sq.ft.",
+                    "<strong>2015-17 Median Sale Price: </strong> $%g /sq.ft.",
+                    "<strong>2013-17 Median Sale Price: </strong> $%g /sq.ft.",
+                    "<strong># Residential units: </strong> %g ",
+                    "<strong>Building Age: </strong> %g years",
+                    "<strong>Violations: </strong> %g /1000 people",
+                    "<strong>Felonies: </strong> %g /1000 people",
+                    "<strong>Misdemeanors: </strong> %g /1000 people",
+                    "<strong>Noisy Ice Cream Trucks: </strong> %g /1000 people",
+                    "<strong>Barking Dogs: </strong> %g /1000 people",
+                    "<strong>Loud Music/Parties: </strong> %g /1000 people")
+  
+  all_stats <- c("med_price_1y","med_price_3y","med_price_5y","res_units","bldg_age",
+  "violation_rate","felony_rate","misdemeanor_rate","icecream_rate","animal_rate","party_rate")
+  
+  matched_columns <- match(stats_names,all_stats)
+  matched_columns <- matched_columns[!is.na(matched_columns)]
+  
+  stat_columns <- paste0(all_stats[matched_columns],"_mean")
+  
+  content <- matrix(NA,nrow=dim(df)[1],ncol=length(matched_columns))
+  for(i in c(1:length(matched_columns))){
+    content[,i] <- sprintf(pretty_names[matched_columns[i]],
+                           round(unlist(df[,stat_columns[i]]),2))
+  }
+  
+  labels <- apply(content,1,FUN= function(x) {paste(x,collapse="<br/>")})
+  labels <- paste("<strong>Cluster averages</strong><br/>",labels)
+  return(labels)
+  
+}
+
