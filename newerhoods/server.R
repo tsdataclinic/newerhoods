@@ -48,7 +48,7 @@ load("../data/cleaned/sales_features_2017.RData")
 load("../data/cleaned/crime_rates.RData")
 load("../data/cleaned/nyc311_rates.RData")
 load("../data/cleaned/census_tracts.RData")
-census_pop <- read_xlsx("../cleaned/data/2010census_population.xlsx",skip=7,
+census_pop <- read_xlsx("../data/cleaned/2010census_population.xlsx",skip=7,
                         col_names=c("borough","county_code","borough_code",
                                     "2010_tract","pop_2000","pop_2010",
                                     "change","pct_change","acres","pop_per_acre"))
