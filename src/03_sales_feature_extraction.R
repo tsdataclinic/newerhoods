@@ -74,9 +74,9 @@ bbl_coords$YearBuilt[bbl_coords$YearBuilt == 0] <- NA ## Removing 0 YearBuilt 5%
 
 bbl_coords$boro_ct201 <- paste0(bbl_coords$boro,str_pad(bbl_coords$Tract2010,6,side="right",pad="0"))
 overall_features <- bbl_coords %>% group_by(boro_ct201) %>% summarise(n_bldgs = n(), 
-                                                  res_units = sum(UnitsRes), 
-                                                  res_area=sum(ResArea),
-                                                  bldg_age = mean((2019 - YearBuilt),na.rm=TRUE))
+                                                                      res_units = sum(UnitsRes), 
+                                                                      res_area=sum(ResArea),
+                                                                      bldg_age = mean((2019 - YearBuilt),na.rm=TRUE))
 
 
 sales_features <- merge(sales_features,overall_features,by="boro_ct201")

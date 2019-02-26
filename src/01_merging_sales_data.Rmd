@@ -41,7 +41,7 @@ for(i in c(1:dim(boro_year)[1])){
   
   tryCatch(
     {
-      tmp <- read_excel(paste0("../data/annualized_sales/",boro_year$file[i]),skip=4)
+      tmp <- read_excel(paste0("./data/raw/annualized_sales/",boro_year$file[i]),skip=4)
       ## standardizing column names to lowercase and removing spaces and escape characters
       colnames(tmp) <- gsub(" ","_",gsub("\n|\r","",tolower(colnames(tmp)))) 
       
@@ -59,8 +59,8 @@ for(i in c(1:dim(boro_year)[1])){
       full_sales_data <- rbind(full_sales_data,tmp)
     }, 
     error=function(cond){
-      error_cases <<- append(error_cases,paste0("../data/annualized_sales/",boro_year$file[i]))
-      print(paste0("../data/annualized_sales/",boro_year$file[i]))
+      error_cases <<- append(error_cases,paste0("../data/raw/annualized_sales/",boro_year$file[i]))
+      print(paste0("../data/raw/annualized_sales/",boro_year$file[i]))
     }
   )
 }
@@ -119,7 +119,7 @@ We use the GeoClient API to get the locations for the Condos. Details in script 
 
 ```{r}
 ## loading data merged with GeoClient API
-load("../missing_sales_data.RData")
+load("../data/intermediary/missing_sales_data.RData")
 ```
 
 
@@ -150,8 +150,8 @@ Lastly, we merge Property Assessment Roll archives data for more accurate inform
 https://www1.nyc.gov/site/finance/taxes/property-assessment-roll-archives.page 
 
 ```{r}
-assessment_tc1 <- mdb.get("../data/assessment/tc1.mdb",tables="tc1")
-assessment_tc234 <- mdb.get("../data/assessment/TC234.mdb",tables="tc234")
+assessment_tc1 <- mdb.get("../data/raw/assessment/tc1.mdb",tables="tc1")
+assessment_tc234 <- mdb.get("../data/raw/assessment/TC234.mdb",tables="tc234")
 assessment_data <- rbind(assessment_tc1,assessment_tc234)
 
 cols_needed <- c("BBLE","BORO","BLOCK","LOT","EASE","TOT.UNIT","RES.UNIT","LND.AREA","GR.SQFT",

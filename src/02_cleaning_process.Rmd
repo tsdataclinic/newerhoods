@@ -22,7 +22,7 @@ library(Hmisc)
 ```
 
 ```{r}
-load(file="../data/pre_cleaning_sales_data.RData")
+load(file="../data/intermediary/pre_cleaning_sales_data.RData")
 ```
 
 ```{r}
@@ -173,6 +173,6 @@ sales_data$boro_ct201 <- paste0(sales_data$borough,sales_data$Tract2010)
 
 
 ```{r}
-save(sales_data,file="../data/cleaned_sales_data.RData")
+save(sales_data,file="../data/intermediary/cleaned_sales_data.RData")
 ```
 

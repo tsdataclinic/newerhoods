@@ -15,7 +15,7 @@ library(sp)
 census_tracts <- readOGR("data/shapefiles/2010 Census Tracts/geo_export_4d4ca7d0-0c46-467e-8dee-99c93361f914.shp")
 load("./data/sales_features_2017.RData")
 
-census_pop <- read_xlsx("./data/2010census_population.xlsx",skip=7,
+census_pop <- read_xlsx("./data/cleaned/2010census_population.xlsx",skip=7,
                         col_names=c("borough","county_code","borough_code",
                                     "2010_tract","pop_2000","pop_2010",
                                     "change","pct_change","acres","pop_per_acre"))
@@ -87,8 +87,3 @@ plot(x=cl[2:48],y=ch[2:48],type='l')
 ### Reshaped Boroughs? (k=5)
 ### Redefined neighborhoods (k= size(PUMAs) = 55)
 ### Optimal #clusters (k= x)
-
-## Emily, David Madina
-
-
-+1-6462926241

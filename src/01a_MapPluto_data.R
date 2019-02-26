@@ -7,11 +7,11 @@ library(dplyr)
 
 ## Source URL: https://www1.nyc.gov/site/planning/data-maps/open-data/dwn-pluto-mappluto.page
 
-bk_pluto <- readOGR("data/shapefiles/bk_mappluto_18v1/BKMapPLUTO.dbf")
-mn_pluto <- readOGR("data/shapefiles/mn_mappluto_18v1/MNMapPLUTO.dbf")
-bx_pluto <- readOGR("data/shapefiles/bx_mappluto_18v1/BXMapPLUTO.dbf")
-qn_pluto <- readOGR("data/shapefiles/qn_mappluto_18v1/QNMapPLUTO.dbf")
-si_pluto <- readOGR("data/shapefiles/si_mappluto_18v1/SIMapPLUTO.dbf")
+bk_pluto <- readOGR("./data/raw/shapefiles/bk_mappluto_18v1/BKMapPLUTO.dbf")
+mn_pluto <- readOGR("./data/raw/shapefiles/mn_mappluto_18v1/MNMapPLUTO.dbf")
+bx_pluto <- readOGR("./data/raw/shapefiles/bx_mappluto_18v1/BXMapPLUTO.dbf")
+qn_pluto <- readOGR("./data/raw/shapefiles/qn_mappluto_18v1/QNMapPLUTO.dbf")
+si_pluto <- readOGR("./data/raw/shapefiles/si_mappluto_18v1/SIMapPLUTO.dbf")
 
 pluto_data <- list(mn_pluto,bk_pluto,bx_pluto,qn_pluto,si_pluto)
 
@@ -41,4 +41,4 @@ bbl_coords <- bbl_coords %>% mutate(boro=case_when( Borough == "MN" ~ 1,
                                                     Borough == "SI" ~ 5))
 
 
-save(bbl_coords,file="data/bbl_coords.RData")
+save(bbl_coords,file="./data/intermediary/bbl_coords.RData")
