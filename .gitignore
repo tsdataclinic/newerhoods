@@ -1,7 +1,8 @@
 
 
 ## Don't want to push data folder to github
-data/
+data/raw/
+data/intermediary/  
 
 ## Mac OS files
 .DS_Store
