@@ -11,7 +11,7 @@ We use multiple open datasets to generate characteristics related to housing, cr
 
 `/src` contains all the code to merge and clean the data sets, extract features from it, and cluster the features. 
 
-`/neighborhood-reclassification` contains the code for the RShiny WebApp.
+`/newerhoods` contains the code for the RShiny WebApp.
 
 
 ### Running the App locally
