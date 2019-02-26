@@ -1,7 +1,10 @@
 # NewerHoods
-![NewerHoods](newerhoods/images/NewerHoods.png){width=500}
 
-New York City is the City of Neighborhoods. These neighborhoods have gone through a lot of changes over the last decade, but our definitions of neighborhoods remain the same. NewerHoods is a tool that allows you to reimagine New York City neighborhoods using Open Data and Machine Learning. NewerHoods lets you select specific characteristics to visualize the clusters on a map of New York City, find similar neighborhoods and compare against existing geographic divisions. 
+<p align="center">
+  <img src="newerhoods/images/NewerHoods.png" width="500"/>
+</p>
+
+New York City is the City of Neighborhoods. These neighborhoods have gone through a lot of changes over the last decade, but our definitions of neighborhoods remain the same. NewerHoods is a RShiny App that allows you to reimagine New York City neighborhoods using Open Data and Machine Learning. NewerHoods lets you select specific characteristics to visualize the clusters on a map of New York City, find similar neighborhoods and compare against existing geographic divisions. 
 
 We use multiple open datasets to generate characteristics related to housing, crime and noise levels. These characteristics/features are evaluated at the census tract level which are then clustered to find pockets of tracts homogenous in terms of the characteristics. These are what we call NewerHoods. 
 
@@ -14,7 +17,7 @@ We use multiple open datasets to generate characteristics related to housing, cr
 `/newerhoods` contains the code for the RShiny WebApp.
 
 
-### Running the App locally
+### Running the App
 
 Mapbox for the underlying map. Getting a token is free by signing up [here](https://www.mapbox.com/). Paste the token and run the code below.
 
@@ -42,3 +45,7 @@ runApp("newerhoods")
 
 1. [ClustGeo: an R package for hierarchical clustering with spatial constraints](https://arxiv.org/abs/1707.03897) 
 2. [Making Neighborhoods - Understanding New York City Transitions 2000-2010](http://chpcny.org/assets/MakingNeighborhoodsPaper.pdf)
+
+### License
+This project is licensed under the Apache 2.0 License - see the LICENSE.md file for details
+
