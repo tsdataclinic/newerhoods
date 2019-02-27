@@ -19,7 +19,13 @@ We use multiple open datasets to generate characteristics related to housing, cr
 
 ### Running the App
 
-Mapbox for the underlying map. Getting a token is free by signing up [here](https://www.mapbox.com/). Paste the token and run the code below.
+First, the R environment needs to be set up with all the necessary packages.
+
+```r
+source("newerhoods/setup.R")
+```
+
+The Shiny App uses Mapbox for the underlying map. Getting a token is free by signing up [here](https://www.mapbox.com/). Paste the token and run the code below.
 
 ```r
 Sys.setenv('MAPBOX_ACCESS_TOKEN'="YOUR TOKEN HERE")
@@ -30,7 +36,6 @@ Run the App
 library(shiny)
 runApp("newerhoods")
 ```
-
 
 ### Data Sources
 
