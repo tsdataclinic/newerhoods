@@ -4,9 +4,12 @@
   <img src="newerhoods/images/NewerHoods.png" width="500"/>
 </p>
 
-New York City is the City of Neighborhoods. These neighborhoods have gone through a lot of changes over the last decade, but our definitions of neighborhoods remain the same. NewerHoods is a RShiny App that allows you to reimagine New York City neighborhoods using Open Data and Machine Learning. NewerHoods lets you select specific characteristics to visualize the clusters on a map of New York City, find similar neighborhoods and compare against existing geographic divisions. 
+New York City a city of neighborhoods. These neighborhoods have gone through a lot of changes over the years, but our definitions of neighborhoods have remained mostly the same. 
 
-We use multiple open datasets to generate characteristics related to housing, crime and noise levels. These characteristics/features are evaluated at the census tract level which are then clustered to find pockets of tracts homogenous in terms of the characteristics. These are what we call NewerHoods. 
+NewerHoods is a RShiny Application that allows you to reimagine New York City neighborhoods using open data and machine learning. This web app lets you select specific characteristics and visualize clusters of these qualities on a map of New York City, find similar neighborhoods, and compare them against existing geographic divisions.
+
+NewerHoods uses multiple open datasets to generate characteristics related to housing, crime, and noise levels to begin with. These characteristics/features are evaluated at the census tract-level, and are then clustered to find pockets of tracts with homogenous characteristics. These are what we call NewerHoods.
+
 
 ### Directory Structure
 
