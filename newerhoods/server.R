@@ -85,6 +85,12 @@ function(input, output) {
     paste0(c(input$crime_features,input$housing_features,input$call_features),collapse = "|")}
     ,ignoreNULL = TRUE) # change to false for initial load
   
+  num_clus <- reactive({
+    input$num_clusters
+  }) %>% debounce(1000)
+  
+  
+  
   clus_res <- reactive({
     
     # c("icecream_rate","animal_rate","party_rate")
@@ -100,9 +106,9 @@ function(input, output) {
     diag(A) <- 1
     D1 <- as.dist(1-A)
     
-    K <- input$num_clusters
+    K <- num_clus()
     set.seed(1729)
-
+    
     tree <- hclustgeo(D0,D1,alpha=0.15)
     clusters <- data.frame(cl=cutree(tree,K))
     
@@ -163,6 +169,7 @@ function(input, output) {
                     '#d30000','#f9158d','#44b244',
                     '#2d5ead','#e8a0ea','#3ec8ed',
                     '#ea0a0a','#ef3fca','#efe8ab','#d87430')
+      
       pal <- colorNumeric(map_cols,
                           c(0:(length(map_cols)-1)),
                           na.color = "#A9A9A9A9")
@@ -191,8 +198,8 @@ function(input, output) {
         ) %>% 
         addPolygons(data=census_tracts, 
                     fillColor = "black",
-                    weight = 0.5,
-                    opacity = 0.5,
+                    weight = 0.3,
+                    opacity = 0.3,
                     color = "white",
                     fillOpacity = 0.01
         ) %>%
@@ -204,11 +211,11 @@ function(input, output) {
                     fillOpacity = 0.6,
                     ## highights
                     highlight = highlightOptions(
-                      weight = 2,
+                      weight = 4,
                       color = ifelse(input$plot_type == "cluster_map","orange","green"),
                       opacity = 0.8,
                       fillOpacity = 0.6,
-                      bringToFront = TRUE),
+                      bringToFront = F),
                     ## labels
                     label = clus_res()$labels %>% lapply(HTML),
                     labelOptions = labelOptions(
@@ -219,8 +226,8 @@ function(input, output) {
         ) %>%
         addPolylines(data=baseline_map(), 
                      stroke=TRUE,
-                     weight=2,
-                     opacity=0.8,
+                     weight=2.75,
+                     opacity=0.75,
                      color="white",
                      dashArray="4")
     })
