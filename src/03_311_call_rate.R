@@ -3,9 +3,11 @@ library("RSocrata")
 library(readxl)
 
 source("./neighborhood-reclassification/support_functions.R")
+
+app_token <- Sys.getenv('NYC_OPENDATA_API_TOKEN')
 nyc311_complaints <- read.socrata(
   "https://data.cityofnewyork.us/resource/fhrw-4uyv.csv?$where=complaint_type like '%25Noise%25'",
-  app_token = "G1jXll4MFa1CUAPu4EgNdxL9K")
+  app_token = app_token)
 
 party_desc <- c("Loud Music/Party","Noise: Loud Music/Nighttime(Mark Date And Time) (NP1)",
                 "Noise: Loud Music/Daytime (Mark Date And Time) (NN1)")

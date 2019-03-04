@@ -8,11 +8,8 @@ library(jsonlite)
 load(file="data/intermediary/missing_sales_data.RData")
 
 BASE_URL <- 'https://api.cityofnewyork.us/geoclient/v1/'
-app_id <- '093863cf'
-app_key <- 'e242cae5103e281c7c18aaea995b40fe'
-
-# path <- 'bbl.json?borough=5&block=713&lot=109'
-
+app_id <- Sys.getenv('GEOCLIENT_API_APP_ID')
+app_key <- Sys.getenv('GEOCLIENT_API_APP_KEY')
 
 missing_sales_data$BBL <- NA
 error_cases <- NULL

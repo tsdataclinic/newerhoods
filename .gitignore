@@ -4,6 +4,9 @@
 data/raw/
 data/intermediary/  
 
+## Don't want to push local settings
+settings_local.R
+
 ## Mac OS files
 .DS_Store
 
