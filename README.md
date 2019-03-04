@@ -28,10 +28,12 @@ First, the R environment needs to be set up with all the necessary packages.
 source("newerhoods/setup.R")
 ```
 
-The Shiny App uses Mapbox for the underlying map. Getting a token is free by signing up [here](https://www.mapbox.com/). Paste the token and run the code below.
+The project uses several APIs from loading data using the APIs developed by NYC Developer Portal and Mapbox for the underlying map visualization in the Shiny App. Getting all of these token are free by signing up [here](https://developer.cityofnewyork.us/) and [here](https://www.mapbox.com/). Follow the instructions in the `settings.R` file and source the local version of the file to get all the tokens stored in the environment. You would have to source this settings file everytime you start a new session.
+
+*Note: If you intend to run only the RShiny App, filling in just the MapBox API Token would suffice.*
 
 ```r
-Sys.setenv('MAPBOX_ACCESS_TOKEN'="YOUR TOKEN HERE")
+source("settings_local.R")
 ```
 
 Run the App
