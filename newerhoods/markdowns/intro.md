@@ -1,7 +1,12 @@
 ### NewerHoods
-#### *Reimagining NYC neighborhood boundaries using Open Data and Machine learning*
+#### *Redefining NYC neighborhood boundaries using open data and Machine learning*
 ___
 
-New York City is the City of Neighborhoods. These neighborhoods have gone through a lot of changes over the last decade, but our definitions of neighborhoods remain the same. NewerHoods is a tool that allows you to reimagine New York City neighborhoods using Open Data and Machine Learning. NewerHoods lets you select specific characteristics to visualize the clusters on a map of New York City, find similar neighborhoods and compare against existing geographic divisions. 
+What makes a neighborhood unique? Is it something about the people who live there? The stores along the streets? The way the buildings look? Or some combination of factors that people can simply intuit?
 
-We use multiple open datasets to generate characteristics related to housing, crime and noise levels. These characteristics/features are evaluated at the census tract level which are then clustered to find pockets of tracts homogenous in terms of the characteristics. These are what we call NewerHoods. 
+New York City a city of neighborhoods. These neighborhoods have gone through a lot of changes over the years, but our definitions of neighborhoods have remained mostly the same. 
+
+NewerHoods is a tool that allows you to reimagine New York City neighborhoods using open data and machine learning. This web app  lets you select specific characteristics and visualize clusters of these qualities on a map of New York City, find similar neighborhoods, and compare them against existing geographic divisions.
+
+NewerHoods uses multiple open datasets to generate characteristics related to housing, crime, and noise levels to begin with. These characteristics/features are evaluated at the census tract-level, and are then clustered to find pockets of tracts with homogenous characteristics. These are what we call NewerHoods.
+
