@@ -18,21 +18,23 @@ require(leaflet)
 require(htmltools)
 
 ## Spatial packages
-require(rgdal)
-require(maptools)
-require(sp)
-require(spdep)
-
-## clustering
-require(cluster)
-require(fpc)
-require(ClustGeo)
 
 ## spatial libraries with issues in deployment
 if (!require(gpclib)) install.packages("gpclib", type="source")
 gpclibPermit()              
 
-require(rgeos)
+library(rgeos)
+require(rgdal)
+require(maptools)
+require(sp)
+require(spdep)
+
+
+
+## clustering
+require(cluster)
+require(fpc)
+require(ClustGeo)
 
 source("support_functions.R")
 
