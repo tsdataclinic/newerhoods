@@ -1,5 +1,5 @@
 ### NewerHoods
-#### *Redefining NYC neighborhood boundaries using open data and Machine learning*
+#### *Redefining NYC neighborhood boundaries using open data and machine learning*
 ___
 
 What makes a neighborhood unique? Is it something about the people who live there? The stores along the streets? The way the buildings look? Or some combination of factors that people can simply intuit?

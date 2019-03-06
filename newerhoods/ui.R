@@ -16,6 +16,7 @@ require(shinythemes)
 require(shinyWidgets)
 require(leaflet)
 require(markdown)
+require(shinycssloaders)
 
 ### Definitions
 
@@ -124,7 +125,7 @@ tagList(
              input_baseline
            ),
            mainPanel(
-             leafletOutput("map",height = 535)
+             withSpinner(leafletOutput("map", height = "535"),type=5)
            )),
   tabPanel("Help", includeMarkdown("markdowns/tutorial.md")),
   tabPanel("Appendix",includeMarkdown("markdowns/appendix.md")),
