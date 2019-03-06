@@ -22,6 +22,7 @@ require(rgdal)
 require(maptools)
 require(sp)
 require(spdep)
+require(rgeos)
 
 ## clustering
 require(cluster)
