@@ -22,16 +22,17 @@ require(rgdal)
 require(maptools)
 require(sp)
 require(spdep)
-require(rgeos)
 
 ## clustering
 require(cluster)
 require(fpc)
 require(ClustGeo)
 
-## installing required packages
+## spatial libraries with issues in deployment
 if (!require(gpclib)) install.packages("gpclib", type="source")
 gpclibPermit()              
+
+require(rgeos)
 
 source("support_functions.R")
 
