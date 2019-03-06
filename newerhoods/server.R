@@ -28,6 +28,10 @@ require(cluster)
 require(fpc)
 require(ClustGeo)
 
+## installing required packages
+if (!require(gpclib)) install.packages("gpclib", type="source")
+gpclibPermit()              
+
 source("support_functions.R")
 
 ## function to add legend to plot
