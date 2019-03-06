@@ -89,8 +89,6 @@ function(input, output) {
     input$num_clusters
   }) %>% debounce(1000)
   
-  
-  
   clus_res <- reactive({
     
     # c("icecream_rate","animal_rate","party_rate")
@@ -113,21 +111,29 @@ function(input, output) {
     clusters <- data.frame(cl=cutree(tree,K))
     
     ## generating cluster average statistics (weighted mean for rates)
+    
+    ## Calculating total population and number of tracts for each cluster
     cluster_vals <- cbind(clusters,features[,feature_set],features$pop_2010)
     colnames(cluster_vals) <- c("cl",feature_set,"pop_2010")
     cluster_pop <- cluster_vals %>% group_by(cl) %>% summarise(pop = sum(pop_2010),n = n())
+    
+    ## Going from rates back to total cases to make cluster aggregation easier
     if(sum(grepl("rate",feature_set)) > 0){
       cluster_vals[,grepl("rate",colnames(cluster_vals))] <- cluster_vals[,grepl("rate",colnames(cluster_vals))]*cluster_vals$pop_2010/1000  
     }
+    
+    ## Summarising over each cluster and calculating mean statistics
     cluster_vals <- cluster_vals %>% group_by(cl) %>% summarise_if(is.numeric,mean)
     colnames(cluster_vals) <- c("cl",paste0(c(feature_set,"pop"),"_mean"))
-    # cluster_vals <- cluster_vals[,-c("pop_mean")]
     cluster_vals <- left_join(cluster_vals,cluster_pop,by="cl")
+    
+    ## for rate variables, dividing over the cluster population to get an overall average
     if(sum(grepl("rate",feature_set)) > 0){
       cluster_vals[,grepl("rate",colnames(cluster_vals))] <- cluster_vals[,grepl("rate",colnames(cluster_vals))]*cluster_vals$n*1000/cluster_vals$pop
     }
-    
+
     cluster_vals <- cluster_vals[,c("cl",paste0(feature_set,"_mean"))]
+    
     ## distance between clusters
     cluster_vals$dist <- eucd_dist(cluster_vals)
     
@@ -146,12 +152,12 @@ function(input, output) {
     newerhoods <- unionSpatialPolygons(census_tracts,census_tracts$cl)
     
     ## adding cluster data
-    census.df <- as(census_tracts,"data.frame")
-    newerhoods.df <- clusters %>% group_by(cl) %>% summarise_if(is.numeric,mean)
-    newerhoods.df <- newerhoods.df[!is.na(newerhoods.df$cl),]
-    newerhoods.df$labels <-  get_labels(newerhoods.df)
+    census_df <- as(census_tracts,"data.frame")
+    newerhoods_df <- clusters %>% group_by(cl) %>% summarise_if(is.numeric,mean)
+    newerhoods_df <- newerhoods_df[!is.na(newerhoods_df$cl),]
+    newerhoods_df$labels <-  get_labels(newerhoods_df)
     
-    newerhoods <- SpatialPolygonsDataFrame(newerhoods,newerhoods.df)
+    newerhoods <- SpatialPolygonsDataFrame(newerhoods,newerhoods_df)
     
     ## Plotting operations
     plot_type <- input$plot_type
