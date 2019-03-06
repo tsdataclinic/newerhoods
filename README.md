@@ -13,7 +13,7 @@ NewerHoods uses multiple open datasets to generate characteristics related to ho
 
 ### Directory Structure
 
-`/data` contains just the cleaned/transformed data sets used directly by the Shiny App. 
+`newerhoods/clean_data` contains just the cleaned/transformed data sets used directly by the Shiny App. 
 
 `/src` contains all the code to merge and clean the data sets, extract features from it, and cluster the features. 
 
