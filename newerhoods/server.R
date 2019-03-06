@@ -20,8 +20,8 @@ require(htmltools)
 ## Spatial packages
 
 ## spatial libraries with issues in deployment
-if (!require(gpclib)) install.packages("gpclib", type="source")
-gpclibPermit()              
+# if (!require(gpclib)) install.packages("gpclib", type="source")
+# gpclibPermit()              
 
 library(rgeos)
 require(rgdal)
@@ -36,6 +36,7 @@ require(cluster)
 require(fpc)
 require(ClustGeo)
 
+source("settings_local.R")
 source("support_functions.R")
 
 ## function to add legend to plot

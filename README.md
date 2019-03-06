@@ -28,12 +28,12 @@ First, the R environment needs to be set up with all the necessary packages.
 source("newerhoods/setup.R")
 ```
 
-The project uses several APIs from loading data using the APIs developed by NYC Developer Portal and Mapbox for the underlying map visualization in the Shiny App. Getting all of these token are free by signing up [here](https://developer.cityofnewyork.us/) and [here](https://www.mapbox.com/). Follow the instructions in the `settings.R` file and source the local version of the file to get all the tokens stored in the environment. You would have to source this settings file everytime you start a new session.
+The project uses several APIs from loading data using the APIs developed by NYC Developer Portal and Mapbox for the underlying map visualization in the Shiny App. Getting all of these token are free by signing up [here](https://developer.cityofnewyork.us/) and [here](https://www.mapbox.com/). Follow the instructions in the `settings.R` file which can be found in the `newerhoods` folder and source the local version of the file to get all the tokens stored in the environment. You would have to source this settings file everytime you start a new session.
 
 *Note: If you intend to run only the RShiny App, filling in just the MapBox API Token would suffice.*
 
 ```r
-source("settings_local.R")
+source("newerhoods/settings_local.R")
 ```
 
 Run the App
