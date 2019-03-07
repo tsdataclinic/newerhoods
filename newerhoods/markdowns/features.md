@@ -2,7 +2,7 @@
 ##### Housing
 To evaluate the housing characteristics of a neighborhood, we look at:
 
-- Median Sale Price: The median price per square footage of real-estate sold in the last year (2017), the last three years (2015-2017), and the last five years (2013-2017).
+- Median Sale Price: The median price per square footage of real-estate sold in 2017, 3-year average for 2015-2017, and 5-year average for 2013-2017.
 - Age of Building: The average age of residential real-estate from the time constructed.
 
 ##### Crime
@@ -14,6 +14,6 @@ NewerHoods categorizes crimes into three levels of offense: felony, misdemeanor,
 
 
 ##### 311 Calls
-One of the largest categories of complaints received on 311 in NYC has to do with noise. In this case, we look at just a few sub-categories of noise complaints. As with crime statistics, these are aggregated for each region and scaled by the population
+One of the largest categories of complaints received on 311 in NYC has to do with noise. In this case, we look at just a few sub-categories of noise complaints (ice cream trucks, barking dogs, and loud music/parties). As with crime statistics, these are aggregated for each region and scaled by the population.
 
 
