@@ -10,6 +10,7 @@ NewerHoods is a RShiny Application that allows you to reimagine New York City ne
 
 NewerHoods uses multiple open datasets to generate characteristics related to housing, crime, and noise levels to begin with. These characteristics/features are evaluated at the census tract-level, and are then clustered to find pockets of tracts with homogenous characteristics. These are what we call NewerHoods.
 
+The application is live and available to use [here](https://data-clinic.shinyapps.io/newerhoods/)
 
 ### Directory Structure
 
