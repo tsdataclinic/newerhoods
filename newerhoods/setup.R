@@ -1,6 +1,6 @@
 ### packages needed for the App
 
-packages <- c("shiny","shinyWidgets","shinyjs","leaflet",
+packages <- c("shiny","shinyWidgets","shinyjs","leaflet","shinycssloaders",
               "htmltools","shinythemes","shinyBS","markdown",
               "rgdal","maptools","sp","spdep","cluster","fpc",
               "ClustGeo","devtools","rgeos")
