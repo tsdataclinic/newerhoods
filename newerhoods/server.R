@@ -52,29 +52,9 @@ add_legend <- function(plot_type){
     proxy %>% clearControls()}
 }
 
-### Loading data
-load("clean_data/sales_features_2017.RData")
-load("clean_data/crime_rates.RData")
-load("clean_data/nyc311_rates.RData")
-load("clean_data/census_tracts.RData")
-census_pop <- read_xlsx("clean_data//2010census_population.xlsx",skip=7,
-                        col_names=c("borough","county_code","borough_code",
-                                    "2010_tract","pop_2000","pop_2010",
-                                    "change","pct_change","acres","pop_per_acre"))
+## loading pre-cleaned data
 
-census_tracts$boro_code <- as.integer(census_tracts$boro_code)
-census_pop$boro_ct201 <- paste0(census_pop$borough_code,census_pop$`2010_tract`)
-
-census_tracts <- merge(census_tracts,census_pop[,c("boro_ct201","pop_2010")],by="boro_ct201")
-
-features <- left_join(sales_features,crime_rates,by="boro_ct201")
-features <- left_join(features,nyc311_rates,by="boro_ct201")
-features <- left_join(features,census_pop[,c("boro_ct201","pop_2010")],by="boro_ct201")
-
-#### subsetting tracts to cluster
-tracts_to_exclude <- c(census_pop$boro_ct201[census_pop$pop_2010 <= 500],"1023802") ##Rosevelt Island
-reduced_tracts <- census_tracts[!(census_tracts$boro_ct201 %in% tracts_to_exclude),]
-features <- features[!(features$boro_ct201 %in% tracts_to_exclude),]
+load(file="clean_data/pre_compiled_data.RData")
 
 ## Server
 function(input, output) {
@@ -94,14 +74,9 @@ function(input, output) {
     paste0(c(input$crime_features,input$housing_features,input$call_features),collapse = "|")}
     ,ignoreNULL = FALSE) # change to false for initial load
   
-  num_clus <- reactive({
-    input$num_clusters
-  }) %>% debounce(1000)
-  
-  clus_res <- reactive({
+
+  tree <- eventReactive(user_selection(),{
     
-    # c("icecream_rate","animal_rate","party_rate")
-    ### Subset data based on user selection of features
     features_to_use <- grepl(user_selection(),colnames(features))
     feature_set <- unlist(strsplit(user_selection(),"\\|"))
     
@@ -112,14 +87,39 @@ function(input, output) {
     A <- nb2mat(list.nb,style = "B",zero.policy = TRUE)
     diag(A) <- 1
     D1 <- as.dist(1-A)
-    
-    K <- num_clus()
     set.seed(1729)
-    
     tree <- hclustgeo(D0,D1,alpha=0.15)
-    clusters <- data.frame(cl=cutree(tree,K))
+    
+    return(tree)
+  },ignoreNULL = FALSE)
+  
+  clus_res <- reactive({
+    
+    
+    # c("icecream_rate","animal_rate","party_rate")
+    ### Subset data based on user selection of features
+    features_to_use <- grepl(user_selection(),colnames(features))
+    feature_set <- unlist(strsplit(user_selection(),"\\|"))
+    
+    # ### Clustering the data based on selected features
+    # D0 <- dist(scale(features[,features_to_use]))
+    # 
+    # list.nb <- poly2nb(reduced_tracts)
+    # A <- nb2mat(list.nb,style = "B",zero.policy = TRUE)
+    # diag(A) <- 1
+    # D1 <- as.dist(1-A)
+    # 
+    # K <- num_clus()
+    # set.seed(1729)
+    # 
+    # tree <- hclustgeo(D0,D1,alpha=0.15)
+    # clusters <- data.frame(cl=cutree(tree,K))
+    
+    K <- input$num_clusters
+    clusters <- data.frame(cl=cutree(tree(),K))
     
     ## generating cluster average statistics (weighted mean for rates)
+    
     
     ## Calculating total population and number of tracts for each cluster
     cluster_vals <- cbind(clusters,features[,feature_set],features$pop_2010)
@@ -168,8 +168,15 @@ function(input, output) {
     
     newerhoods <- SpatialPolygonsDataFrame(newerhoods,newerhoods_df)
     
-    ## Plotting operations
+    return(newerhoods)
+  }) %>% debounce(500)
+  
+  newerhoods <- reactive({
+    
+    
     plot_type <- input$plot_type
+    
+    newerhoods <- clus_res()
     
     if(plot_type=="heat_map"){
       heatmap_palette <- c('#ffffb2','#fed976','#feb24c',
@@ -194,8 +201,11 @@ function(input, output) {
     return(newerhoods)
   })
   
+  
+  
   ## To Do: Option to not have any baseline map
   ### Baseline Map
+  
   baseline_map <- eventReactive(input$baseline,{
     load(file=paste0("clean_data//",input$baseline,".RData"))
     get(input$baseline)
@@ -203,6 +213,7 @@ function(input, output) {
   
   
   ##### Interactive Map #####
+  
   output$map <- 
     renderLeaflet({
       leaflet() %>%
@@ -211,15 +222,15 @@ function(input, output) {
           id= "mapbox.dark",
           accessToken = Sys.getenv('MAPBOX_ACCESS_TOKEN'))
         ) %>% 
-        addPolygons(data=census_tracts, 
-                    fillColor = "black",
-                    weight = 0.3,
-                    opacity = 0.3,
-                    color = "white",
-                    fillOpacity = 0.01
-        ) %>%
-        addPolygons(data=clus_res(),
-                    fillColor = clus_res()$colour,
+        # addPolygons(data=census_tracts, 
+        #             fillColor = "black",
+        #             weight = 0.3,
+        #             opacity = 0.3,
+        #             color = "white",
+        #             fillOpacity = 0.01
+        # ) %>%
+        addPolygons(data=newerhoods(),
+                    fillColor = newerhoods()$colour,
                     weight = 0.5,
                     opacity = 0.5,
                     color = "white",
@@ -232,7 +243,7 @@ function(input, output) {
                       fillOpacity = 0.6,
                       bringToFront = F),
                     ## labels
-                    label = clus_res()$labels %>% lapply(HTML),
+                    label = newerhoods()$labels %>% lapply(HTML),
                     labelOptions = labelOptions(
                       style = list("font-weight"="normal",
                                    padding = "3px 8px"),
@@ -246,6 +257,7 @@ function(input, output) {
                      color="white",
                      dashArray="4") 
     })
+
   
   ## To do: Simplify this. Feels like too many observes
   observeEvent(input$select,{
@@ -256,7 +268,11 @@ function(input, output) {
     add_legend(input$plot_type)
   })
   
-  observeEvent(input$num_clusters,{
+  observeEvent(clus_res(),{
+    add_legend(input$plot_type)
+  })
+  
+  observeEvent(baseline_map(),{
     add_legend(input$plot_type)
   })
   

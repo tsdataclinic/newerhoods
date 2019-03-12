@@ -88,4 +88,31 @@ get_labels <- function(df){
   
 }
 
+shiny_data <- function(){
+  ### Loading data
+  load("newerhoods/clean_data/sales_features_2017.RData")
+  load("newerhoods/clean_data/crime_rates.RData")
+  load("newerhoods/clean_data/nyc311_rates.RData")
+  load("newerhoods/clean_data/census_tracts.RData")
+  census_pop <- read_xlsx("newerhoods/clean_data/2010census_population.xlsx",skip=7,
+                          col_names=c("borough","county_code","borough_code",
+                                      "2010_tract","pop_2000","pop_2010",
+                                      "change","pct_change","acres","pop_per_acre"))
+  
+  census_tracts$boro_code <- as.integer(census_tracts$boro_code)
+  census_pop$boro_ct201 <- paste0(census_pop$borough_code,census_pop$`2010_tract`)
+  
+  census_tracts <- merge(census_tracts,census_pop[,c("boro_ct201","pop_2010")],by="boro_ct201")
+  
+  features <- left_join(sales_features,crime_rates,by="boro_ct201")
+  features <- left_join(features,nyc311_rates,by="boro_ct201")
+  features <- left_join(features,census_pop[,c("boro_ct201","pop_2010")],by="boro_ct201")
+  
+  #### subsetting tracts to cluster
+  tracts_to_exclude <- c(census_pop$boro_ct201[census_pop$pop_2010 <= 500],"1023802") ##Rosevelt Island
+  reduced_tracts <- census_tracts[!(census_tracts$boro_ct201 %in% tracts_to_exclude),]
+  features <- features[!(features$boro_ct201 %in% tracts_to_exclude),]
+  
+  save(features,reduced_tracts,census_tracts,file="newerhoods/clean_data/pre_compiled_data.RData")
+}
 

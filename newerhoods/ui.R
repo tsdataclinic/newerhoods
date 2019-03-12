@@ -126,6 +126,7 @@ tagList(
            ),
            mainPanel(
              withSpinner(leafletOutput("map", height = "535"),type=5)
+             # leafletOutput("map", height = "535")
            )),
   tabPanel("Help", includeMarkdown("markdowns/tutorial.md")),
   tabPanel("Appendix",includeMarkdown("markdowns/appendix.md")),
