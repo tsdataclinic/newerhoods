@@ -46,7 +46,7 @@ input_housing <-
                            #"No. of Residential units"="res_units",
                            "Age of buildings"="bldg_age"),
               options=list(`actions-box`=TRUE,title="Housing Characteristics"),
-              multiple=TRUE
+              multiple=TRUE, selected = "med_price_1y|sd_price_1y"
               ) %>% 
   shinyInput_label_embed(
     shiny_iconlink() %>%
@@ -115,7 +115,7 @@ tagList(
              input_housing,
              input_crime,
              input_noise,
-             actionButton("select","Select Features",class="btn-primary"),
+             actionButton("select","Map it",class="btn-primary"),
              bsTooltip("select", "Click to select or update features to be used for clustering",
                        "right", options = list(container = "body")),
              br(),

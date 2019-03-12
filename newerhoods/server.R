@@ -45,8 +45,8 @@ add_legend <- function(plot_type){
   heatmap_palette <- c('#ffffb2','#fed976','#feb24c','#fd8d3c','#fc4e2a','#e31a1c','#b10026')
   if(plot_type == "heat_map"){
     proxy %>% addLegend(position="bottomright",
-                        colors = heatmap_palette,
-                        labels = c("Low","","","","","","High"),
+                        colors = heatmap_palette[7:1],
+                        labels = c("Low","","","","","","High")[7:1],
                         opacity = 1)
   }else{
     proxy %>% clearControls()}
@@ -92,7 +92,7 @@ function(input, output) {
   
   user_selection <- eventReactive(input$select,{
     paste0(c(input$crime_features,input$housing_features,input$call_features),collapse = "|")}
-    ,ignoreNULL = TRUE) # change to false for initial load
+    ,ignoreNULL = FALSE) # change to false for initial load
   
   num_clus <- reactive({
     input$num_clusters
@@ -140,7 +140,7 @@ function(input, output) {
     if(sum(grepl("rate",feature_set)) > 0){
       cluster_vals[,grepl("rate",colnames(cluster_vals))] <- cluster_vals[,grepl("rate",colnames(cluster_vals))]*cluster_vals$n*1000/cluster_vals$pop
     }
-
+    
     cluster_vals <- cluster_vals[,c("cl",paste0(feature_set,"_mean"))]
     
     ## distance between clusters
@@ -244,7 +244,7 @@ function(input, output) {
                      weight=2.75,
                      opacity=0.75,
                      color="white",
-                     dashArray="4")
+                     dashArray="4") 
     })
   
   ## To do: Simplify this. Feels like too many observes
