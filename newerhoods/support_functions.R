@@ -113,6 +113,11 @@ shiny_data <- function(){
   reduced_tracts <- census_tracts[!(census_tracts$boro_ct201 %in% tracts_to_exclude),]
   features <- features[!(features$boro_ct201 %in% tracts_to_exclude),]
   
-  save(features,reduced_tracts,census_tracts,file="newerhoods/clean_data/pre_compiled_data.RData")
+  list.nb <- poly2nb(reduced_tracts)
+  A <- nb2mat(list.nb,style = "B",zero.policy = TRUE)
+  diag(A) <- 1
+  D1 <- as.dist(1-A)
+  
+  save(features,D1,census_tracts,file="newerhoods/clean_data/pre_compiled_data.RData")
 }
 

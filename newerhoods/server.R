@@ -52,6 +52,13 @@ add_legend <- function(plot_type){
     proxy %>% clearControls()}
 }
 
+## function to validate input
+validate_selection <- function(a,b,c){
+  if(a == "" & b == "" & c == ""){
+    "Please select atleast one feature"
+  }
+}
+
 ## loading pre-cleaned data
 
 load(file="clean_data/pre_compiled_data.RData")
@@ -71,9 +78,12 @@ function(input, output) {
   # 
   
   user_selection <- eventReactive(input$select,{
-    paste0(c(input$crime_features,input$housing_features,input$call_features),collapse = "|")}
-    ,ignoreNULL = FALSE) # change to false for initial load
-  
+    selection <- paste0(c(input$crime_features,input$housing_features,input$call_features),collapse = "|")
+    validate(
+      need(selection != "", "Please select atleast one feature")
+    )
+    selection}, ignoreNULL = FALSE) # change to false for initial load
+
 
   tree <- eventReactive(user_selection(),{
     
@@ -83,10 +93,6 @@ function(input, output) {
     ### Clustering the data based on selected features
     D0 <- dist(scale(features[,features_to_use]))
     
-    list.nb <- poly2nb(reduced_tracts)
-    A <- nb2mat(list.nb,style = "B",zero.policy = TRUE)
-    diag(A) <- 1
-    D1 <- as.dist(1-A)
     set.seed(1729)
     tree <- hclustgeo(D0,D1,alpha=0.15)
     
