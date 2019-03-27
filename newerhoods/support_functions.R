@@ -109,15 +109,29 @@ shiny_data <- function(){
   features <- left_join(features,census_pop[,c("boro_ct201","pop_2010")],by="boro_ct201")
   
   #### subsetting tracts to cluster
-  tracts_to_exclude <- c(census_pop$boro_ct201[census_pop$pop_2010 <= 500],"1023802") ##Rosevelt Island
+  tracts_to_exclude <- c(census_pop$boro_ct201[census_pop$pop_2010 <= 500]) ##Rosevelt Island ,"1023802"
   reduced_tracts <- census_tracts[!(census_tracts$boro_ct201 %in% tracts_to_exclude),]
+  
+  ## distances between centroids of tracts
+  tract_centroids <- gCentroid(reduced_tracts,byid=TRUE)
+  D1c <- dist(tract_centroids@coords)
+  
+  ### excluding tracts with 0 neighbors
+  # list.nb <- poly2nb(reduced_tracts)
+  # A <- nb2mat(list.nb,style = "B",zero.policy = TRUE)
+  # zero_neighbors <- reduced_tracts$boro_ct201[as.integer(which(rowSums(A) == 0,arr.ind = TRUE))]
+  # tracts_to_exclude <- c(tracts_to_exclude,zero_neighbors)
+  # reduced_tracts <- census_tracts[!(census_tracts$boro_ct201 %in% tracts_to_exclude),]
+  # 
   features <- features[!(features$boro_ct201 %in% tracts_to_exclude),]
   
   list.nb <- poly2nb(reduced_tracts)
   A <- nb2mat(list.nb,style = "B",zero.policy = TRUE)
+
   diag(A) <- 1
-  D1 <- as.dist(1-A)
+  D1a <- as.dist(1-A)
+  D1 <- (1+D1c) * D1a
   
-  save(features,D1,census_tracts,file="newerhoods/clean_data/pre_compiled_data.RData")
+  save(features,D1,census_tracts,reduced_tracts,file="newerhoods/clean_data/pre_compiled_data.RData")
 }
 

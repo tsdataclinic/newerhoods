@@ -94,7 +94,7 @@ function(input, output) {
     D0 <- dist(scale(features[,features_to_use]))
     
     set.seed(1729)
-    tree <- hclustgeo(D0,D1,alpha=0.15)
+    tree <- hclustgeo(D0,D1,alpha=0.1)
     
     return(tree)
   },ignoreNULL = FALSE)
@@ -228,13 +228,13 @@ function(input, output) {
           id= "mapbox.dark",
           accessToken = Sys.getenv('MAPBOX_ACCESS_TOKEN'))
         ) %>% 
-        # addPolygons(data=census_tracts, 
-        #             fillColor = "black",
-        #             weight = 0.3,
-        #             opacity = 0.3,
-        #             color = "white",
-        #             fillOpacity = 0.01
-        # ) %>%
+        addPolygons(data=census_tracts,
+                    fillColor = "black",
+                    weight = 0.3,
+                    opacity = 0.3,
+                    color = "white",
+                    fillOpacity = 0.01
+        ) %>%
         addPolygons(data=newerhoods(),
                     fillColor = newerhoods()$colour,
                     weight = 0.5,

@@ -66,6 +66,7 @@ plot(census_tracts,col=colours[clusters$cl])
 
 
 
+
 tree <- hclustgeo(D0)
 cl <- c(2:60)
 sil <- NULL
