@@ -88,11 +88,11 @@ input_plot_type <-
 
 input_baseline <- 
   selectInput('baseline',label='Compare against',
-              choices=list("Community Districts"="cds",
-                           "Public Use Microdata Areas (PUMA)"="pumas",
-                           "Neighborhood Tabulation Areas (NTA)"="ntas",
-                           "Police Precincts"="precincts",
-                           "School Districts"="school_dists"))
+              choices=list("Community Districts (59)"="cds",
+                           "Public use Microdata Areas (55)"="pumas",
+                           "Neighborhood Tabulation Areas (195)"="ntas",
+                           "Police Precincts (77)"="precincts",
+                           "School Districts (33)"="school_dists"))
 
 # UI
 tagList(
