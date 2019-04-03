@@ -175,7 +175,7 @@ function(input, output) {
     newerhoods <- SpatialPolygonsDataFrame(newerhoods,newerhoods_df)
     
     return(newerhoods)
-  }) %>% debounce(500)
+  }) %>% debounce(10)
   
   newerhoods <- reactive({
     
@@ -228,13 +228,13 @@ function(input, output) {
           id= "mapbox.dark",
           accessToken = Sys.getenv('MAPBOX_ACCESS_TOKEN'))
         ) %>% 
-        addPolygons(data=census_tracts,
-                    fillColor = "black",
-                    weight = 0.3,
-                    opacity = 0.3,
-                    color = "white",
-                    fillOpacity = 0.01
-        ) %>%
+        # addPolygons(data=census_tracts,
+        #             fillColor = "black",
+        #             weight = 0.3,
+        #             opacity = 0.3,
+        #             color = "white",
+        #             fillOpacity = 0.01
+        # ) %>%
         addPolygons(data=newerhoods(),
                     fillColor = newerhoods()$colour,
                     weight = 0.5,

@@ -102,8 +102,6 @@ tagList(
   
   "NewerHoods",
   
-  tabPanel("Home",includeMarkdown("markdowns/intro.md"),width=4),
-  
   tabPanel("Map",
            
            ## add modals
@@ -115,7 +113,7 @@ tagList(
              input_housing,
              input_crime,
              input_noise,
-             actionButton("select","Map it",class="btn-primary"),
+             actionButton("select","Apply",class="btn-primary"),
              bsTooltip("select", "Click to select or update features to be used for clustering",
                        "right", options = list(container = "body")),
              br(),
@@ -129,7 +127,7 @@ tagList(
              # leafletOutput("map", height = "535")
            )),
   tabPanel("Help", includeMarkdown("markdowns/tutorial.md")),
-  tabPanel("Appendix",includeMarkdown("markdowns/appendix.md")),
+  tabPanel("About",includeMarkdown("markdowns/intro.md"),width=4),
   
   # activate tooltips, popovers
   use_bs_tooltip(),
