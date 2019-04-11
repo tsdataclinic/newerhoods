@@ -8,9 +8,12 @@ New York City’s (NYC’s) neighborhoods are a driving force in the lives of Ne
 
 Data Clinic developed NewerHoods with the goal of helping individuals and organizations better advocate for their communities by enabling them to tailor insights to meet their specific needs. NewerHoods is an interactive web-app that uses open data to generate localized features at the census tract-level and machine learning to create homogeneous clusters. Users are able to select characteristics of interest (currently open data on housing, crime, and 311 complaints), visualize NewerHood clusters on an interactive map, find similar neighborhoods, and compare them against existing administrative boundaries.  The tool is designed to enable users without in-depth data expertise to compare and incorporate these redefined neighborhoods into their work and life.
 
-The application is live and available to use [here](https://data-clinic.shinyapps.io/newerhoods/)
+The application is live and available to use [here](https://data-clinic.shinyapps.io/newerhoods/).
 
-### Directory Structure
+### Getting Started
+The below steps will help you get started and setting up and running NewerHoods locally. Since this is a RShiny application, install RStudio on your machine if you haven't already from [here](https://www.rstudio.com/products/RStudio/#Desktop).
+
+#### Directory Structure
 
 `newerhoods/clean_data` contains just the cleaned/transformed data sets used directly by the Shiny App. 
 
@@ -19,9 +22,9 @@ The application is live and available to use [here](https://data-clinic.shinyapp
 `/newerhoods` contains the code for the RShiny WebApp.
 
 
-### Running the App
+#### Running the App
 
-First, the R environment needs to be set up with all the necessary packages.
+First, the R environment needs to be set up with all the necessary packages.  
 
 ```r
 source("newerhoods/setup.R")
