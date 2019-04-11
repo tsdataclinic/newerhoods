@@ -10,8 +10,6 @@ Data Clinic developed NewerHoods with the goal of helping individuals and organi
 
 The application is live and available to use [here](https://data-clinic.shinyapps.io/newerhoods/)
 
-We invite [feedback](https://airtable.com/shr2sLGHHIiLY6BUC) on the tool and encourage users to contribute. To contact [Data Clinic](https://www.twosigma.com/about/data-clinic/) about NewerHoods, please email us at dataclinic@twosigma.com.
-
 ### Directory Structure
 
 `newerhoods/clean_data` contains just the cleaned/transformed data sets used directly by the Shiny App. 
@@ -45,7 +43,7 @@ runApp("newerhoods")
 
 ### Contributing to NewerHoods
 
-We'd love for you to contribute to the development of NewerHoods. Check out [this page](https://github.com/tsdataclinic/newerhoods/blob/master/CONTRIBUTING.md) form some ways in which you can! 
+We invite [feedback](https://airtable.com/shr2sLGHHIiLY6BUC) on the tool and encourage users to contribute. Check out [this page](https://github.com/tsdataclinic/newerhoods/blob/master/CONTRIBUTING.md) for some ways in which you can contribute. To contact [Data Clinic](https://www.twosigma.com/about/data-clinic/) about NewerHoods, please email us at dataclinic@twosigma.com.
 
 ### Data Sources
 
