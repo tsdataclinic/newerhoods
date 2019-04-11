@@ -43,6 +43,10 @@ library(shiny)
 runApp("newerhoods")
 ```
 
+### Contributing to NewerHoods
+
+We'd love for you to contribute to the development of NewerHoods. Check out [this page](https://github.com/tsdataclinic/newerhoods/blob/master/CONTRIBUTING.md) form some ways in which you can! 
+
 ### Data Sources
 
 1. [NYC Annualized Property Sales Data (2012-2017)](https://www1.nyc.gov/site/finance/taxes/property-annualized-sales-update.page)
