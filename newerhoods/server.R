@@ -40,10 +40,10 @@ source("settings_local.R")
 source("support_functions.R")
 
 ## function to add legend to plot
-add_legend <- function(plot_type){
+add_legend <- function(enable_heatmap){
   proxy <- leafletProxy("map")
-  heatmap_palette <- c('#ffffb2','#fed976','#feb24c','#fd8d3c','#fc4e2a','#e31a1c','#b10026')
-  if(plot_type == "heat_map"){
+  heatmap_palette <- c('#0093ee','#136bb0','#1d4c7b','#017f7c','#015d5f','#003b3e', '#1d293a')
+  if(enable_heatmap == TRUE){
     proxy %>% addLegend(position="bottomright",
                         colors = heatmap_palette[7:1],
                         labels = c("Low","","","","","","High")[7:1],
@@ -80,7 +80,7 @@ function(input, output) {
   user_selection <- eventReactive(input$select,{
     selection <- paste0(c(input$crime_features,input$housing_features,input$call_features),collapse = "|")
     validate(
-      need(selection != "", "Please select atleast one feature")
+      need(selection != "", "Please select at least one feature")
     )
     selection}, ignoreNULL = FALSE) # change to false for initial load
 
@@ -180,13 +180,13 @@ function(input, output) {
   newerhoods <- reactive({
     
     
-    plot_type <- input$plot_type
+    enable_heatmap <- input$enable_heatmap
     
     newerhoods <- clus_res()
     
-    if(plot_type=="heat_map"){
-      heatmap_palette <- c('#ffffb2','#fed976','#feb24c',
-                           '#fd8d3c','#fc4e2a','#e31a1c','#b10026')
+    if(enable_heatmap==TRUE){
+      heatmap_palette <- c('#0093ee','#136bb0','#1d4c7b',
+                           '#017f7c','#015d5f','#003b3e', '#1d293a')
       pal_heatmap <- colorQuantile(heatmap_palette,newerhoods$dist,
                                    n=length(heatmap_palette),
                                    na.color = "#A9A9A9A9")
@@ -195,8 +195,8 @@ function(input, output) {
       map_cols <- c('#b7e882','#f4f062','#8fe2b4',
                     '#237de0','#8dcd5c','#a327ad',
                     '#d30000','#f9158d','#44b244',
-                    '#2d5ead','#e8a0ea','#3ec8ed',
-                    '#ea0a0a','#ef3fca','#efe8ab','#d87430')
+                    '#0093ee','#136bb0','#1d4c7b',
+                    '#1d293a','#017f7c','#015d5f','#003b3e')
       
       pal <- colorNumeric(map_cols,
                           c(0:(length(map_cols)-1)),
@@ -225,7 +225,7 @@ function(input, output) {
       leaflet() %>%
         setView(-73.885,40.71,11) %>%
         addProviderTiles("MapBox", options = providerTileOptions(
-          id= "mapbox.dark",
+          id= "mapbox.light",
           accessToken = Sys.getenv('MAPBOX_ACCESS_TOKEN'))
         ) %>% 
         # addPolygons(data=census_tracts,
@@ -244,7 +244,7 @@ function(input, output) {
                     ## highights
                     highlight = highlightOptions(
                       weight = 4,
-                      color = ifelse(input$plot_type == "cluster_map","orange","green"),
+                      color = ifelse(input$enable_heatmap == FALSE,"orange","green"),
                       opacity = 0.8,
                       fillOpacity = 0.6,
                       bringToFront = F),
@@ -267,19 +267,19 @@ function(input, output) {
   
   ## To do: Simplify this. Feels like too many observes
   observeEvent(input$select,{
-    add_legend(input$plot_type)
+    add_legend(input$enable_heatmap)
   })
   
   observe({
-    add_legend(input$plot_type)
+    add_legend(input$enable_heatmap)
   })
   
   observeEvent(clus_res(),{
-    add_legend(input$plot_type)
+    add_legend(input$enable_heatmap)
   })
   
   observeEvent(baseline_map(),{
-    add_legend(input$plot_type)
+    add_legend(input$enable_heatmap)
   })
   
 }

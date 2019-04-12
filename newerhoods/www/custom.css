@@ -1,0 +1,179 @@
+body {
+  background-color: #fff7e3;
+  font-family: Lato;
+}
+
+a,
+.link {
+  color: #929292;
+}
+
+a:focus,
+a:active,
+a:hover {
+  color: #1d1e1f;
+  text-decoration: none;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-between {
+  justify-content: space-between;
+  align-items: center;
+}
+
+.flex-end {
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.link {
+  margin-right: 20px;
+}
+
+.links {
+  padding-left: 0;
+}
+
+.header {
+  background-color: #eae2d0;
+  box-shadow: inset 0 -1px 0 0 rgba(0, 0, 0, 0.07);
+  padding: 16px 32px;
+}
+
+.navbar {
+  margin-bottom: 0px;
+  border: none;
+  display: flex;
+  align-items: center;
+  color: #1d1e1f;
+}
+
+.navbar-brand {
+  background-image: url("logo.svg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  height: 48px;
+  width: 48px;
+  cursor: pointer;
+}
+
+.navbar-group {
+  margin-left: 20px;
+}
+
+.text {
+  color: #1d1e1f;
+  margin-right: 20px;
+}
+
+.navbar-lg {
+  font-size: 27px;
+  font-weight: 600;
+  font-family: TenOldstyle;
+}
+
+.navbar-sm {
+  font-size: 24px;
+  font-weight: 300;
+  font-style: italic;
+  font-family: Lato;
+}
+
+.navbar-subtitle {
+  opacity: 0.7;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.main {
+  padding: 4rem 0;
+  margin: 0 auto;
+  float: none;
+  display: flex;
+}
+
+.sidebar {
+  width: 320px;
+  margin-right: 20px;
+}
+
+.well {
+  background-color: white;
+  box-shadow: 1px 1px 1px 0 rgba(0, 0, 0, 0.13);
+  border-radius: 3px;
+  border: none;
+  padding: 24px 16px;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.map-content {
+  flex: 1;
+}
+
+.map {
+  padding: 24px 12px 8px;
+  background-color: white;
+}
+
+.control-label {
+  opacity: 0.7;
+  font-size: 13px;
+  font-weight: 900;
+  margin-top: 12px;
+}
+
+.btn-custom {
+  border-radius: 2px;
+  border: solid 2px #e27327;
+  color: #e27327;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.orange-border {
+  height: 4px;
+  background-image: url("assets/border-orange.svg");
+}
+
+.blue-border {
+  height: 4px;
+  background-image: url("assets/border-blue.svg");
+}
+
+.leaflet-control-attribution {
+  display: none;
+}
+
+.label-info {
+  background-color: #0099a6;
+}
+
+.material-switch > label::after {
+  background-color: #0099a6;
+}
+
+.custom .form-group {
+  margin-bottom: 16px;
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+}
+
+.custom label {
+  min-width: 60px;
+  opacity: 1;
+}
+
+.auto .form-group {
+  width: auto;
+}
+
+@media (max-width: 1024px) {
+  .main {
+    display: block;
+  }
+}
