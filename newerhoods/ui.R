@@ -38,6 +38,7 @@ bootstrapPage(
         modal_plots,
         info,
         input_housing,
+        input_housing_sales,
         input_crime,
         input_noise,
         actionButton("select","Apply",class="btn-custom")

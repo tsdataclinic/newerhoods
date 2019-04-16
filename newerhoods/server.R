@@ -78,7 +78,12 @@ function(input, output) {
   # 
   
   user_selection <- eventReactive(input$select,{
-    selection <- paste0(c(input$crime_features,input$housing_features,input$call_features),collapse = "|")
+    selection <- c(input$crime_features,input$housing,input$call_features)
+    if("sale_price" %in% selection){
+      selection <- selection[selection != "sale_price"]  
+      selection <- c(selection,input$sales_features)
+    }
+    selection <- paste0(selection,collapse = "|")
     validate(
       need(selection != "", "Please select at least one feature")
     )

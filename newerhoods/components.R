@@ -44,17 +44,22 @@ info <-
   
 
 ### Inputs
-input_housing <- 
-  checkboxGroupInput(
-    inputId = 'housing_features',label="HOUSING",
-    c("2017 Median Sale Price"="med_price_1y|sd_price_1y",
-      "2015-17 Median Sale Price"="med_price_3y|sd_price_3y",
-      "2013-17 Median Sale Price"="med_price_5y|sd_price_5y",
-      #"No. of Residential units"="res_units",
-      "Age of buildings"="bldg_age"
-    ),
-    selected = "med_price_1y|sd_price_1y"
-  )
+input_housing <- checkboxGroupInput(
+  inputId = 'housing',label="HOUSING",
+  choices=c("Age of buildings"="bldg_age","Median Sale Price"="sale_price"),
+  selected = "bldg_age"
+)
+  
+input_housing_sales <- conditionalPanel(condition="input.housing.includes('sale_price')",
+                                        radioButtons(
+                                          inputId = 'sales_features',label="",
+                                          choices=c("1y Average"="med_price_1y|sd_price_1y",
+                                                    "3y Average"="med_price_3y|sd_price_3y",
+                                                    "5y Average"="med_price_5y|sd_price_5y"
+                                          ),selected = NULL))
+
+
+
 
 input_crime <- 
   checkboxGroupInput(
