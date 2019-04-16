@@ -25,7 +25,7 @@ modal_features <-
   bs_modal(
     id = "modal_features",
     title="Understanding Features",
-      body= includeMarkdown("markdowns/features.md"),
+    body= includeMarkdown("markdowns/features.md"),
     size="medium"
   )
 
@@ -47,11 +47,11 @@ input_housing <-
                            "Age of buildings"="bldg_age"),
               options=list(`actions-box`=TRUE,title="Housing Characteristics"),
               multiple=TRUE, selected = "med_price_1y|sd_price_1y"
-              ) %>% 
+  ) %>% 
   shinyInput_label_embed(
     shiny_iconlink() %>%
       bs_attach_modal(id_modal = "modal_features")
-    )
+  )
 
 input_crime <- 
   pickerInput(inputId = 'crime_features',#label=h6("Crime"),
@@ -94,45 +94,96 @@ input_baseline <-
                            "Police Precincts (77)"="precincts",
                            "School Districts (33)"="school_dists"))
 
+
 # UI
 tagList(
   navbarPage(
     
-  theme = shinytheme("cerulean"),
-  
-  "NewerHoods",
-  
-  tabPanel("Map",
-           
-           ## add modals
-           modal_features,
-           modal_plots,
-           
-           ## Sidebar
-           sidebarPanel(
-             input_housing,
-             input_crime,
-             input_noise,
-             actionButton("select","Apply",class="btn-primary"),
-             bsTooltip("select", "Click to select or update features to be used for clustering",
-                       "right", options = list(container = "body")),
-             br(),
-             br(),
-             input_clusters,
-             input_plot_type,
-             input_baseline
-           ),
-           mainPanel(
-             withSpinner(leafletOutput("map", height = "535"),type=5)
-             # leafletOutput("map", height = "535")
-           )),
-  tabPanel("Help", includeMarkdown("markdowns/tutorial.md")),
-  tabPanel("About",includeMarkdown("markdowns/intro.md"),width=4),
-  
-  # activate tooltips, popovers
-  use_bs_tooltip(),
-  use_bs_popover()
-  
+    theme = shinytheme("cerulean"),
+    
+    "NewerHoods",
+    
+    tabPanel("Map",
+             
+             ## add modals
+             
+             modal_features,
+             modal_plots,
+             
+             ## Sidebar
+             
+             sidebarPanel(
+               materialSwitch(
+                 inputId = "upload",
+                 label = "Upload data?",
+                 value = FALSE,
+                 status = "primary"
+               ),
+               conditionalPanel(
+                 condition = "input.upload",
+                 fileInput("file1","Choose a CSV File",
+                           multiple = FALSE,
+                           accept = c("text/csv","text/comma-separated-values,text/plain",".csv"))
+               ),
+               
+               # Select Geographic id
+               conditionalPanel(
+                 condition = "input.upload",
+                 radioButtons(
+                   inputId = "geo",
+                   label = "Select Geographic Identifier", 
+                   choices = c("Latitude & Longitude" = "lat_lon",
+                               "Borough & Census Tract" = "boro_tract",
+                               "Combined Tract ID" = "boro_ct"),
+                   selected = NULL,
+                   inline = FALSE)),
+               
+               # Select lat/lon columns
+               conditionalPanel(
+                 condition = "input.geo == lat_lon",
+                 selectInput("lat","Select Latitude column",
+                             choices = NULL, multiple = FALSE),
+                 selectInput("lat","Select Longitude column",
+                             choices = NULL, multiple = FALSE)),
+               
+               # Select boto/ct columns
+               conditionalPanel(
+                 condition = "input.geo == boro_tract",
+                 selectInput("boro","Select Borough column",
+                             choices = NULL, multiple = FALSE),
+                 selectInput("ct","Select Tract column",
+                             choices = NULL, multiple = FALSE)),
+               
+               # Select boro_ct columns
+               conditionalPanel(
+                 condition = "input.geo == boro_ct",
+                 selectInput("boro_ct","Select Borough column",
+                             choices = NULL, multiple = FALSE)),
+               
+               input_housing,
+               input_crime,
+               input_noise,
+               
+               actionButton("select","Redraw",class="btn-primary"),
+               bsTooltip("select", "Click to select or update features to be used for clustering",
+                         "right", options = list(container = "body")),
+               tags$hr(),
+               input_clusters,
+               input_plot_type,
+               input_baseline
+             ),
+             mainPanel(
+               withSpinner(leafletOutput("map", height = "535"),type=3,color.background = "white")
+               # leafletOutput("map", height = "535")
+             )),
+    tabPanel("Help", includeMarkdown("markdowns/tutorial.md")),
+    tabPanel("About",includeMarkdown("markdowns/intro.md"),width=4),
+    
+    # activate tooltips, popovers
+    use_bs_tooltip(),
+    use_bs_accordion_sidebar(),
+    use_bs_popover()
+    
   )
 )
 
