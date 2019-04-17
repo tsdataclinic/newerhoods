@@ -1,7 +1,7 @@
 library("RSocrata")
 library(readxl)
 
-source("./neighborhood-reclassification/support_functions.R")
+source("./newerhoods/support_functions.R")
 
 app_token <- Sys.getenv('NYC_OPENDATA_API_TOKEN')
 crime_17 <- read.socrata(
