@@ -121,9 +121,10 @@ tagList(
                ),
                conditionalPanel(
                  condition = "input.upload",
-                 fileInput("file1","Choose a CSV File",
+                 fileInput("file","Choose a File",
                            multiple = FALSE,
-                           accept = c("text/csv","text/comma-separated-values,text/plain",".csv"))
+                           accept = c("text/csv","text/comma-separated-values",
+                                      "text/plain",".csv"))
                ),
                
                # Select Geographic id
@@ -140,15 +141,15 @@ tagList(
                
                # Select lat/lon columns
                conditionalPanel(
-                 condition = "input.geo == lat_lon",
+                 condition = "input.upload && input.geo == 'lat_lon'",
                  selectInput("lat","Select Latitude column",
                              choices = NULL, multiple = FALSE),
-                 selectInput("lat","Select Longitude column",
+                 selectInput("lon","Select Longitude column",
                              choices = NULL, multiple = FALSE)),
                
                # Select boto/ct columns
                conditionalPanel(
-                 condition = "input.geo == boro_tract",
+                 condition = "input.upload && input.geo == 'boro_tract'",
                  selectInput("boro","Select Borough column",
                              choices = NULL, multiple = FALSE),
                  selectInput("ct","Select Tract column",
@@ -156,15 +157,26 @@ tagList(
                
                # Select boro_ct columns
                conditionalPanel(
-                 condition = "input.geo == boro_ct",
-                 selectInput("boro_ct","Select Borough column",
+                 condition = "input.upload && input.geo == 'boro_ct'",
+                 selectInput("boro_ct","Select combined tract identifier",
                              choices = NULL, multiple = FALSE)),
+               
+               # Select feature columns
+               conditionalPanel(
+                 condition = "input.upload && input.geo != 'lat_lon'",
+                 selectInput("user_features","Select features to use",
+                             choices = NULL, multiple = TRUE)),
+               conditionalPanel(
+                 condition = "input.upload",
+                 actionButton("upload_done","Done",class="btn-primary")),
+               
+               tags$hr(),
                
                input_housing,
                input_crime,
                input_noise,
                
-               actionButton("select","Redraw",class="btn-primary"),
+               actionButton("select","Apply",class="btn-primary"),
                bsTooltip("select", "Click to select or update features to be used for clustering",
                          "right", options = list(container = "body")),
                tags$hr(),

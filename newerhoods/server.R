@@ -64,7 +64,7 @@ validate_selection <- function(a,b,c){
 load(file="clean_data/pre_compiled_data.RData")
 
 ## Server
-function(input, output) {
+function(input, output, session) {
   
   ## To Add: error handling on clicking select without selecting any features
   
@@ -76,6 +76,48 @@ function(input, output) {
   #   }
   # })
   # 
+  
+  raw_user_data <- reactive({
+    req(input$file)
+    raw_user_df <- read.csv(input$file$datapath)
+    raw_user_df
+  })
+  
+  ## updating columns to select from
+  observe({
+    req(input$file)
+    col_names <- colnames(raw_user_data())
+    updateSelectInput(session, "lat", choices= col_names)
+    updateSelectInput(session, "lon", choices= col_names)
+    updateSelectInput(session, "boro", choices= col_names)
+    updateSelectInput(session, "ct", choices= col_names)
+    updateSelectInput(session, "boro_ct", choices= col_names)
+    updateSelectInput(session, "user_features", choices= col_names)
+  })
+  
+  user_data <- eventReactive(input$upload_done,{
+    if(input$geo == 'lat_lon'){
+      ## convert points to rates fatures
+      user_df <- points_to_feature(raw_user_data(),input$lat,input$lon,"rates")
+    }else if(input$geo == 'boro_tract'){
+      user_df <- raw_user_data()
+      user_df$boro_ct201 <- paste0(user_df[,input$boro],str_pad(user_df[,input$ct],6,side="right",pad="0"))
+      user_df <- user_df %>% group_by(boro_ct201) %>% 
+        dplyr::select(input$user_features) %>%
+        summarise_all(funs(avg = mean))
+      user_df <- as.data.frame(user_df)
+    }else{
+      user_df <- raw_user_data()
+      user_df$boro_ct201 <- input$boro_ct
+      user_df <- user_df %>% group_by(boro_ct201) %>% 
+        dplyr::select(input$user_features) %>%
+        summarise_all(funs(mean))
+      user_df <- as.data.frame(user_df)
+      print(colnames(user_df))
+    }
+    user_df
+  })
+  
   
   user_selection <- eventReactive(input$select,{
     selection <- paste0(c(input$crime_features,input$housing_features,input$call_features),collapse = "|")
@@ -89,6 +131,17 @@ function(input, output) {
     
     features_to_use <- grepl(user_selection(),colnames(features))
     feature_set <- unlist(strsplit(user_selection(),"\\|"))
+    
+    if(isTruthy(input$file)){
+      features <- merge(features,user_data(),by="boro_ct201")
+      user_cols <- colnames(user_data())
+      user_cols <- user_cols[user_cols != 'boro_ct201']
+      
+      feature_set <- c(feature_set,user_cols)
+      feature_reg_ex <- paste0(feature_set,collapse = "|")
+      features_to_use <- grepl(feature_reg_ex,colnames(features))
+      print(feature_set)
+    }
     
     ### Clustering the data based on selected features
     D0 <- dist(scale(features[,features_to_use]))
@@ -107,6 +160,16 @@ function(input, output) {
     features_to_use <- grepl(user_selection(),colnames(features))
     feature_set <- unlist(strsplit(user_selection(),"\\|"))
     
+    if(isTruthy(input$file)){
+      features <- merge(features,user_data(),by="boro_ct201")
+      user_cols <- colnames(user_data())
+      user_cols <- user_cols[user_cols != 'boro_ct201']
+      
+      feature_set <- c(feature_set,user_cols)
+      feature_reg_ex <- paste0(feature_set,collapse = "|")
+      features_to_use <- grepl(feature_reg_ex,colnames(features))
+      print(feature_set)
+    }
     # ### Clustering the data based on selected features
     # D0 <- dist(scale(features[,features_to_use]))
     # 
