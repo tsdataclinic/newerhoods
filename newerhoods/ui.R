@@ -25,9 +25,12 @@ source("components.R")
 bootstrapPage(
   theme = "custom.css",
   title = "NewerHoods",
+  tags$head(
+    tags$link(rel = "stylesheet", type = "text/css", href = "https://fonts.googleapis.com/css?family=Lato:300,400,400italic,500,500italic,700,700italic,900")
+  ),
   header_nav,
   div(
-    class="main col-sm-10",
+    class="main col-xs-11",
     div(
       class="sidebar",
       div(class="orange-border", ""),
@@ -43,17 +46,7 @@ bootstrapPage(
         input_noise,
         actionButton("select","Apply",class="btn-custom")
       ),
-      withTags({
-        div(
-          class="flex",
-          span(class='link', 'Getting started'),
-          ul(
-            class="links flex", 
-            li(class="link", a(href="/", "Intro video")),
-            li(class="link", a(href="/", "Credits"))
-          )
-        )
-      })
+      intro_links
     ),
     div(
       class="map-content",
@@ -64,10 +57,10 @@ bootstrapPage(
         map_control_panel
       ),
       bsTooltip("select", "Click to select or update features to be used for clustering",
-                          "right", options = list(container = "body")),
-      input_baseline
+                          "right", options = list(container = "body"))
     )
   ),
+  footer,
   # activate tooltips, popovers
   use_bs_tooltip(),
   use_bs_popover()

@@ -2,7 +2,7 @@
     <defs>
     <filter id="filter" height="2" width="2">
       <feTurbulence baseFrequency="1" numOctaves="1" type="fractalNoise" />
-      <feDisplacementMap  scale="80"  xChannelSelector="R" in="SourceGraphic" />
+      <feDisplacementMap  scale="25"  xChannelSelector="R" in="SourceGraphic" />
     </filter>
     </defs>
     <path d="m 0 0 l 200 5" stroke="#e27327" stroke-width="50" style="filter:url(#filter)"/>

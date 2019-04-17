@@ -1,16 +1,10 @@
 header_nav <- withTags(
   header(class ="header",
-    div(class="container-fluid", 
+    div(class="content col-xs-11", 
+      div(class="navbar-wrapper", 
       a(href="https://www.twosigma.com/about/data-clinic/", target="_blank",
-        div(class="navbar", 
-          div(class="navbar-brand", ""),
-          div(class="navbar-group", 
-            div(class="navbar-name", 
-              span(class="navbar-lg", "Newer"),
-              span(class="navbar-sm", "hoods")
-            ),
-            div(class="navbar-subtitle", "FROM TWO SIGMA DATA CLINIC")
-          )
+          div(class="navbar-title", "NewerHoods"),
+          div(class="navbar-subtitle", "FROM TWO SIGMA DATA CLINIC")
         )
       )
     )
@@ -36,10 +30,7 @@ modal_plots <-
 ### Info
 info <- 
   div(class="text",
-    div("Choose data sets to draw neighborhoods.",
-    shiny_iconlink() %>%
-      bs_attach_modal(id_modal = "modal_features")
-    )
+    div("Choose data sets to draw neighborhoods.")
   ) 
   
 
@@ -80,10 +71,12 @@ input_noise <-
   )
 
 input_clusters <- 
-  pickerInput(inputId = "num_clusters",
+  sliderInput("num_clusters",
               label="Map view",
-              choices=c("5 neighborhoods"=5,"25 neighborhoods"=25, "100 neighborhoods"=100,  "200 neighborhoods"=200),
-              selected = 100)
+              ticks = FALSE,
+              min = 5,
+              max = 200,
+              value = 100)
 
 input_enable_heatmap <- 
   materialSwitch(inputId = "enable_heatmap", label = "Cluster map", status = "info")
@@ -102,11 +95,38 @@ input_baseline <-
 
 map_control_panel <- div(
   class="flex flex-between", 
-  input_clusters,
+  div(class="xsflex", 
+    input_clusters,
+    input_baseline
+  ),
   div(
     class="flex flex-end auto", 
     input_enable_heatmap,
-    div(class="text", "Heat map"),
+    div(class="heat-map-label", "Heat map"),
     info_plot_type
   )
 )
+
+intro_links <- 
+  withTags({
+    div(
+      class="xsflex",
+      span(class='link', 'Getting started') %>% bs_attach_modal(id_modal = "modal_features"),
+      ul(
+        class="links flex", 
+        li(class="slink", a(href="/", "Intro video")),
+        li(class="slink", a(href="/", "Credits"))
+      )
+    )
+  })
+
+footer <-
+  div(class="footer", 
+    div(class="content flex flex-between col-xs-11",
+      div(class="hint", "© 2019 Data Clinic. All rights reserved."),
+      div(class="flex",
+        div(class="links", a(href="https://www.twosigma.com/legal-disclosure/", "Legal Disclosure", target="_blank")),
+        div(class="slink links", a(href="https://www.twosigma.com/legal-disclosure/privacy-policy/", "Privacy Policy", target="_blank"))
+      )
+    )
+  )
