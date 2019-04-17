@@ -244,7 +244,7 @@ function(input, output) {
                     fillColor = newerhoods()$colour,
                     weight = 0.5,
                     opacity = 0.5,
-                    color = "white",
+                    color = "lightgrey",
                     fillOpacity = 0.6,
                     ## highights
                     highlight = highlightOptions(
