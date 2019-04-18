@@ -24,7 +24,7 @@ a:hover {
   cursor: pointer;
 }
 
-/* custon checkbox */
+/* custom checkbox */
 .checkbox input[type="checkbox"] {
   opacity: 0;
 }
