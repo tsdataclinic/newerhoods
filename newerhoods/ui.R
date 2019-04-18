@@ -94,6 +94,12 @@ input_baseline <-
                            "Police Precincts (77)"="precincts",
                            "School Districts (33)"="school_dists"))
 
+input_user_features <- 
+  pickerInput(inputId = 'user_features',#label=h6("311 Complaints"),
+              choices=NULL,
+              options=list(`actions-box`=TRUE,title="User Features"),
+              multiple=TRUE)
+
 
 # UI
 tagList(
@@ -164,17 +170,19 @@ tagList(
                # Select feature columns
                conditionalPanel(
                  condition = "input.upload && input.geo != 'lat_lon'",
-                 selectInput("user_features","Select features to use",
+                 selectInput("user_columns","Select features to use",
                              choices = NULL, multiple = TRUE)),
                conditionalPanel(
                  condition = "input.upload",
-                 actionButton("upload_done","Done",class="btn-primary")),
+                 actionButton("upload_done","Next",class="btn-primary")),
                
                tags$hr(),
                
                input_housing,
                input_crime,
                input_noise,
+               conditionalPanel(condition = "input.upload",
+                 input_user_features),
                
                actionButton("select","Apply",class="btn-primary"),
                bsTooltip("select", "Click to select or update features to be used for clustering",

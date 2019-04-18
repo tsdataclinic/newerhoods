@@ -92,10 +92,10 @@ function(input, output, session) {
     updateSelectInput(session, "boro", choices= col_names)
     updateSelectInput(session, "ct", choices= col_names)
     updateSelectInput(session, "boro_ct", choices= col_names)
-    updateSelectInput(session, "user_features", choices= col_names)
+    updateSelectInput(session, "user_columns", choices= col_names)
   })
   
-  user_data <- eventReactive(input$upload_done,{
+  user_data <- observeEvent(input$upload_done,{
     if(input$geo == 'lat_lon'){
       ## convert points to rates fatures
       user_df <- points_to_feature(raw_user_data(),input$lat,input$lon,"rates")
@@ -109,31 +109,55 @@ function(input, output, session) {
     }else{
       user_df <- raw_user_data()
       user_df$boro_ct201 <- input$boro_ct
-      user_df <- user_df %>% group_by(boro_ct201) %>% 
-        dplyr::select(input$user_features) %>%
-        summarise_all(funs(mean,median,sum,sd))
+      user_df <- user_df %>% dplyr::select(input$user_columns,boro_ct201) %>% 
+        group_by(boro_ct201) %>% 
+        summarise_all(funs(n=n(),mean,median,sum,sd))
       user_df <- as.data.frame(user_df)
-      print(colnames(user_df))
+      colnames(user_df) <- c("boro_ct201",paste0(input$user_columns,
+                                  rep(c("_count","_mean","_median","_sum","_sd"),
+                                      each=length(input$user_columns))))
+      # print(colnames(user_df))
     }
+    generated_feature_names <- colnames(user_df)
+    generated_feature_names <- generated_feature_names[generated_feature_names != "boro_ct201"]
+    updateSelectInput(session, "user_features", choices= generated_feature_names)
     user_df
+    # comb <- merge(features,user_df,by="boro_ct201")
+    # print(colnames(comb))
+    # comb
   })
   
-  combined_data <- eventReactive(input$upload_done,{
-    user <- user_data()
-    comb <- merge(features,user,by="boro_ct201")
-    comb
+  mergedData <- eventReactive(user_data(),{
+    if(is.null(user_data()))
+      return(features)
+    
+    merge(features,user_df,by="boro_ct201")
   })
   
+  # combined_data <- eventReactive(input$upload_done,{
+  #   req(user_data())
+  #   user <- user_data()
+  #   print(colnames(user))
+  #   comb <- merge(features,user,by="boro_ct201")
+  #   print(colnames(comb))
+  #   comb
+  # })
+ 
   user_selection <- eventReactive(input$select,{
-    selection <- paste0(c(input$crime_features,input$housing_features,input$call_features),collapse = "|")
+    selection <- paste0(c(input$crime_features,input$housing_features,
+                          input$call_features,input$user_features),collapse = "|")
     validate(
       need(selection != "", "Please select atleast one feature")
     )
-    selection}, ignoreNULL = FALSE) # change to false for initial load
+    selection
+    }, ignoreNULL = FALSE) # change to false for initial load
+  
+  
+  tree <- eventReactive({
+    user_selection() 
+    mergedData()},{
 
-
-  tree <- eventReactive(user_selection(),{
-    
+    features <- mergedData()
     features_to_use <- grepl(user_selection(),colnames(features))
     feature_set <- unlist(strsplit(user_selection(),"\\|"))
     
@@ -158,6 +182,10 @@ function(input, output, session) {
   },ignoreNULL = FALSE)
   
   clus_res <- reactive({
+    
+    if(input$upload_done){
+      features <- combined_data()  
+    }
     
     ### Subset data based on user selection of features
     features_to_use <- grepl(user_selection(),colnames(features))
@@ -329,7 +357,7 @@ function(input, output, session) {
                      color="white",
                      dashArray="4") 
     })
-
+  
   
   ## To do: Simplify this. Feels like too many observes
   observeEvent(input$select,{
