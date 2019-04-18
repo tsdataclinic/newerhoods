@@ -1,22 +1,23 @@
 header_nav <- withTags(
   header(class ="header",
-    div(class="content col-xs-11", 
-      div(class="navbar-wrapper", 
-      a(href="https://www.twosigma.com/about/data-clinic/", target="_blank",
-          div(class="navbar-title", "NewerHoods"),
-          div(class="navbar-subtitle", "FROM TWO SIGMA DATA CLINIC")
-        )
-      )
-    )
+         div(class="content col-xs-11", 
+             div(class="navbar-wrapper", 
+                 a(href="https://www.twosigma.com/about/data-clinic/", target="_blank",
+                   div(class="navbar-title", "NewerHoods"),
+                   div(class="navbar-subtitle", "FROM TWO SIGMA DATA CLINIC")
+                 )
+             )
+         )
   )
 )
 ### Modals
 modal_features <- 
-  bs_modal(
+  bsModal(
     id = "modal_features",
-    title="Choose data sets to draw neighborhoods.",
-      body= includeMarkdown("markdowns/features.md"),
-    size="medium"
+    title="Getting started with NewerHoods",
+    body= includeMarkdown("markdowns/tutorial.md"),
+    size="medium",
+    trigger = "Help"
   )
 
 modal_plots <- 
@@ -27,12 +28,22 @@ modal_plots <-
     size="medium"
   )
 
+modal_credits <- 
+  bsModal(
+    id = "modal_credits",
+    title="NewerHoods",
+    body= includeMarkdown("markdowns/intro.md"),
+    size="medium",
+    trigger = "Credits"
+  )
+
+
 ### Info
 info <- 
   div(class="text",
-    div("Choose data sets to draw neighborhoods.")
+      div("Choose data sets to draw neighborhoods.")
   ) 
-  
+
 
 ### Inputs
 input_housing <- checkboxGroupInput(
@@ -40,7 +51,7 @@ input_housing <- checkboxGroupInput(
   choices=c("Age of buildings"="bldg_age","Median Sale Price"="sale_price"),
   selected = "bldg_age"
 )
-  
+
 input_housing_sales <- conditionalPanel(condition="input.housing.includes('sale_price')",
                                         radioButtons(
                                           inputId = 'sales_features',label="",
@@ -82,7 +93,7 @@ input_enable_heatmap <-
   materialSwitch(inputId = "enable_heatmap", label = "Cluster map", status = "info")
 
 info_plot_type <- shiny_iconlink() %>%
-    bs_attach_modal(id_modal = "modal_plots")
+  bs_attach_modal(id_modal = "modal_plots")
 
 
 input_baseline <- 
@@ -96,8 +107,8 @@ input_baseline <-
 map_control_panel <- div(
   class="flex flex-between", 
   div(class="xsflex", 
-    input_clusters,
-    input_baseline
+      input_clusters,
+      input_baseline
   ),
   div(
     class="flex flex-end auto", 
@@ -107,26 +118,47 @@ map_control_panel <- div(
   )
 )
 
+help_link <- actionLink(inputId = "Help",label="Getting Started")
+video_link <- actionLink(inputId = 'Video',label="Intro Video")
+credits_link <- actionLink(inputId = 'Credits',label="Credits")
+
 intro_links <- 
   withTags({
     div(
       class="xsflex",
-      span(class='link', 'Getting started') %>% bs_attach_modal(id_modal = "modal_features"),
+      div(class="link",help_link),
       ul(
-        class="links flex", 
-        li(class="slink", a(href="/", "Intro video")),
-        li(class="slink", a(href="/", "Credits"))
+        class="links flex",
+        li(class="slink",video_link),
+        li(class="slink",credits_link)
       )
     )
   })
 
+
+
+
+# intro_links <- 
+#   withTags({
+#     div(
+#       class="xsflex",
+#       span(class='link', 'Getting started') %>% bs_attach_modal(id_modal = "modal_features"),
+#       ul(
+#         class="links flex", 
+#         li(class="slink", a(href="/", "Intro video")),
+#         span(class='slink', 'Credits') %>% bs_attach_modal(id_modal = "modal_credits")
+#         # li(class="slink", a(href="/", "Credits"))
+#       )
+#     )
+#   })
+
 footer <-
   div(class="footer", 
-    div(class="content flex flex-between col-xs-11",
-      div(class="hint", "© 2019 Data Clinic. All rights reserved."),
-      div(class="flex",
-        div(class="links", a(href="https://www.twosigma.com/legal-disclosure/", "Legal Disclosure", target="_blank")),
-        div(class="slink links", a(href="https://www.twosigma.com/legal-disclosure/privacy-policy/", "Privacy Policy", target="_blank"))
+      div(class="content flex flex-between col-xs-11",
+          div(class="hint", "© 2019 Data Clinic. All rights reserved."),
+          div(class="flex",
+              div(class="links", a(href="https://www.twosigma.com/legal-disclosure/", "Legal Disclosure", target="_blank")),
+              div(class="slink links", a(href="https://www.twosigma.com/legal-disclosure/privacy-policy/", "Privacy Policy", target="_blank"))
+          )
       )
-    )
   )

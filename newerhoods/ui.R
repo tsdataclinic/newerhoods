@@ -38,6 +38,7 @@ bootstrapPage(
         class="well",
         ## add modals
         modal_features,
+        modal_credits,
         modal_plots,
         info,
         input_housing,
@@ -53,7 +54,7 @@ bootstrapPage(
       div(class="blue-border", ""),
       div(
         class="map custom",
-        withSpinner(leafletOutput("map", height = "535"),type=5),
+        withSpinner(leafletOutput("map", height = "535"),type=3,color.background = "white"),
         map_control_panel
       ),
       bsTooltip("select", "Click to select or update features to be used for clustering",

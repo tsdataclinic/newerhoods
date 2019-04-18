@@ -1,5 +1,4 @@
-### NewerHoods
-#### *Redefining NYC neighborhood boundaries using open data and machine learning*
+##### *Redefining NYC neighborhood boundaries using open data and machine learning*
 By [Data Clinic](https://www.twosigma.com/about/data-clinic/)
 ___
 
