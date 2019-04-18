@@ -104,20 +104,25 @@ function(input, output, session) {
       user_df$boro_ct201 <- paste0(user_df[,input$boro],str_pad(user_df[,input$ct],6,side="right",pad="0"))
       user_df <- user_df %>% group_by(boro_ct201) %>% 
         dplyr::select(input$user_features) %>%
-        summarise_all(funs(avg = mean))
+        summarise_all(funs(mean,median,sum,sd))
       user_df <- as.data.frame(user_df)
     }else{
       user_df <- raw_user_data()
       user_df$boro_ct201 <- input$boro_ct
       user_df <- user_df %>% group_by(boro_ct201) %>% 
         dplyr::select(input$user_features) %>%
-        summarise_all(funs(mean))
+        summarise_all(funs(mean,median,sum,sd))
       user_df <- as.data.frame(user_df)
       print(colnames(user_df))
     }
     user_df
   })
   
+  combined_data <- eventReactive(input$upload_done,{
+    user <- user_data()
+    comb <- merge(features,user,by="boro_ct201")
+    comb
+  })
   
   user_selection <- eventReactive(input$select,{
     selection <- paste0(c(input$crime_features,input$housing_features,input$call_features),collapse = "|")
@@ -132,16 +137,16 @@ function(input, output, session) {
     features_to_use <- grepl(user_selection(),colnames(features))
     feature_set <- unlist(strsplit(user_selection(),"\\|"))
     
-    if(isTruthy(input$file)){
-      features <- merge(features,user_data(),by="boro_ct201")
-      user_cols <- colnames(user_data())
-      user_cols <- user_cols[user_cols != 'boro_ct201']
-      
-      feature_set <- c(feature_set,user_cols)
-      feature_reg_ex <- paste0(feature_set,collapse = "|")
-      features_to_use <- grepl(feature_reg_ex,colnames(features))
-      print(feature_set)
-    }
+    # if(isTruthy(input$file)){
+    #   features <- merge(features,user_data(),by="boro_ct201")
+    #   user_cols <- colnames(user_data())
+    #   user_cols <- user_cols[user_cols != 'boro_ct201']
+    #   
+    #   feature_set <- c(feature_set,user_cols)
+    #   feature_reg_ex <- paste0(feature_set,collapse = "|")
+    #   features_to_use <- grepl(feature_reg_ex,colnames(features))
+    #   print(feature_set)
+    # }
     
     ### Clustering the data based on selected features
     D0 <- dist(scale(features[,features_to_use]))
@@ -154,22 +159,20 @@ function(input, output, session) {
   
   clus_res <- reactive({
     
-    
-    # c("icecream_rate","animal_rate","party_rate")
     ### Subset data based on user selection of features
     features_to_use <- grepl(user_selection(),colnames(features))
     feature_set <- unlist(strsplit(user_selection(),"\\|"))
     
-    if(isTruthy(input$file)){
-      features <- merge(features,user_data(),by="boro_ct201")
-      user_cols <- colnames(user_data())
-      user_cols <- user_cols[user_cols != 'boro_ct201']
-      
-      feature_set <- c(feature_set,user_cols)
-      feature_reg_ex <- paste0(feature_set,collapse = "|")
-      features_to_use <- grepl(feature_reg_ex,colnames(features))
-      print(feature_set)
-    }
+    # if(isTruthy(input$file)){
+    #   features <- merge(features,user_data(),by="boro_ct201")
+    #   user_cols <- colnames(user_data())
+    #   user_cols <- user_cols[user_cols != 'boro_ct201']
+    #   
+    #   feature_set <- c(feature_set,user_cols)
+    #   feature_reg_ex <- paste0(feature_set,collapse = "|")
+    #   features_to_use <- grepl(feature_reg_ex,colnames(features))
+    #   print(feature_set)
+    # }
     # ### Clustering the data based on selected features
     # D0 <- dist(scale(features[,features_to_use]))
     # 
