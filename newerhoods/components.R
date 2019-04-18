@@ -123,19 +123,22 @@ video_link <- actionLink(inputId = 'Video',label="Intro Video")
 credits_link <- actionLink(inputId = 'Credits',label="Credits")
 
 intro_links <- 
-  withTags({
-    div(
-      class="xsflex",
+  div(class="links flex",
       div(class="link",help_link),
-      ul(
-        class="links flex",
-        li(class="slink",video_link),
-        li(class="slink",credits_link)
-      )
-    )
-  })
-
-
+      div(class="slink",video_link),
+      div(class="slink",credits_link)
+  )
+  # withTags({
+  #   div(
+  #     class="xsflex",
+  #     
+  #     ul(
+  #       class="links flex",
+  #       li(class="slink",video_link),
+  #       li(class="slink",credits_link)
+  #     )
+  #   )
+  # })
 
 
 # intro_links <- 
