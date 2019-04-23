@@ -61,8 +61,6 @@ input_housing_sales <- conditionalPanel(condition="input.housing.includes('sale_
                                           ),selected = NULL))
 
 
-
-
 input_crime <- 
   checkboxGroupInput(
     inputId = 'crime_features', label="CRIME",
@@ -81,7 +79,7 @@ input_noise <-
     )
   )
 
-input_clusters <- 
+input_clusters <-
   sliderInput("num_clusters",
               label="Number of neighborhoods",
               ticks = FALSE,
@@ -92,17 +90,25 @@ input_clusters <-
 input_enable_heatmap <- 
   materialSwitch(inputId = "enable_heatmap", label = "Cluster map", status = "info")
 
-info_plot_type <- shiny_iconlink() %>%
-  bs_attach_modal(id_modal = "modal_plots")
+# info_plot_type <- shiny_iconlink() %>%
+#   bs_attach_modal(id_modal = "modal_plots")
 
+info_plot_type <- shiny_iconlink() %>%
+  bs_embed_tooltip(title="The cluster map shows the city divided into the selected neighborhoods.
+                          The colors are only to differentiate clusters from one another.
+                          The heatmap shows the relative value for clusters averaged over the 
+                          chosen characteristics.",
+                   placement = "bottom")
 
 input_baseline <- 
   selectInput('baseline',label='Compare against',
-              choices=list("Community Districts (59)"="cds",
+              choices=list("None"="none",
+                           "Community Districts (59)"="cds",
                            "Public use Microdata Areas (55)"="pumas",
                            "Neighborhood Tabulation Areas (195)"="ntas",
                            "Police Precincts (77)"="precincts",
-                           "School Districts (33)"="school_dists"))
+                           "School Districts (33)"="school_dists"),
+              selected = "none")
 
 map_control_panel <- div(
   class="flex flex-between map-control", 
