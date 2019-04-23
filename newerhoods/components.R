@@ -105,13 +105,13 @@ input_baseline <-
                            "School Districts (33)"="school_dists"))
 
 map_control_panel <- div(
-  class="flex flex-between", 
+  class="flex flex-between map-control", 
   div(class="xsflex", 
       input_clusters,
       input_baseline
   ),
   div(
-    class="flex flex-end auto", 
+    class="flex flex-end auto heatmap-group", 
     input_enable_heatmap,
     div(class="heat-map-label", "Heat map"),
     info_plot_type
@@ -128,38 +128,12 @@ intro_links <-
       div(class="slink",video_link),
       div(class="slink",credits_link)
   )
-  # withTags({
-  #   div(
-  #     class="xsflex",
-  #     
-  #     ul(
-  #       class="links flex",
-  #       li(class="slink",video_link),
-  #       li(class="slink",credits_link)
-  #     )
-  #   )
-  # })
-
-
-# intro_links <- 
-#   withTags({
-#     div(
-#       class="xsflex",
-#       span(class='link', 'Getting started') %>% bs_attach_modal(id_modal = "modal_features"),
-#       ul(
-#         class="links flex", 
-#         li(class="slink", a(href="/", "Intro video")),
-#         span(class='slink', 'Credits') %>% bs_attach_modal(id_modal = "modal_credits")
-#         # li(class="slink", a(href="/", "Credits"))
-#       )
-#     )
-#   })
 
 footer <-
   div(class="footer", 
-      div(class="content flex flex-between col-xs-11",
+      div(class="content flex-between col-xs-11 xsflex",
           div(class="hint", "© 2019 Data Clinic. All rights reserved."),
-          div(class="flex",
+          div(class="xsflex",
               div(class="links", a(href="https://www.twosigma.com/legal-disclosure/", "Legal Disclosure", target="_blank")),
               div(class="slink links", a(href="https://www.twosigma.com/legal-disclosure/privacy-policy/", "Privacy Policy", target="_blank"))
           )

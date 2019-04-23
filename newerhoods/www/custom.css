@@ -1,7 +1,18 @@
+html {
+  min-height: 100%;
+}
+
 body {
   background-color: #fff7e3;
   color: #1d1e1f;
   font-family: Lato;
+  display: grid;
+  grid-template-rows: 80px 1fr 130px;
+  grid-template-columns: 1fr;
+  min-height: 100vh;
+  display: -ms-grid;
+  -ms-grid-rows: 80px 1fr 130px;
+  -ms-grid-columns: 1fr;
 }
 
 a,
@@ -11,6 +22,7 @@ a,
 
 .link {
   color: #0099a6;
+  padding-right: 10px;
 }
 
 .link:focus,
@@ -73,6 +85,35 @@ a:hover {
   transform-origin: 100% 100%;
 }
 
+/* custom radio */
+.radio input[type="radio"] {
+  opacity: 0;
+}
+
+.radio [type="radio"] + span:before,
+.radio [type="radio"] + span:after {
+  border: 2px solid #c8c8c8;
+  border-radius: 50%;
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 0px;
+  width: 16px;
+  height: 16px;
+  transition: 0.28s ease;
+}
+
+.radio [type="radio"]:checked + span:before,
+.radio [type="radio"]:checked + span:after {
+  border: 2px solid #e27327;
+  background-color: #e27327;
+}
+
+.radio [type="radio"]:checked + span:after {
+  transform: scale(0.7);
+  border: 2px solid #fff;
+}
+
 /* layout */
 .flex,
 .xsflex {
@@ -112,6 +153,10 @@ a:hover {
   background-color: #eae2d0;
   box-shadow: inset 0 -1px 0 0 rgba(0, 0, 0, 0.07);
   padding: 10px 0 20px;
+  grid-row: 1;
+  grid-column: 1;
+  -ms-grid-column: 1;
+  -ms-grid-row: 1;
 }
 
 .content {
@@ -149,6 +194,10 @@ a:hover {
   margin: 0 auto;
   float: none;
   display: flex;
+  grid-row: 2;
+  grid-column: 1;
+  -ms-grid-column: 1;
+  -ms-grid-row: 2;
 }
 
 .sidebar {
@@ -224,11 +273,15 @@ a:hover {
   box-shadow: none;
 }
 
+#sales_features > label {
+  display: none;
+}
+
 /* slider style override */
 
 .irs {
   width: 200px;
-  margin-right: 10px;
+  margin-right: 30px;
 }
 
 .irs-bar {
@@ -300,6 +353,14 @@ a:hover {
 .footer {
   background-color: #e7e0d0;
   padding: 40px 0 70px;
+  grid-row: 3;
+  grid-column: 1;
+  -ms-grid-column: 1;
+  -ms-grid-row: 3;
+}
+
+.heatmap-group {
+  width: 231px;
 }
 
 /* responsive */
@@ -310,7 +371,24 @@ a:hover {
 }
 
 @media (max-width: 1024px) {
+  .sidebar {
+    width: 260px;
+    margin-right: 10px;
+  }
+  .map-control,
+  .links {
+    display: block;
+  }
+}
+
+@media (max-width: 767px) {
+  .sidebar {
+    width: 100%;
+  }
   .main {
     display: block;
+  }
+  .footer {
+    text-align: center;
   }
 }
