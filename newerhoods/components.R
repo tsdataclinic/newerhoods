@@ -41,7 +41,7 @@ modal_credits <-
 ### Info
 info <- 
   div(class="text",
-      div("Choose data sets to draw neighborhoods.")
+      div("Choose characteristics to draw neighborhoods.")
   ) 
 
 
@@ -83,7 +83,7 @@ input_noise <-
 
 input_clusters <- 
   sliderInput("num_clusters",
-              label="Map view",
+              label="Number of neighborhoods",
               ticks = FALSE,
               min = 5,
               max = 200,
@@ -125,7 +125,7 @@ credits_link <- actionLink(inputId = 'Credits',label="Credits")
 intro_links <- 
   div(class="links flex",
       div(class="link",help_link),
-      div(class="slink",video_link),
+      # div(class="slink",video_link),
       div(class="slink",credits_link)
   )
 

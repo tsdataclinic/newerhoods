@@ -263,10 +263,10 @@ function(input, output) {
         ) %>%
         addPolylines(data=baseline_map(), 
                      stroke=TRUE,
-                     weight=2.75,
+                     weight=2.5,
                      opacity=0.75,
                      color="white",
-                     dashArray="4") 
+                     dashArray="5") 
     })
 
   
