@@ -63,6 +63,8 @@ validate_selection <- function(a,b,c){
 
 load(file="clean_data/pre_compiled_data.RData")
 
+merged_features <- features
+
 ## Server
 function(input, output, session) {
   
@@ -80,6 +82,7 @@ function(input, output, session) {
   raw_user_data <- reactive({
     req(input$file)
     raw_user_df <- read.csv(input$file$datapath)
+    # merged_features <<- features
     raw_user_df
   })
   
@@ -108,31 +111,34 @@ function(input, output, session) {
       user_df <- as.data.frame(user_df)
     }else{
       user_df <- raw_user_data()
-      user_df$boro_ct201 <- input$boro_ct
+      user_df$boro_ct201 <- as.character(user_df[,input$boro_ct])
       user_df <- user_df %>% dplyr::select(input$user_columns,boro_ct201) %>% 
         group_by(boro_ct201) %>% 
-        summarise_all(funs(n=n(),mean,median,sum,sd))
+        summarise_all(funs(mean,median,sum))
       user_df <- as.data.frame(user_df)
       colnames(user_df) <- c("boro_ct201",paste0(input$user_columns,
-                                  rep(c("_count","_mean","_median","_sum","_sd"),
+                                  rep(c("_mean","_median","_sum"),
                                       each=length(input$user_columns))))
-      # print(colnames(user_df))
+      print(head(user_df))
     }
     generated_feature_names <- colnames(user_df)
     generated_feature_names <- generated_feature_names[generated_feature_names != "boro_ct201"]
     updateSelectInput(session, "user_features", choices= generated_feature_names)
-    user_df
+    merged_features <<- left_join(features,user_df,by="boro_ct201")
+    # print(head(merged_features))
+    return(user_df)
     # comb <- merge(features,user_df,by="boro_ct201")
     # print(colnames(comb))
     # comb
   })
   
-  mergedData <- eventReactive(user_data(),{
-    if(is.null(user_data()))
-      return(features)
-    
-    merge(features,user_df,by="boro_ct201")
-  })
+  # mergedData <- eventReactive({input$upload_done
+  #   user_selection()},{
+  #   if(is.null(user_data()))
+  #     return(features)
+  #   
+  #   merge(features,user_df,by="boro_ct201")
+  # })
   
   # combined_data <- eventReactive(input$upload_done,{
   #   req(user_data())
@@ -153,27 +159,15 @@ function(input, output, session) {
     }, ignoreNULL = FALSE) # change to false for initial load
   
   
-  tree <- eventReactive({
-    user_selection() 
-    mergedData()},{
+  tree <- eventReactive({user_selection()},{
 
-    features <- mergedData()
-    features_to_use <- grepl(user_selection(),colnames(features))
+    # features <- mergedData()
+    features_to_use <- grepl(user_selection(),colnames(merged_features))
     feature_set <- unlist(strsplit(user_selection(),"\\|"))
     
-    # if(isTruthy(input$file)){
-    #   features <- merge(features,user_data(),by="boro_ct201")
-    #   user_cols <- colnames(user_data())
-    #   user_cols <- user_cols[user_cols != 'boro_ct201']
-    #   
-    #   feature_set <- c(feature_set,user_cols)
-    #   feature_reg_ex <- paste0(feature_set,collapse = "|")
-    #   features_to_use <- grepl(feature_reg_ex,colnames(features))
-    #   print(feature_set)
-    # }
-    
+    print(dim(merged_features))
     ### Clustering the data based on selected features
-    D0 <- dist(scale(features[,features_to_use]))
+    D0 <- dist(scale(merged_features[,features_to_use]))
     
     set.seed(1729)
     tree <- hclustgeo(D0,D1,alpha=0.1)
@@ -182,13 +176,9 @@ function(input, output, session) {
   },ignoreNULL = FALSE)
   
   clus_res <- reactive({
-    
-    if(input$upload_done){
-      features <- combined_data()  
-    }
-    
+  
     ### Subset data based on user selection of features
-    features_to_use <- grepl(user_selection(),colnames(features))
+    features_to_use <- grepl(user_selection(),colnames(merged_features))
     feature_set <- unlist(strsplit(user_selection(),"\\|"))
     
     # if(isTruthy(input$file)){
@@ -222,7 +212,7 @@ function(input, output, session) {
     
     
     ## Calculating total population and number of tracts for each cluster
-    cluster_vals <- cbind(clusters,features[,feature_set],features$pop_2010)
+    cluster_vals <- cbind(clusters,merged_features[,feature_set],merged_features$pop_2010)
     colnames(cluster_vals) <- c("cl",feature_set,"pop_2010")
     cluster_pop <- cluster_vals %>% group_by(cl) %>% summarise(pop = sum(pop_2010),n = n())
     
@@ -248,7 +238,7 @@ function(input, output, session) {
     
     ## merging with cluster results
     clusters <- left_join(clusters,cluster_vals,by="cl")
-    clusters$boro_ct201 <- as.character(features$boro_ct201)
+    clusters$boro_ct201 <- as.character(merged_features$boro_ct201)
     clusters <- left_join(data.frame(boro_ct201=census_tracts$boro_ct201,
                                      stringsAsFactors = FALSE),
                           clusters,by="boro_ct201")
