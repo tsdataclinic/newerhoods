@@ -17,7 +17,7 @@ body {
 
 a,
 .hint {
-  color: #929292;
+  color: #0099a6;
 }
 
 .link {
@@ -167,7 +167,7 @@ a:hover {
 }
 
 .navbar-wrapper {
-  width: 190px;
+  width: 200px;
 }
 
 .navbar-title {
@@ -187,6 +187,8 @@ a:hover {
   font-size: 11px;
   font-weight: 900;
   color: #1d1e1f;
+  letter-spacing: 1.1px;
+  padding-top: 4px;
 }
 
 .main {
@@ -360,9 +362,21 @@ a:hover {
 }
 
 .heatmap-group {
-  width: 231px;
+  width: 233px;
+  min-width: 233px;
 }
 
+.tooltip {
+  min-width: 200px;
+}
+
+.tooltip-inner {
+  text-align: left;
+}
+
+.shiny-options-group {
+  padding-left: 25px;
+}
 /* responsive */
 @media (max-width: 1280px) {
   .xsflex {
@@ -375,10 +389,6 @@ a:hover {
     width: 260px;
     margin-right: 10px;
   }
-  .map-control,
-  .links {
-    display: block;
-  }
 }
 
 @media (max-width: 767px) {
@@ -387,8 +397,5 @@ a:hover {
   }
   .main {
     display: block;
-  }
-  .footer {
-    text-align: center;
   }
 }

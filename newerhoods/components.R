@@ -96,9 +96,10 @@ input_enable_heatmap <-
 info_plot_type <- shiny_iconlink() %>%
   bs_embed_tooltip(title="The cluster map shows the city divided into the selected neighborhoods.
                           The colors are only to differentiate clusters from one another.
+                          <br>
                           The heatmap shows the relative value for clusters averaged over the 
                           chosen characteristics.",
-                   placement = "bottom")
+                   placement = "top")
 
 input_baseline <- 
   selectInput('baseline',label='Compare against',
@@ -138,8 +139,8 @@ intro_links <-
 footer <-
   div(class="footer", 
       div(class="content flex-between col-xs-11 xsflex",
-          div(class="hint", "© 2019 Data Clinic. All rights reserved."),
-          div(class="xsflex",
+          div(class="links", a(href="https://www.twosigma.com/about/data-clinic/", "© 2019 Data Clinic. All rights reserved.")),
+          div(class="flex",
               div(class="links", a(href="https://www.twosigma.com/legal-disclosure/", "Legal Disclosure", target="_blank")),
               div(class="slink links", a(href="https://www.twosigma.com/legal-disclosure/privacy-policy/", "Privacy Policy", target="_blank"))
           )
