@@ -367,16 +367,17 @@ a:hover {
 }
 
 .tooltip {
-  min-width: 200px;
+  min-width: 240px;
 }
 
 .tooltip-inner {
   text-align: left;
 }
 
-.shiny-options-group {
+.form-group.shiny-input-radiogroup.shiny-input-container.shiny-bound-input {
   padding-left: 25px;
 }
+
 /* responsive */
 @media (max-width: 1280px) {
   .xsflex {

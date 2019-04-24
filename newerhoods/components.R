@@ -96,7 +96,6 @@ input_enable_heatmap <-
 info_plot_type <- shiny_iconlink() %>%
   bs_embed_tooltip(title="The cluster map shows the city divided into the selected neighborhoods.
                           The colors are only to differentiate clusters from one another.
-                          <br>
                           The heatmap shows the relative value for clusters averaged over the 
                           chosen characteristics.",
                    placement = "top")
