@@ -120,7 +120,8 @@ tagList(
              br(),
              input_clusters,
              input_plot_type,
-             input_baseline
+             input_baseline,
+             downloadButton("downloadData","Download GeoJSON")
            ),
            mainPanel(
              withSpinner(leafletOutput("map", height = "535"),type=5)
