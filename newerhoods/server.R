@@ -29,6 +29,7 @@ require(rgdal)
 require(maptools)
 require(sp)
 require(spdep)
+library(mapview)
 
 
 
@@ -176,12 +177,22 @@ function(input, output) {
     newerhoods <- SpatialPolygonsDataFrame(newerhoods,newerhoods_df)
 
     ## Add the ability to download the results as GeoJSON
-    output$downloadData <- downloadHandler(
+    output$downloadGEOJson<- downloadHandler(
         filename = function() {
-            paste("clusters",".geojson",sep="") 
-        }, 
+            paste("clusters",".geojson",sep="")
+        },
         content = function(file){
             write(as.geojson(newerhoods), file )
+        }
+    )
+
+
+    output$downloadPNG<- downloadHandler(
+        filename = function() {
+            paste("clusters",".png",sep="")
+        },
+        content = function(file){
+            mapshot(map_reactive(), file=file)
         }
     )
 
@@ -230,9 +241,7 @@ function(input, output) {
 
 
   ##### Interactive Map #####
-
-  output$map <-
-    renderLeaflet({
+  map_reactive <- reactive({
       leaflet() %>%
         setView(-73.885,40.71,11) %>%
         addProviderTiles("MapBox", options = providerTileOptions(
@@ -273,7 +282,11 @@ function(input, output) {
                      opacity=0.75,
                      color="white",
                      dashArray="4") 
-    })
+  })
+
+  output$map <-renderLeaflet({
+    map_reactive()  
+  })
 
 
   ## To do: Simplify this. Feels like too many observes
