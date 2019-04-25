@@ -21,24 +21,26 @@ require(shinycssloaders)
 ### Definitions
 
 ### Modals
-modal_features <-
+modal_features <- function(){
   bs_modal(
     id = "modal_features",
     title="Understanding Features",
       body= includeMarkdown("markdowns/features.md"),
     size="medium"
   )
+}
 
-modal_plots <-
+modal_plots <- function(){
   bs_modal(
     id = "modal_plots",
     title="Interpreting Plots",
     body= includeMarkdown("markdowns/plots.md"),
     size="medium"
   )
+}
 
 ### Inputs
-input_housing <-
+input_housing <- function(){
   pickerInput(inputId = 'housing_features',label="Features to use",
               choices=list("2017 Median Sale Price"="med_price_1y|sd_price_1y",
                            "2015-17 Median Sale Price"="med_price_3y|sd_price_3y",
@@ -52,31 +54,35 @@ input_housing <-
     shiny_iconlink() %>%
       bs_attach_modal(id_modal = "modal_features")
     )
+}
 
-input_crime <-
+input_crime <- function(){
   pickerInput(inputId = 'crime_features',#label=h6("Crime"),
               choices=list("Violations"="violation_rate",
                            "Felonies"="felony_rate",
                            "Misdemeanors"="misdemeanor_rate"),
               options=list(`actions-box`=TRUE,title="Crime Characteristics"),
               multiple=TRUE)
+}
 
-input_noise <-
+input_noise <- function(){
   pickerInput(inputId = 'call_features',#label=h6("311 Complaints"),
               choices=list("Ice Cream truck"="icecream_rate",
                            "Barking Dog"="animal_rate",
                            "Loud Music/party"="party_rate"),
               options=list(`actions-box`=TRUE,title="311 Noise Complaints"),
               multiple=TRUE)
+}
 
-input_clusters <-
+input_clusters <- function(){
   sliderInput("num_clusters",
               label="Number of NewerHoods",
               min = 5,
               max = 200,
               value = 100)
+}
 
-input_plot_type <-
+input_plot_type <- function(){
   radioGroupButtons(inputId = "plot_type",label="Plot type",
                     choices = list("Cluster Map"="cluster_map","Heatmap"="heat_map"),
                     justified = TRUE,status="primary"
@@ -85,57 +91,60 @@ input_plot_type <-
     shiny_iconlink() %>%
       bs_attach_modal(id_modal = "modal_plots")
   )
+}
 
-input_baseline <-
+input_baseline <- function(){
   selectInput('baseline',label='Compare against',
               choices=list("Community Districts (59)"="cds",
                            "Public use Microdata Areas (55)"="pumas",
                            "Neighborhood Tabulation Areas (195)"="ntas",
                            "Police Precincts (77)"="precincts",
                            "School Districts (33)"="school_dists"))
+}
 
 # UI
-tagList(
-  navbarPage(
+ui <- function(request){
+    tagList(
+      navbarPage(
 
-  theme = shinytheme("cerulean"),
+      theme = shinytheme("cerulean"),
 
-  "NewerHoods",
+      "NewerHoods",
 
-  tabPanel("Map",
+      tabPanel("Map",
 
-           ## add modals
-           modal_features,
-           modal_plots,
+               ## add modals
+               modal_features(),
+               modal_plots(),
 
-           ## Sidebar
-           sidebarPanel(
-             input_housing,
-             input_crime,
-             input_noise,
-             actionButton("select","Apply",class="btn-primary"),
-             bsTooltip("select", "Click to select or update features to be used for clustering",
-                       "right", options = list(container = "body")),
-             br(),
-             br(),
-             input_clusters,
-             input_plot_type,
-             input_baseline,
-             downloadButton("downloadGeoJSON","GeoJSON"),
-             downloadButton("downloadPNG","png")
-           ),
-           mainPanel(
-             withSpinner(leafletOutput("map", height = "535"),type=5)
-             # leafletOutput("map", height = "535")
-           )),
-  tabPanel("Help", includeMarkdown("markdowns/tutorial.md")),
-  tabPanel("About",includeMarkdown("markdowns/intro.md"),width=4),
+               ## Sidebar
+               sidebarPanel(
+                 input_housing(),
+                 input_crime(),
+                 input_noise(),
+                 actionButton("select","Apply",class="btn-primary"),
+                 bsTooltip("select", "Click to select or update features to be used for clustering",
+                           "right", options = list(container = "body")),
+                 br(),
+                 br(),
+                 input_clusters(),
+                 input_plot_type(),
+                 input_baseline(),
+                 downloadButton("downloadGeoJSON","GeoJSON"),
+                 downloadButton("downloadPNG","png"),
+                 bookmarkButton()
+               ),
+               mainPanel(
+                 withSpinner(leafletOutput("map", height = "535"),type=5)
+                 # leafletOutput("map", height = "535")
+               )),
+      tabPanel("Help", includeMarkdown("markdowns/tutorial.md")),
+      tabPanel("About",includeMarkdown("markdowns/intro.md"),width=4),
 
-  # activate tooltips, popovers
-  use_bs_tooltip(),
-  use_bs_popover()
+      # activate tooltips, popovers
+      use_bs_tooltip(),
+      use_bs_popover()
 
-  )
-)
-
-
+      )
+    )
+}
