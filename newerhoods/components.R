@@ -37,6 +37,14 @@ modal_credits <-
     trigger = "Credits"
   )
 
+modal_feedback <- 
+  bsModal(
+    id = "modal_feedback",
+    title="Feedback",
+    body= includeMarkdown("markdowns/appendix.md"),
+    size="medium",
+    trigger = "Feedback"
+  )
 
 ### Info
 info <- 
@@ -124,15 +132,15 @@ map_control_panel <- div(
   )
 )
 
-help_link <- actionLink(inputId = "Help",label="Getting Started")
-video_link <- actionLink(inputId = 'Video',label="Intro Video")
-credits_link <- actionLink(inputId = 'Credits',label="Credits")
+help_link <- actionLink(inputId = "Help",label="Help")
+feedback_link <- actionLink(inputId = 'Feedback',label="Feedback")
+credits_link <- actionLink(inputId = 'Credits',label="About")
 
 intro_links <- 
   div(class="links flex",
-      div(class="link",help_link),
-      # div(class="slink",video_link),
-      div(class="slink",credits_link)
+      div(class="mainlink",credits_link),
+      div(class="mainslink",help_link),
+      div(class="mainslink",feedback_link)
   )
 
 footer <-

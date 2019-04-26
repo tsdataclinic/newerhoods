@@ -40,6 +40,7 @@ bootstrapPage(
         modal_features,
         modal_credits,
         modal_plots,
+        modal_feedback,
         info,
         input_housing,
         input_housing_sales,

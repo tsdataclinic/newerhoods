@@ -182,8 +182,8 @@ function(input, output) {
     newerhoods <- clus_res()
     
     if(enable_heatmap==TRUE){
-      heatmap_palette <- c('#0093ee','#136bb0','#1d4c7b',
-                           '#017f7c','#015d5f','#003b3e', '#1d293a')
+      heatmap_palette <- c('#ffffb2','#fed976','#feb24c',
+                           '#fd8d3c','#fc4e2a','#e31a1c','#b10026')
       pal_heatmap <- colorQuantile(heatmap_palette,newerhoods$dist,
                                    n=length(heatmap_palette),
                                    na.color = "#A9A9A9A9")
@@ -253,7 +253,9 @@ function(input, output) {
   ## function to add legend to plot
   add_legend <- function(enable_heatmap){
     proxy <- leafletProxy("map")
-    heatmap_palette <- c('#0093ee','#136bb0','#1d4c7b','#017f7c','#015d5f','#003b3e', '#1d293a')
+    # heatmap_palette <- c('#0093ee','#136bb0','#1d4c7b','#017f7c','#015d5f','#003b3e', '#1d293a')
+    heatmap_palette <- c('#ffffb2','#fed976','#feb24c',
+                         '#fd8d3c','#fc4e2a','#e31a1c','#b10026')
     if(enable_heatmap == TRUE){
       proxy %>% addLegend(position="bottomright",
                           colors = heatmap_palette[7:1],

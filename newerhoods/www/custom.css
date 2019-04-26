@@ -15,14 +15,28 @@ body {
   -ms-grid-columns: 1fr;
 }
 
-a,
+a
+{
+  color: #0099a6;
+}
+
 .hint {
+  color: #929292;
+}
+
+.mainlink {
+  color: #0099a6;
+  padding-right: 15px;
+  font-weight: bold;
+}
+
+.mainlink:hint {
   color: #0099a6;
 }
 
 .link {
   color: #0099a6;
-  padding-right: 10px;
+  padding-right: 15px;
 }
 
 .link:focus,
@@ -128,6 +142,20 @@ a:hover {
 .flex-end {
   justify-content: flex-end;
   align-items: center;
+}
+
+.mainslink {
+  color: #929292;
+  margin-right: 15px;
+  font-weight: bold;
+}
+
+.mainslink::before {
+  content: "\2022";
+  font-size: 8px;
+  position: relative;
+  top: -3px;
+  right: 5px;
 }
 
 .slink {
