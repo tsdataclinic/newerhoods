@@ -1,21 +1,24 @@
+require(devtools)
+install.packages('lattice')
+devtools::install_version("rgeos",version ='0.3-28')
 ### packages needed for the App
 
 packages <- c("dplyr","readxl","shiny","shinyWidgets","shinyjs",
               "leaflet","htmltools","shinyBS","shinythemes","markdown",
-              "shinycssloaders","rgeos","rgdal","maptools","sp","spdep",
+              "shinycssloaders","rgdal","maptools","sp","spdep",
               "cluster","fpc","ClustGeo")
 
 ## installing required packages
-install.packages(packages,quiet = TRUE)
+install.packages(packages,quiet = FALSE)
 
 ## installing required packages
 if (!require(gpclib)) {
   install.packages("gpclib", type="source")
-  gpclibPermit()
+  require(gpclib)
+  #gcplib::gpclibPermit()
 }
 
 ## installing the dev version of bsplus from GitHub 
-require(devtools)
 devtools::install_github("ijlyttle/bsplus")
 
 
