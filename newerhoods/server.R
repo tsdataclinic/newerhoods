@@ -39,19 +39,6 @@ require(ClustGeo)
 source("settings_local.R")
 source("support_functions.R")
 
-## function to add legend to plot
-add_legend <- function(plot_type){
-  proxy <- leafletProxy("map")
-  heatmap_palette <- c('#ffffb2','#fed976','#feb24c','#fd8d3c','#fc4e2a','#e31a1c','#b10026')
-  if(plot_type == "heat_map"){
-    proxy %>% addLegend(position="bottomright",
-                        colors = heatmap_palette[7:1],
-                        labels = c("Low","","","","","","High")[7:1],
-                        opacity = 1)
-  }else{
-    proxy %>% clearControls()}
-}
-
 ## function to validate input
 validate_selection <- function(a,b,c){
   if(a == "" & b == "" & c == ""){
@@ -62,6 +49,11 @@ validate_selection <- function(a,b,c){
 ## loading pre-cleaned data
 
 load(file="clean_data/pre_compiled_data.RData")
+load(file="clean_data/cds.RData")
+load(file="clean_data/ntas.RData")
+load(file="clean_data/precincts.RData")
+load(file="clean_data/pumas.RData")
+load(file="clean_data/school_dists.RData")
 
 ## Server
 function(input, output) {
@@ -78,13 +70,18 @@ function(input, output) {
   # 
   
   user_selection <- eventReactive(input$select,{
-    selection <- paste0(c(input$crime_features,input$housing_features,input$call_features),collapse = "|")
+    selection <- c(input$crime_features,input$housing,input$call_features)
+    if("sale_price" %in% selection){
+      selection <- selection[selection != "sale_price"]  
+      selection <- c(selection,input$sales_features)
+    }
+    selection <- paste0(selection,collapse = "|")
     validate(
-      need(selection != "", "Please select atleast one feature")
+      need(selection != "", "Please select at least one feature")
     )
     selection}, ignoreNULL = FALSE) # change to false for initial load
-
-
+  
+  
   tree <- eventReactive(user_selection(),{
     
     features_to_use <- grepl(user_selection(),colnames(features))
@@ -180,11 +177,11 @@ function(input, output) {
   newerhoods <- reactive({
     
     
-    plot_type <- input$plot_type
+    enable_heatmap <- input$enable_heatmap
     
     newerhoods <- clus_res()
     
-    if(plot_type=="heat_map"){
+    if(enable_heatmap==TRUE){
       heatmap_palette <- c('#ffffb2','#fed976','#feb24c',
                            '#fd8d3c','#fc4e2a','#e31a1c','#b10026')
       pal_heatmap <- colorQuantile(heatmap_palette,newerhoods$dist,
@@ -195,8 +192,8 @@ function(input, output) {
       map_cols <- c('#b7e882','#f4f062','#8fe2b4',
                     '#237de0','#8dcd5c','#a327ad',
                     '#d30000','#f9158d','#44b244',
-                    '#2d5ead','#e8a0ea','#3ec8ed',
-                    '#ea0a0a','#ef3fca','#efe8ab','#d87430')
+                    '#0093ee','#136bb0','#1d4c7b',
+                    '#1d293a','#017f7c','#015d5f','#003b3e')
       
       pal <- colorNumeric(map_cols,
                           c(0:(length(map_cols)-1)),
@@ -208,16 +205,6 @@ function(input, output) {
   })
   
   
-  
-  ## To Do: Option to not have any baseline map
-  ### Baseline Map
-  
-  baseline_map <- eventReactive(input$baseline,{
-    load(file=paste0("clean_data//",input$baseline,".RData"))
-    get(input$baseline)
-  })
-  
-  
   ##### Interactive Map #####
   
   output$map <- 
@@ -225,7 +212,7 @@ function(input, output) {
       leaflet() %>%
         setView(-73.885,40.71,11) %>%
         addProviderTiles("MapBox", options = providerTileOptions(
-          id= "mapbox.dark",
+          id= "mapbox.light",
           accessToken = Sys.getenv('MAPBOX_ACCESS_TOKEN'))
         ) %>% 
         # addPolygons(data=census_tracts,
@@ -237,14 +224,15 @@ function(input, output) {
         # ) %>%
         addPolygons(data=newerhoods(),
                     fillColor = newerhoods()$colour,
-                    weight = 0.5,
+                    stroke = TRUE,
+                    weight = 1,
                     opacity = 0.5,
-                    color = "white",
+                    color = "lightgrey",
                     fillOpacity = 0.6,
                     ## highights
                     highlight = highlightOptions(
                       weight = 4,
-                      color = ifelse(input$plot_type == "cluster_map","orange","green"),
+                      color = ifelse(input$enable_heatmap == FALSE,"orange","green"),
                       opacity = 0.8,
                       fillOpacity = 0.6,
                       bringToFront = F),
@@ -255,31 +243,65 @@ function(input, output) {
                                    padding = "3px 8px"),
                       textsize = "15px",
                       direction = "auto")
-        ) %>%
-        addPolylines(data=baseline_map(), 
-                     stroke=TRUE,
-                     weight=2.75,
-                     opacity=0.75,
-                     color="white",
-                     dashArray="4") 
+        )
     })
-
+  
   
   ## To do: Simplify this. Feels like too many observes
-  observeEvent(input$select,{
-    add_legend(input$plot_type)
-  })
+  ## Adding Heatmap Legend
+  ## function to add legend to plot
+  ## function to add legend to plot
+  add_legend <- function(enable_heatmap){
+    proxy <- leafletProxy("map")
+    # heatmap_palette <- c('#0093ee','#136bb0','#1d4c7b','#017f7c','#015d5f','#003b3e', '#1d293a')
+    heatmap_palette <- c('#ffffb2','#fed976','#feb24c',
+                         '#fd8d3c','#fc4e2a','#e31a1c','#b10026')
+    if(enable_heatmap == TRUE){
+      proxy %>% addLegend(position="bottomright",
+                          colors = heatmap_palette[7:1],
+                          labels = c("Low","","","","","","High")[7:1],
+                          opacity = 1)
+    }else{
+      proxy %>% clearControls()}
+  }
   
-  observe({
-    add_legend(input$plot_type)
-  })
+  observe({add_legend(input$enable_heatmap)})
+  observeEvent(clus_res(),{add_legend(input$enable_heatmap)})
   
-  observeEvent(clus_res(),{
-    add_legend(input$plot_type)
-  })
   
-  observeEvent(baseline_map(),{
-    add_legend(input$plot_type)
-  })
+  ### Baseline Map
+  baselines <- c("cds","ntas","pumas","precincts","school_dists")
+  add_baselines <- function(){
+    for(i in c(1:length(baselines))){
+      baseline_map <- get(baselines[i])
+      proxy <- leafletProxy("map")
+      proxy %>% 
+        addPolylines(data=baseline_map, 
+                     stroke=TRUE,
+                     weight=2,
+                     opacity=0.75,
+                     color="white",
+                     dashArray="5",
+                     group = baselines[i])
+      if(baselines[i] != input$baseline){
+        proxy %>% hideGroup(baselines[i])  
+      }
+    }
+  }
   
+  observeEvent({input$enable_heatmap},{add_baselines()})
+  observeEvent({clus_res()},{add_baselines()})
+  
+  observeEvent(input$baseline,{
+    if(input$baseline != "none"){
+      baseline_map <- get(input$baseline)
+      
+      proxy <- leafletProxy("map")
+      proxy %>% hideGroup(baselines)
+      proxy %>% showGroup(input$baseline)
+    }else{
+      proxy <- leafletProxy("map")
+      proxy %>% hideGroup(baselines)
+    }
+  })
 }
