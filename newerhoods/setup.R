@@ -9,7 +9,7 @@ packages <- c("dplyr","readxl","shiny","shinyWidgets","shinyjs",
               "cluster","fpc","ClustGeo")
 
 ## installing required packages
-install.packages(packages,quiet = FALSE)
+install.packages(packages,quiet = TRUE)
 
 ## installing required packages
 if (!require(gpclib)) {
