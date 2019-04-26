@@ -43,6 +43,20 @@ Run the App
 library(shiny)
 runApp("newerhoods")
 ```
+Alternatively, you can run the application in docker. To build the docker container run
+
+```bash
+docker build -t newerhoods . 
+```
+
+Then to run the docker container simply run 
+
+```bash
+docker run -it --rm -p 3000:3000 -v $(pwd):/app newerhoods 
+```
+
+any changes you make in the code should trigger an application reload so all you should need to do is refresh your browser to see them.
+
 
 ### Contributing to NewerHoods
 
