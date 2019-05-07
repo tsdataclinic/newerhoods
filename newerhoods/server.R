@@ -209,16 +209,16 @@ function(input, output, session) {
     clusters <- data.frame(cl=cutree(tree(),K))
     
     ## cluster statistics to find optimal numbers
-    avg_sil <- rep(NA,200)
-    for(i in c(5:200)){
-      c <- cutree(tree(),i) 
-      avg_sil[i] <- summary(silhouette(c,D))$avg.width
-    }
-    cl_metric <- data.frame(k=c(1:200),avg_sil=avg_sil)
-    cl_metric$groups <- cut(c(1:200),breaks=4)
-    
-    s <- cl_metric %>% group_by(groups) %>% summarize(K=max(k),k_opt=min(k)+which.max(avg_sil)-1)
-    
+    # avg_sil <- rep(NA,200)
+    # for(i in c(5:200)){
+    #   c <- cutree(tree(),i) 
+    #   avg_sil[i] <- summary(silhouette(c,D))$avg.width
+    # }
+    # cl_metric <- data.frame(k=c(1:200),avg_sil=avg_sil)
+    # cl_metric$groups <- cut(c(1:200),breaks=4)
+    # 
+    # s <- cl_metric %>% group_by(groups) %>% summarize(K=max(k),k_opt=min(k)+which.max(avg_sil)-1)
+    # 
     
     ## generating cluster average statistics (weighted mean for rates)
     ## Calculating total population and number of tracts for each cluster

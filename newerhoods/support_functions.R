@@ -55,6 +55,9 @@ get_labels <- function(df){
 
   stats_selected <- colnames(df)[grepl("_mean",colnames(df))]
   stats_names <- gsub("_mean","",stats_selected)
+  excluded_stats <- c("sd_price_1y","sd_price_3y","sd_price_5y")
+  
+  stats_names <- stats_names[!(stats_names %in% excluded_stats)]
   
   pretty_names <- c("<strong>2017 Median Sale Price: </strong> $%g /sq.ft.",
                     "<strong>2015-17 Median Sale Price: </strong> $%g /sq.ft.",
@@ -71,14 +74,18 @@ get_labels <- function(df){
   all_stats <- c("med_price_1y","med_price_3y","med_price_5y","res_units","bldg_age",
   "violation_rate","felony_rate","misdemeanor_rate","icecream_rate","animal_rate","party_rate")
   
+  ## matching columns with existing ones
   matched_columns <- match(stats_names,all_stats)
-  matched_columns <- matched_columns[!is.na(matched_columns)]
+  # matched_columns <- matched_columns[!is.na(matched_columns)]
+  label_names <- rep(NA,length(matched_columns))
+  label_names[!is.na(matched_columns)] <- pretty_names[matched_columns[!is.na(matched_columns)]]
+  label_names[is.na(matched_columns)] <- paste0("<strong>",stats_names[is.na(matched_columns)],": </strong> $%g")
   
-  stat_columns <- paste0(all_stats[matched_columns],"_mean")
+  stat_columns <- paste0(stats_names,"_mean")
   
   content <- matrix(NA,nrow=dim(df)[1],ncol=length(matched_columns))
   for(i in c(1:length(matched_columns))){
-    content[,i] <- sprintf(pretty_names[matched_columns[i]],
+    content[,i] <- sprintf(label_names[i],
                            round(unlist(df[,stat_columns[i]]),2))
   }
   
