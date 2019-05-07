@@ -21,6 +21,7 @@ D0 <- dist(scale(features[,features_to_use]))
 set.seed(1729)
 alpha=0.15
 tree <- hclustgeo(D0,D1,alpha=0.15)
+# plot(tree,labels=FALSE)
 
 K <- 100
 ct <- census_tracts
@@ -28,9 +29,46 @@ ct <- census_tracts
 map <- get_stamenmap(bbox = c(left=-74.25559, bottom=40.49612,right=-73.70001,top=40.91553),
                      maptype = "toner-lite", source = "stamen", zoom = 11)
 
-for(i in c(1:100)){
+x <- seq(from=0,to=2100,by=50)
+x[1] <- 1
+x <- x[1:43]
+x[43] <- 2096
+
+for(i in c(1:length(x))){
   ct <- census_tracts
-  clusters <- data.frame(cl=cutree(tree,i))
+  clusters <- data.frame(cl=cutree(tree,x[i]))
+  clusters$boro_ct201 <- features$boro_ct201
+  clusters <- left_join(data.frame(boro_ct201=ct$boro_ct201,
+                                   stringsAsFactors = FALSE),
+                        clusters,by="boro_ct201")
+  ct@data$cl <- clusters$cl
+  ct <- ct[order(census_tracts$boro_ct201),]
+  # ct <- ct[sample(c(1:dim(ct)[1]),dim(ct)[1],replace = FALSE),]
+  tt <- tidy(ct,region = "cl")
+  tt <- as.data.frame(tt, stringsAsFactors = FALSE)
+  # tt$iter <- i
+  p <- ggmap(map) + geom_polygon(data = fortify(tt),
+                                 aes(long, lat, group = group, fill=as.factor(as.numeric(id) %% 10)),
+                                 colour = "white", alpha = 0.75) + 
+    theme(legend.position="none") + ggtitle(label=paste0("k = ",x[i],", alpha=0.15"))
+  ggsave(filename = paste0("./fig_output/nyc2/nyc_",str_pad(i,4,side="left",pad="0"),".png"),
+         width = 8,height=8,dpi = 150)
+}
+
+list.files(path = "./fig_output/nyc2/", pattern = "*.png", full.names = T) %>% 
+  sort(decreasing = TRUE) %>% 
+  map(image_read) %>% # reads each path file
+  image_join() %>% # joins image
+  image_animate(fps=2) %>% # animates, can opt for number of loops
+  image_write("nyc_clustering2.gif")
+
+
+
+for(i in c(1:21)){
+  alpha=0.05*(i-1)
+  tree <- hclustgeo(D0,D1,alpha=alpha)
+  ct <- census_tracts
+  clusters <- data.frame(cl=cutree(tree,50))
   clusters$boro_ct201 <- features$boro_ct201
   clusters <- left_join(data.frame(boro_ct201=ct$boro_ct201,
                                    stringsAsFactors = FALSE),
@@ -42,40 +80,17 @@ for(i in c(1:100)){
   # tt$iter <- i
   p <- ggmap(map) + geom_polygon(data = fortify(tt),
                                  aes(long, lat, group = group, fill=id),
-                                 colour = "white", alpha = 0.6) + theme(legend.position="none") 
-  ggsave(filename = paste0("./fig_output/nyc/nyc_",str_pad(i,3,side="left",pad="0"),".png"),
+                                 colour = "white", alpha = 0.6) + 
+    theme(legend.position="none") + ggtitle(label=paste0("alpha= ",alpha,", k = 50"))
+  ggsave(filename = paste0("./fig_output/nyc_alpha/nyc_",str_pad(i,3,side="left",pad="0"),".png"),
          width = 8,height=8,dpi = 150)
 }
 
-list.files(path = "./fig_output/nyc/", pattern = "*.png", full.names = T) %>% 
+list.files(path = "./fig_output/nyc_alpha/", pattern = "*.png", full.names = T) %>% 
   map(image_read) %>% # reads each path file
   image_join() %>% # joins image
-  image_animate(fps=4) %>% # animates, can opt for number of loops
-  image_write("nyc_clustering.gif")
+  image_animate(fps=2) %>% # animates, can opt for number of loops
+  image_write("nyc_alpha_clustering.gif")
 
 
-map <- get_stamenmap(bbox = c(left=-74.25559, bottom=40.49612,right=-73.70001,top=40.91553),
-               maptype = "toner-lite", source = "stamen", zoom = 11)
-
-polyplot <- function(data){
-  p <- ggmap(map) + geom_polygon(data = fortify(data),
-                            aes(long, lat, group = group, fill=id),
-                            colour = "white", alpha = 0.6) + theme(legend.position="none") 
-  
-}
-
-# p <- ggmap(map) + geom_polygon(data = fortify(tidy_tracts),
-#                                aes(long, lat, group = group, fill=id),
-#                                colour = "white", alpha = 0.6) + theme(legend.position="none") 
-
-
-animation <- tween_polygon(tidy_tracts[tidy_tracts$iter == 1,],tidy_tracts[tidy_tracts$iter == 2,],
-                           'cubic-in-out',10)
-
-ani <- lapply(split(animation, animation$.frame),polyplot)
-p <- p + transition_states(iter) 
-p
-
-
-
-# census_tracts@bbox
+ca <- choicealpha(D0,D1,range.alpha = seq(0,1,0.1),K=100)

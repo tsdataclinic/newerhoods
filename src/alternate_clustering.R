@@ -1,6 +1,11 @@
 library(dbscan)
 
+
+load(file="newerhoods/clean_data/pre_compiled_data.RData")
+
 ##k-means
+features_to_use <- grepl("lat$|lon$|med_price_1y|sd_price_1y|violation_rate|party_rate",colnames(features))
+feature_set <- unlist(strsplit("med_price_1y|sd_price_1y|violation_rate|party_rate","\\|"))
 cluster_data <- features[,features_to_use]
 cluster_data <- scale(cluster_data)
 cluster_km <- kmeans(cluster_data,centers = 100)
