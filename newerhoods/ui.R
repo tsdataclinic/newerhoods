@@ -3,7 +3,7 @@
 # run the application by clicking 'Run App' above.
 #
 # Find out more about building applications with Shiny here:
-# 
+#
 #    http://shiny.rstudio.com/
 #
 
@@ -106,7 +106,10 @@ bootstrapPage(
         input_crime,
         input_noise,
         input_user_features,
-        actionButton("select","Apply",class="btn-custom")
+        actionButton("select","Apply",class="btn-custom"),
+        downloadButton("downloadGEOJson","GeoJSON"),
+        downloadButton("downloadPNG","png"),
+        bookmarkButton()
       ),
       intro_links
     ),
@@ -128,5 +131,3 @@ bootstrapPage(
   use_bs_tooltip(),
   use_bs_popover()
 )
-
-

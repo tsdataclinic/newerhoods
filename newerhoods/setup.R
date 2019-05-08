@@ -4,8 +4,8 @@ devtools::install_version("rgeos",version ='0.3-28')
 ### packages needed for the App
 
 packages <- c("dplyr","readxl","shiny","shinyWidgets","shinyjs",
-              "leaflet","htmltools","shinyBS","shinythemes","markdown",
-              "shinycssloaders","rgdal","maptools","sp","spdep",
+              "leaflet","htmltools","shinyBS","shinythemes","markdown",'geojson',
+              "shinycssloaders","rgdal","maptools","sp","spdep",'mapview',
               "cluster","fpc","ClustGeo")
 
 ## installing required packages
@@ -17,6 +17,8 @@ if (!require(gpclib)) {
   require(gpclib)
   #gcplib::gpclibPermit()
 }
+
+webshot::install_phantomjs()
 
 ## installing the dev version of bsplus from GitHub 
 devtools::install_github("ijlyttle/bsplus")
