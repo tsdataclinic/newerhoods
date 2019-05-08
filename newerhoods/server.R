@@ -220,29 +220,30 @@ function(input, output, session) {
 
     newerhoods <- SpatialPolygonsDataFrame(newerhoods,newerhoods_df)
 
-    ## Add the ability to download the results as GeoJSON
-    output$downloadGEOJson<- downloadHandler(
-        filename = function() {
-            paste("clusters",".geojson",sep="")
-        },
-        content = function(file){
-            write(as.geojson(newerhoods), file )
-        }
-    )
-
-
-    output$downloadPNG<- downloadHandler(
-        filename = function() {
-            paste("clusters",".png",sep="")
-        },
-        content = function(file){
-            mapshot(map_reactive(), file=file)
-        }
-    )
-
     return(newerhoods)
   }) %>% debounce(10)
 
+  ## Add the ability to download the results as GeoJSON
+  output$downloadGEOJson<- downloadHandler(
+    filename = function() {
+      print("test")
+      paste("clusters",".geojson",sep="")
+    },
+    content = function(file){
+      print("test")
+      write(as.geojson(clus_res()), file )
+    }
+  )
+  
+  output$downloadPNG<- downloadHandler(
+    filename = function() {
+      paste("clusters",".png",sep="")
+    },
+    content = function(file){
+      mapshot(map_reactive(), file=file)
+    }
+  )
+  
   newerhoods <- reactive({
     
     
@@ -308,26 +309,6 @@ function(input, output, session) {
   output$map <-renderLeaflet({
     map_reactive()  
   })
-
-
-  ## To do: Simplify this. Feels like too many observes
-  observeEvent(input$select,{
-    add_legend(input$plot_type)
-  })
-
-  observe({
-    add_legend(input$plot_type)
-  })
-
-  observeEvent(clus_res(),{
-    add_legend(input$plot_type)
-  })
-
-  observeEvent(baseline_map(),{
-    add_legend(input$plot_type)
-  })
-
-
 
   ## To do: Simplify this. Feels like too many observes
   ## Adding Heatmap Legend

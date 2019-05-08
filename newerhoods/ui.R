@@ -107,7 +107,7 @@ bootstrapPage(
         input_noise,
         input_user_features,
         actionButton("select","Apply",class="btn-custom"),
-        downloadButton("downloadGeoJSON","GeoJSON"),
+        downloadButton("downloadGEOJson","GeoJSON"),
         downloadButton("downloadPNG","png"),
         bookmarkButton()
       ),
