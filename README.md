@@ -8,11 +8,12 @@ New York City’s (NYC’s) neighborhoods are a driving force in the lives of Ne
 
 Data Clinic developed NewerHoods with the goal of helping individuals and organizations better advocate for their communities by enabling them to tailor insights to meet their specific needs. NewerHoods is an interactive web-app that uses open data to generate localized features at the census tract-level and machine learning to create homogeneous clusters. Users are able to select characteristics of interest (currently open data on housing, crime, and 311 complaints), visualize NewerHood clusters on an interactive map, find similar neighborhoods, and compare them against existing administrative boundaries.  The tool is designed to enable users without in-depth data expertise to compare and incorporate these redefined neighborhoods into their work and life.
 
-The application is live and available to use [here](https://data-clinic.shinyapps.io/newerhoods/)
+The application is live and available to use [here](https://data-clinic.shinyapps.io/newerhoods/).
 
-We invite [feedback](https://airtable.com/shr2sLGHHIiLY6BUC) on the tool and encourage users to contribute. To contact [Data Clinic](https://www.twosigma.com/about/data-clinic/) about NewerHoods, please email us at dataclinic@twosigma.com.
+### Getting Started
+The below steps will help you get started and setting up and running NewerHoods locally. Since this is a RShiny application, install RStudio on your machine if you haven't already from [here](https://www.rstudio.com/products/RStudio/#Desktop).
 
-### Directory Structure
+#### Directory Structure
 
 `newerhoods/clean_data` contains just the cleaned/transformed data sets used directly by the Shiny App. 
 
@@ -21,9 +22,9 @@ We invite [feedback](https://airtable.com/shr2sLGHHIiLY6BUC) on the tool and enc
 `/newerhoods` contains the code for the RShiny WebApp.
 
 
-### Running the App
+#### Running the App
 
-First, the R environment needs to be set up with all the necessary packages.
+First, the R environment needs to be set up with all the necessary packages.  
 
 ```r
 source("newerhoods/setup.R")
@@ -42,6 +43,24 @@ Run the App
 library(shiny)
 runApp("newerhoods")
 ```
+Alternatively, you can run the application in docker. To build the docker container run
+
+```bash
+docker build -t newerhoods . 
+```
+
+Then to run the docker container simply run 
+
+```bash
+docker run -it --rm -p 3000:3000 -v $(pwd):/app newerhoods 
+```
+
+any changes you make in the code should trigger an application reload so all you should need to do is refresh your browser to see them.
+
+
+### Contributing to NewerHoods
+
+We invite [feedback](https://airtable.com/shr2sLGHHIiLY6BUC) on the tool and encourage users to contribute. Check out [this page](https://github.com/tsdataclinic/newerhoods/blob/master/CONTRIBUTING.md) for some ways in which you can contribute. To contact [Data Clinic](https://www.twosigma.com/about/data-clinic/) about NewerHoods, please email us at dataclinic@twosigma.com.
 
 ### Data Sources
 

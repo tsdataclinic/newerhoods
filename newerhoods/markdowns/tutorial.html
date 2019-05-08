@@ -372,36 +372,53 @@ $(document).ready(function () {
 </div>
 
 
-<div id="how-to-use-newerhoods" class="section level3">
-<h3>How to use NewerHoods</h3>
-<hr />
-<div id="select-features-of-interest" class="section level5">
-<h5>#1 Select features of interest</h5>
-<p>You can start by browsing and selecting chararacteristics from the drop down menu and clicking the <em>Select</em> button. This selects the features which are clustered and an output map is produced. You can also use the same button to update your selection at any stage. To get more details on each of the features, use the information icon.</p>
+<p>Follow these steps to begin creating NewerHoods of your own.</p>
+<div id="step-1-select-features-of-interest" class="section level4">
+<h4>Step 1 Select features of interest</h4>
+<p>Select one or more chracteristics under Housing, Crime, and 311 Complaints from the sidebar and click Apply. The tool will return clusters based on your selection(s) and produce an output map. You can use the same button to update your selection at any stage. Details on each of the features are as below.</p>
+<div id="housing" class="section level5">
+<h5>Housing</h5>
+<ul>
+<li>Age of Building: The average age of residential real-estate from the time constructed.</li>
+<li>Median Sale Price: The median price per square footage of real-estate sold in 2017, 3-year average for 2015-2017, and 5-year average for 2013-2017.</li>
+</ul>
 </div>
-<div id="choose-number-of-neighborhoods" class="section level5">
-<h5>#2 Choose number of neighborhoods</h5>
-<p>Next, you can use the slider to choose the number of neighborhoods you want to see New York City divided up into. The map automatically updates everytime you change the number to neighborhoods to view. As a starting point, you can look at settings that correspond to existing administrative divisions of New York City.</p>
+<div id="crime" class="section level5">
+<h5>Crime</h5>
+<p>Crimes are categorized into three levels of offense: felony, misdemeanor, and violation. The count of each of these types is calculated for each region and scaled by its respective population to obtain a rate.</p>
+<ul>
+<li>Violations: Also known as infractions, these are the most minor of offenses. For example: a speeding ticket, public intoxication, or jaywalking.</li>
+<li>Misdemeanors: More serious than violations but less severe than felonies, misdemeanors can carry up to a year in jail.</li>
+<li>Felonies: These are the most serious type of criminal offense. Felonies often involve serious physical harm to victims, but they also include offenses like white collar crimes and fraud schemes.</li>
+</ul>
+</div>
+<div id="calls" class="section level5">
+<h5>311 Calls</h5>
+<p>One of the largest categories of complaints received on 311 in NYC has to do with noise. In this case, we look at just a few sub-categories of noise complaints (ice cream trucks, barking dogs, and loud music/parties). As with crime statistics, these are aggregated for each region and scaled by the population.</p>
+</div>
+</div>
+<div id="step-2-choose-number-of-new-neighborhoods" class="section level4">
+<h4>Step 2 Choose number of new neighborhoods</h4>
+<p>Next, you can use the slider to choose the number of NewerHoods into which you want to divide New York City. The map automatically updates every time you change the number to neighborhoods to view. As a starting point, consider settings that correspond to the city’s existing administrative divisions.</p>
+</div>
+<div id="step-3-dig-into-the-numbers" class="section level4">
+<h4>Step 3 Dig into the numbers</h4>
+<p>Having generated a map of NewerHoods, you can pan and zoom the map to your area of interest. Hovering over a cluster, you’ll find the NewerHood highlight and a pop-up window showing the average statistics of the characteristics chosen.</p>
+</div>
+<div id="step-4-check-out-different-views" class="section level4">
+<h4>Step 4 Check out different views</h4>
+<p>When you select the Heatmap plot, the NewerHoods will be colored according to the magnitude of the values. When multiple features are chosen, the magnitude represents a combination of all the chosen features. You can use them to find broadly similar neighborhoods by simply looking at similarly colored areas.</p>
+</div>
+<div id="step-5-compare" class="section level4">
+<h4>Step 5 Compare</h4>
+<p>Lastly, you can compare the NewerHoods to existing geographical boundaries. The chosen division appears on the map as a white dashed line. The available administrative divisions and their counts are as below:</p>
 <ul>
 <li>Community Districts: 59</li>
-<li>Public Use Micordata Areas (PUMAs): 55</li>
+<li>Public Use Microdata Areas (PUMAs): 55</li>
 <li>Neighborhood Tabulation Areas (NTAs): 195</li>
 <li>Police Precincts: 77</li>
 <li>School Districts: 33</li>
 </ul>
-</div>
-<div id="dig-into-the-numbers" class="section level5">
-<h5>#3 Dig into the numbers</h5>
-<p>Given a selection of features and number of neighborhoods, you can view the map of the NewerHoods. You can pan and zoom the map to your area of interest. Hovering over a cluster, you’ll find the NewerHood highlight and a pop-up window showing the average statistics of the characteristics chosen.</p>
-</div>
-<div id="check-out-different-views" class="section level5">
-<h5>#4 Check out different views</h5>
-<p>By choosing the Heatmap plot, you will find the NewerHoods coloured based on the magnitude of the values. When multiple features are chosen, the magnitude represent a combination of all the chosen features. These can be used to find broadly similar neighborhoods by simply looking at similarly coloured areas.</p>
-</div>
-<div id="compare" class="section level5">
-<h5>#5 Compare</h5>
-<p>Lastly, you can compare the NewerHoods to existing geographical boundaries. The chosen division appears on the map as a white dashed line.</p>
-</div>
 </div>
 
 
