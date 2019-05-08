@@ -56,16 +56,16 @@ info <-
 ### Inputs
 input_housing <- checkboxGroupInput(
   inputId = 'housing',label="HOUSING",
-  choices=c("Age of buildings"="bldg_age","Median Sale Price"="sale_price"),
+  choices=c("Age of buildings"="bldg_age","Median sale price"="sale_price"),
   selected = "bldg_age"
 )
 
 input_housing_sales <- conditionalPanel(condition="input.housing.includes('sale_price')",
                                         radioButtons(
                                           inputId = 'sales_features',label="",
-                                          choices=c("1y Average"="med_price_1y|sd_price_1y",
-                                                    "3y Average"="med_price_3y|sd_price_3y",
-                                                    "5y Average"="med_price_5y|sd_price_5y"
+                                          choices=c("1y average"="med_price_1y|sd_price_1y",
+                                                    "3y average"="med_price_3y|sd_price_3y",
+                                                    "5y average"="med_price_5y|sd_price_5y"
                                           ),selected = NULL))
 
 
@@ -81,9 +81,9 @@ input_crime <-
 input_noise <- 
   checkboxGroupInput(
     inputId = 'call_features',label="311 COMPLAINTS",
-    c("Ice Cream truck"="icecream_rate",
-      "Barking Dog"="animal_rate",
-      "Loud Music/party"="party_rate"
+    c("Ice cream truck"="icecream_rate",
+      "Barking dog"="animal_rate",
+      "Loud music/party"="party_rate"
     )
   )
 
