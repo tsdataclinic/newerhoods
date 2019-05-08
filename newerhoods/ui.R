@@ -169,8 +169,8 @@ tagList(
                
                # Select feature columns
                conditionalPanel(
-                 condition = "input.upload && input.geo != 'lat_lon'",
-                 selectInput("user_columns","Select features to use",
+                 condition = "input.upload",
+                 selectInput("user_columns","Select columns to aggregate",
                              choices = NULL, multiple = TRUE)),
                conditionalPanel(
                  condition = "input.upload",

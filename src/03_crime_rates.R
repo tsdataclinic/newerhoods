@@ -5,7 +5,7 @@ source("./newerhoods/support_functions.R")
 
 app_token <- Sys.getenv('NYC_OPENDATA_API_TOKEN')
 crime_17 <- read.socrata(
-  "https://data.cityofnewyork.us/resource/9s4h-37hy.csv?$where=cmplnt_fr_dt>='2017-01-01T00:00:00.000'",
+  "https://data.cityofnewyork.us/resource/9s4h-37hy.csv?$where=cmplnt_fr_dt>='2017-12-01T00:00:00.000'",
   app_token = app_token
 )
 
