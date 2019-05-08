@@ -105,6 +105,7 @@ bootstrapPage(
         input_housing_sales,
         input_crime,
         input_noise,
+        input_user_features,
         actionButton("select","Apply",class="btn-custom")
       ),
       intro_links

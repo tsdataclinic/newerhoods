@@ -126,14 +126,14 @@ function(input, output, session) {
 
  
   user_selection <- eventReactive(input$select,{
-    selection <- paste0(c(input$crime_features,input$housing_features,
-                          input$call_features),collapse = "|")
-    user_feature_selection <- paste0("USER_",input$user_features,collapse = "|")
+    selection <- c(input$crime_features,input$housing,input$call_features)
     if("sale_price" %in% selection){
       selection <- selection[selection != "sale_price"]  
       selection <- c(selection,input$sales_features)
     }
     selection <- paste0(selection,collapse = "|")
+    
+    user_feature_selection <- paste0("USER_",input$user_features,collapse = "|")
     
     if(user_feature_selection != "USER_"){
       selection <- paste0(c(selection,user_feature_selection),collapse = "|")  
@@ -147,7 +147,7 @@ function(input, output, session) {
     }, ignoreNULL = FALSE) # change to false for initial load
   
   
-  tree <- eventReactive({user_selection()},{
+  tree <- eventReactive(user_selection(),{
 
     # features <- mergedData()
     features_to_use <- grepl(user_selection(),colnames(merged_features))
