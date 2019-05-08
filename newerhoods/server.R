@@ -93,7 +93,7 @@ function(input, output, session) {
   user_data <- observeEvent(input$upload_done,{
     if(input$geo == 'lat_lon'){
       ## convert points to rates fatures
-      user_df <- point_data_to_feature_columns(raw_user_data(),input$lat,input$lon,input$user_columns)
+      user_df <- point_data_to_feature_columns(raw_user_data(),lat=input$lat,lon=input$lon,cols=input$user_columns)
       colnames(user_df) <- paste0("USER_",colnames(user_df))
       colnames(user_df)[1] <- "boro_ct201"
     }else if(input$geo == 'boro_tract'){

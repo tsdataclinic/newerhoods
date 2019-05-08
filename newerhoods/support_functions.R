@@ -44,7 +44,7 @@ point_data_to_feature_columns <- function(df,lat,lon,cols){
   ## Spatial columns need to be lat and lon, transformations not supported as yet. 
   
   ## creating the spatial dataframe
-  colnames(df[,c(col1,col2)]) <- c("latitude","longitude")
+  colnames(df[,c(lat,lon)]) <- c("latitude","longitude")
   
   df <- df[!is.na(df$latitude) | !is.na(df$longitude),]
   coordinates(df) <- ~ longitude + latitude
@@ -99,7 +99,7 @@ point_data_to_feature_columns <- function(df,lat,lon,cols){
   
   for(i in c(1:length(sum_cols))){
     df_rates[,gsub("_sum$","_rate_by_pop",sum_cols[i])] <- df_rates[,sum_cols[i]]*1000/df_rates$pop_2010 
-    df_rates[, gsub("_sum$","_rate_by_pop",sum_cols[i])] <- df_rates[,sum_cols[i]]*1000000/(2.59*df_rates$tract_area) ## rate per sq. mile
+    df_rates[, gsub("_sum$","_rate_by_area",sum_cols[i])] <- df_rates[,sum_cols[i]]*1000000/(2.59*df_rates$tract_area) ## rate per sq. mile
   }
   
   df_rates <- df_rates[,!grepl("_sum$|pop_2010$|tract_area",colnames(df_rates))]
