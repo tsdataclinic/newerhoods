@@ -55,8 +55,10 @@ load(file="clean_data/precincts.RData")
 load(file="clean_data/pumas.RData")
 load(file="clean_data/school_dists.RData")
 
+merged_features <- features
+
 ## Server
-function(input, output) {
+function(input, output, session) {
   
   ## To Add: error handling on clicking select without selecting any features
   
@@ -69,6 +71,60 @@ function(input, output) {
   # })
   # 
   
+  raw_user_data <- reactive({
+    req(input$file)
+    raw_user_df <- read.csv(input$file$datapath)
+    # merged_features <<- features
+    raw_user_df
+  })
+  
+  ## updating columns to select from
+  observe({
+    req(input$file)
+    col_names <- colnames(raw_user_data())
+    updateSelectInput(session, "lat", choices= col_names)
+    updateSelectInput(session, "lon", choices= col_names)
+    updateSelectInput(session, "boro", choices= col_names)
+    updateSelectInput(session, "ct", choices= col_names)
+    updateSelectInput(session, "boro_ct", choices= col_names)
+    updateSelectInput(session, "user_columns", choices= col_names)
+  })
+  
+  user_data <- observeEvent(input$upload_done,{
+    if(input$geo == 'lat_lon'){
+      ## convert points to rates fatures
+      user_df <- point_data_to_feature_columns(raw_user_data(),input$lat,input$lon,input$user_columns)
+      colnames(user_df) <- paste0("USER_",colnames(user_df))
+      colnames(user_df)[1] <- "boro_ct201"
+    }else if(input$geo == 'boro_tract'){
+      ## reformat the boro and tract columns and combine for merging
+      user_df <- raw_user_data()
+      user_df$boro_ct201 <- paste0(user_df[,input$boro],str_pad(user_df[,input$ct],6,side="right",pad="0"))
+      user_df <- user_df %>% group_by(boro_ct201) %>% 
+        dplyr::select(input$user_features) %>%
+        summarise_all(funs(mean))
+      user_df <- as.data.frame(user_df)
+      colnames(user_df) <- c("boro_ct201",paste0("USER_",input$user_columns))
+    }else{
+      ## reformat the combined boro-tract column
+      user_df <- raw_user_data()
+      user_df$boro_ct201 <- as.character(user_df[,input$boro_ct])
+      user_df <- user_df %>% dplyr::select(input$user_columns,boro_ct201) %>% 
+        group_by(boro_ct201) %>% 
+        summarise_all(funs(mean))
+      user_df <- as.data.frame(user_df)
+      colnames(user_df) <- c("boro_ct201",paste0("USER_",input$user_columns))
+    }
+    
+    generated_feature_names <- gsub("USER_","",colnames(user_df))
+    generated_feature_names <- generated_feature_names[generated_feature_names != "boro_ct201"]
+    updateSelectInput(session, "user_features", choices= generated_feature_names)
+    merged_features <<- left_join(features,user_df,by="boro_ct201")
+  
+    return(user_df)
+  })
+
+ 
   user_selection <- eventReactive(input$select,{
     selection <- c(input$crime_features,input$housing,input$call_features)
     if("sale_price" %in% selection){
@@ -76,19 +132,29 @@ function(input, output) {
       selection <- c(selection,input$sales_features)
     }
     selection <- paste0(selection,collapse = "|")
+    
+    user_feature_selection <- paste0("USER_",input$user_features,collapse = "|")
+    
+    if(user_feature_selection != "USER_"){
+      selection <- paste0(c(selection,user_feature_selection),collapse = "|")  
+      selection <- gsub("^\\|","",selection)
+    }
+
     validate(
-      need(selection != "", "Please select at least one feature")
+      need(selection != "|", "Please select atleast one feature")
     )
-    selection}, ignoreNULL = FALSE) # change to false for initial load
+    selection
+    }, ignoreNULL = FALSE) # change to false for initial load
   
   
   tree <- eventReactive(user_selection(),{
-    
-    features_to_use <- grepl(user_selection(),colnames(features))
+
+    # features <- mergedData()
+    features_to_use <- grepl(user_selection(),colnames(merged_features))
     feature_set <- unlist(strsplit(user_selection(),"\\|"))
     
     ### Clustering the data based on selected features
-    D0 <- dist(scale(features[,features_to_use]))
+    D0 <- dist(scale(merged_features[,features_to_use]))
     
     set.seed(1729)
     tree <- hclustgeo(D0,D1,alpha=0.1)
@@ -97,35 +163,29 @@ function(input, output) {
   },ignoreNULL = FALSE)
   
   clus_res <- reactive({
-    
-    
-    # c("icecream_rate","animal_rate","party_rate")
+  
     ### Subset data based on user selection of features
-    features_to_use <- grepl(user_selection(),colnames(features))
+    features_to_use <- grepl(user_selection(),colnames(merged_features))
     feature_set <- unlist(strsplit(user_selection(),"\\|"))
-    
-    # ### Clustering the data based on selected features
-    # D0 <- dist(scale(features[,features_to_use]))
-    # 
-    # list.nb <- poly2nb(reduced_tracts)
-    # A <- nb2mat(list.nb,style = "B",zero.policy = TRUE)
-    # diag(A) <- 1
-    # D1 <- as.dist(1-A)
-    # 
-    # K <- num_clus()
-    # set.seed(1729)
-    # 
-    # tree <- hclustgeo(D0,D1,alpha=0.15)
-    # clusters <- data.frame(cl=cutree(tree,K))
     
     K <- input$num_clusters
     clusters <- data.frame(cl=cutree(tree(),K))
     
+    ## cluster statistics to find optimal numbers
+    # avg_sil <- rep(NA,200)
+    # for(i in c(5:200)){
+    #   c <- cutree(tree(),i) 
+    #   avg_sil[i] <- summary(silhouette(c,D))$avg.width
+    # }
+    # cl_metric <- data.frame(k=c(1:200),avg_sil=avg_sil)
+    # cl_metric$groups <- cut(c(1:200),breaks=4)
+    # 
+    # s <- cl_metric %>% group_by(groups) %>% summarize(K=max(k),k_opt=min(k)+which.max(avg_sil)-1)
+    # 
+    
     ## generating cluster average statistics (weighted mean for rates)
-    
-    
     ## Calculating total population and number of tracts for each cluster
-    cluster_vals <- cbind(clusters,features[,feature_set],features$pop_2010)
+    cluster_vals <- cbind(clusters,merged_features[,feature_set],merged_features$pop_2010)
     colnames(cluster_vals) <- c("cl",feature_set,"pop_2010")
     cluster_pop <- cluster_vals %>% group_by(cl) %>% summarise(pop = sum(pop_2010),n = n())
     
@@ -146,12 +206,12 @@ function(input, output) {
     
     cluster_vals <- cluster_vals[,c("cl",paste0(feature_set,"_mean"))]
     
-    ## distance between clusters
+    ## distance between clusters to use for heatmap
     cluster_vals$dist <- eucd_dist(cluster_vals)
     
     ## merging with cluster results
     clusters <- left_join(clusters,cluster_vals,by="cl")
-    clusters$boro_ct201 <- as.character(features$boro_ct201)
+    clusters$boro_ct201 <- as.character(merged_features$boro_ct201)
     clusters <- left_join(data.frame(boro_ct201=census_tracts$boro_ct201,
                                      stringsAsFactors = FALSE),
                           clusters,by="boro_ct201")
@@ -166,6 +226,7 @@ function(input, output) {
     ## adding cluster data
     census_df <- as(census_tracts,"data.frame")
     newerhoods_df <- clusters %>% group_by(cl) %>% summarise_if(is.numeric,mean)
+    newerhoods_df <- as.data.frame(newerhoods_df)
     newerhoods_df <- newerhoods_df[!is.na(newerhoods_df$cl),]
     newerhoods_df$labels <-  get_labels(newerhoods_df)
     

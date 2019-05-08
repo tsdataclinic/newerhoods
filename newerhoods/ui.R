@@ -19,6 +19,7 @@ require(markdown)
 require(shinycssloaders)
 
 ### Definitions
+
 source("components.R")
 
 # UI
@@ -42,10 +43,69 @@ bootstrapPage(
         modal_plots,
         modal_feedback,
         info,
+        materialSwitch(
+          inputId = "upload",
+          label = "Upload data?",
+          value = FALSE,
+          status = "primary"
+        ),
+        conditionalPanel(
+          condition = "input.upload",
+          fileInput("file","Choose a File",
+                    multiple = FALSE,
+                    accept = c("text/csv","text/comma-separated-values",
+                               "text/plain",".csv"))
+        ),
+        
+        # Select Geographic id
+        conditionalPanel(
+          condition = "input.upload",
+          radioButtons(
+            inputId = "geo",
+            label = "Select Geographic Identifier", 
+            choices = c("Latitude & Longitude" = "lat_lon",
+                        "Borough & Census Tract" = "boro_tract",
+                        "Combined Tract ID" = "boro_ct"),
+            selected = NULL,
+            inline = FALSE)),
+        
+        # Select lat/lon columns
+        conditionalPanel(
+          condition = "input.upload && input.geo == 'lat_lon'",
+          selectInput("lat","Select Latitude column",
+                      choices = NULL, multiple = FALSE),
+          selectInput("lon","Select Longitude column",
+                      choices = NULL, multiple = FALSE)),
+        
+        # Select boto/ct columns
+        conditionalPanel(
+          condition = "input.upload && input.geo == 'boro_tract'",
+          selectInput("boro","Select Borough column",
+                      choices = NULL, multiple = FALSE),
+          selectInput("ct","Select Tract column",
+                      choices = NULL, multiple = FALSE)),
+        
+        # Select boro_ct columns
+        conditionalPanel(
+          condition = "input.upload && input.geo == 'boro_ct'",
+          selectInput("boro_ct","Select combined tract identifier",
+                      choices = NULL, multiple = FALSE)),
+        
+        # Select feature columns
+        conditionalPanel(
+          condition = "input.upload",
+          selectInput("user_columns","Select columns to aggregate",
+                      choices = NULL, multiple = TRUE)),
+        conditionalPanel(
+          condition = "input.upload",
+          actionButton("upload_done","Next",class="btn-primary")),
+        
+        tags$hr(),
         input_housing,
         input_housing_sales,
         input_crime,
         input_noise,
+        input_user_features,
         actionButton("select","Apply",class="btn-custom")
       ),
       intro_links

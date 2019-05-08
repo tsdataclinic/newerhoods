@@ -118,6 +118,13 @@ input_baseline <-
                            "School Districts (33)"="school_dists"),
               selected = "none")
 
+input_user_features <- 
+  pickerInput(inputId = 'user_features',#label=h6("311 Complaints"),
+              choices=NULL,
+              options=list(`actions-box`=TRUE,title="User Features"),
+              multiple=TRUE)
+
+
 map_control_panel <- div(
   class="flex flex-between map-control", 
   div(class="xsflex", 
