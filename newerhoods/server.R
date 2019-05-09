@@ -18,7 +18,7 @@ require(shinyjs)
 require(leaflet)
 require(htmltools)
 library(grDevices)
-
+require(raster)
 ## Spatial packages
 
 ## spatial libraries with issues in deployment
