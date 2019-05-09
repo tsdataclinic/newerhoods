@@ -46,12 +46,135 @@ modal_feedback <-
     trigger = "Feedback"
   )
 
+modal_upload <- 
+  bsModal(
+    id = "modal_upload",
+    title="Upload Data",
+    body= list(upload_file,
+      upload_geo_id,
+      upload_lat_lon,
+      upload_boro_ct,
+      upload_tract_id,
+      upload_feature,
+      upload_done),
+    size="medium",
+    trigger = "upload"
+  )
+
+
 ### Info
 info <- 
   div(class="text",
       div("Choose characteristics to draw neighborhoods.")
   ) 
 
+## Upload inputs
+
+upload_link <- actionLink(inputId = "upload",label="Upload Data")
+
+upload_switch<- materialSwitch(
+  inputId = "upload",
+  label = "Upload data?",
+  value = FALSE,
+  status = "primary"
+)
+
+upload_file <- fileInput("file","Choose a File",
+            multiple = FALSE,
+            accept = c("text/csv","text/comma-separated-values",
+                       "text/plain",".csv")
+)
+
+# Select Geographic id
+upload_geo_id <- radioButtons(
+    inputId = "geo",
+    label = "Select Geographic Identifier", 
+    choices = c("Latitude & Longitude" = "lat_lon",
+                "Borough & Census Tract" = "boro_tract",
+                "Combined Tract ID" = "boro_ct"),
+    selected = NULL,
+    inline = FALSE)
+
+# Select lat/lon columns
+upload_lat_lon <- conditionalPanel(
+  condition = "input.geo == 'lat_lon'",
+  selectInput("lat","Select Latitude column",
+              choices = NULL, multiple = FALSE),
+  selectInput("lon","Select Longitude column",
+              choices = NULL, multiple = FALSE))
+
+# Select boto/ct columns
+upload_boro_ct <- conditionalPanel(
+  condition = "input.geo == 'boro_tract'",
+  selectInput("boro","Select Borough column",
+              choices = NULL, multiple = FALSE),
+  selectInput("ct","Select Tract column",
+              choices = NULL, multiple = FALSE))
+
+# Select boro_ct columns
+upload_tract_id <- conditionalPanel(
+  condition = "input.geo == 'boro_ct'",
+  selectInput("boro_ct","Select combined tract identifier",
+              choices = NULL, multiple = FALSE))
+
+# Select feature columns
+upload_feature <- selectInput("user_columns","Select columns to aggregate",
+              choices = NULL, multiple = TRUE)
+
+upload_done <- actionButton("upload_done","Next",class="btn-primary")
+
+
+# upload_file <- conditionalPanel(
+#   condition = "input.upload",
+#   fileInput("file","Choose a File",
+#             multiple = FALSE,
+#             accept = c("text/csv","text/comma-separated-values",
+#                        "text/plain",".csv"))
+# )
+# 
+# # Select Geographic id
+# upload_geo_id <- conditionalPanel(
+#   condition = "input.upload",
+#   radioButtons(
+#     inputId = "geo",
+#     label = "Select Geographic Identifier", 
+#     choices = c("Latitude & Longitude" = "lat_lon",
+#                 "Borough & Census Tract" = "boro_tract",
+#                 "Combined Tract ID" = "boro_ct"),
+#     selected = NULL,
+#     inline = FALSE))
+# 
+# # Select lat/lon columns
+# upload_lat_lon <- conditionalPanel(
+#   condition = "input.upload && input.geo == 'lat_lon'",
+#   selectInput("lat","Select Latitude column",
+#               choices = NULL, multiple = FALSE),
+#   selectInput("lon","Select Longitude column",
+#               choices = NULL, multiple = FALSE))
+# 
+# # Select boto/ct columns
+# upload_boro_ct <- conditionalPanel(
+#   condition = "input.upload && input.geo == 'boro_tract'",
+#   selectInput("boro","Select Borough column",
+#               choices = NULL, multiple = FALSE),
+#   selectInput("ct","Select Tract column",
+#               choices = NULL, multiple = FALSE))
+# 
+# # Select boro_ct columns
+# upload_tract_id <- conditionalPanel(
+#   condition = "input.upload && input.geo == 'boro_ct'",
+#   selectInput("boro_ct","Select combined tract identifier",
+#               choices = NULL, multiple = FALSE))
+# 
+# # Select feature columns
+# upload_feature <- conditionalPanel(
+#   condition = "input.upload",
+#   selectInput("user_columns","Select columns to aggregate",
+#               choices = NULL, multiple = TRUE))
+# 
+# upload_done <- conditionalPanel(
+#   condition = "input.upload",
+#   actionButton("upload_done","Next",class="btn-primary"))
 
 ### Inputs
 input_housing <- checkboxGroupInput(
@@ -123,6 +246,27 @@ input_user_features <-
               choices=NULL,
               options=list(`actions-box`=TRUE,title="User Features"),
               multiple=TRUE)
+
+## Download dropdown
+# myDownloadButton <- function (outputId, label = "Download", class = NULL,icon=icon("download"),...) {
+#   aTag <- tags$a(id = outputId, class = paste("btn btn-default shiny-download-link", class),
+#                  href = "", target = "_blank", download = NA, icon, label, ...)
+# }
+
+download_dropdown <- dropdownButton(
+
+  downloadButton("downloadGEOJson","GeoJSON",icon=icon("file-download")),
+  br(),
+  downloadButton("downloadPNG","png"),
+  br(),
+  bookmarkButton(icon=icon("share-alt",lib="font-awesome")),
+  
+  circle = TRUE, status = "danger",
+  icon = icon("download",lib="font-awesome"), width = "300px",
+  
+  tooltip = tooltipOptions(title = "Click to see download options")
+)
+
 
 
 map_control_panel <- div(

@@ -9,6 +9,7 @@
 ## Data handling packages
 require(dplyr)
 require(readxl)
+require(broom)
 
 ## UI/UX packages
 require(shiny)
@@ -16,6 +17,7 @@ require(shinyWidgets)
 require(shinyjs)
 require(leaflet)
 require(htmltools)
+library(grDevices)
 
 ## Spatial packages
 
@@ -30,8 +32,7 @@ require(maptools)
 require(sp)
 require(spdep)
 library(mapview)
-
-
+require(ggmap)
 
 ## clustering
 require(cluster)
@@ -67,7 +68,7 @@ function(input, output, session) {
     # merged_features <<- features
     raw_user_df
   })
-
+  
   ## updating columns to select from
   observe({
     req(input$file)
@@ -79,8 +80,9 @@ function(input, output, session) {
     updateSelectInput(session, "boro_ct", choices= col_names)
     updateSelectInput(session, "user_columns", choices= col_names)
   })
-
+  
   user_data <- observeEvent(input$upload_done,{
+    toggleModal(session,modalId = "modal_upload",toggle="close")
     if(input$geo == 'lat_lon'){
       ## convert points to rates fatures
       user_df <- point_data_to_feature_columns(raw_user_data(),lat=input$lat,lon=input$lon,cols=input$user_columns)
@@ -105,16 +107,16 @@ function(input, output, session) {
       user_df <- as.data.frame(user_df)
       colnames(user_df) <- c("boro_ct201",paste0("USER_",input$user_columns))
     }
-
+    
     generated_feature_names <- gsub("USER_","",colnames(user_df))
     generated_feature_names <- generated_feature_names[generated_feature_names != "boro_ct201"]
     updateSelectInput(session, "user_features", choices= generated_feature_names)
     merged_features <<- left_join(features,user_df,by="boro_ct201")
-
+    
     return(user_df)
   })
-
-
+  
+  
   user_selection <- eventReactive(input$select,{
     selection <- c(input$crime_features,input$housing,input$call_features)
     if("sale_price" %in% selection){
@@ -129,28 +131,28 @@ function(input, output, session) {
       selection <- paste0(c(selection,user_feature_selection),collapse = "|")  
       selection <- gsub("^\\|","",selection)
     }
-
+    
     validate(
       need(selection != "", "Please select at least one feature.")
     )
     selection
-    }, ignoreNULL = FALSE) # change to false for initial load
-
-
+  }, ignoreNULL = FALSE) # change to false for initial load
+  
+  
   tree <- eventReactive(user_selection(),{
-
+    
     features_to_use <- grepl(user_selection(),colnames(merged_features))
     feature_set <- unlist(strsplit(user_selection(),"\\|"))
-
+    
     ### Clustering the data based on selected features
     D0 <- dist(scale(merged_features[,features_to_use]))
     
     set.seed(1729)
     tree <- hclustgeo(D0,D1,alpha=0.1)
-
+    
     return(tree)
   },ignoreNULL = FALSE)
-
+  
   clus_res <- reactive({
     ### Subset data based on user selection of features
     features_to_use <- grepl(user_selection(),colnames(merged_features))
@@ -176,53 +178,53 @@ function(input, output, session) {
     cluster_vals <- cbind(clusters,merged_features[,feature_set],merged_features$pop_2010)
     colnames(cluster_vals) <- c("cl",feature_set,"pop_2010")
     cluster_pop <- cluster_vals %>% group_by(cl) %>% summarise(pop = sum(pop_2010),n = n())
-
+    
     ## Going from rates back to total cases to make cluster aggregation easier
     if(sum(grepl("rate",feature_set)) > 0){
       cluster_vals[,grepl("rate",colnames(cluster_vals))] <- cluster_vals[,grepl("rate",colnames(cluster_vals))]*cluster_vals$pop_2010/1000
     }
-
+    
     ## Summarising over each cluster and calculating mean statistics
     cluster_vals <- cluster_vals %>% group_by(cl) %>% summarise_if(is.numeric,mean)
     colnames(cluster_vals) <- c("cl",paste0(c(feature_set,"pop"),"_mean"))
     cluster_vals <- left_join(cluster_vals,cluster_pop,by="cl")
-
+    
     ## for rate variables, dividing over the cluster population to get an overall average
     if(sum(grepl("rate",feature_set)) > 0){
       cluster_vals[,grepl("rate",colnames(cluster_vals))] <- cluster_vals[,grepl("rate",colnames(cluster_vals))]*cluster_vals$n*1000/cluster_vals$pop
     }
-
+    
     cluster_vals <- cluster_vals[,c("cl",paste0(feature_set,"_mean"))]
     
     ## distance between clusters to use for heatmap
     cluster_vals$dist <- eucd_dist(cluster_vals)
-
+    
     ## merging with cluster results
     clusters <- left_join(clusters,cluster_vals,by="cl")
     clusters$boro_ct201 <- as.character(merged_features$boro_ct201)
     clusters <- left_join(data.frame(boro_ct201=census_tracts$boro_ct201,
                                      stringsAsFactors = FALSE),
                           clusters,by="boro_ct201")
-
+    
     ## adding to census tracts to merge polygons
     census_tracts@data$cl <- clusters$cl
     census_tracts <- census_tracts[order(census_tracts$boro_ct201),]
-
+    
     ## merged polygon
     newerhoods <- unionSpatialPolygons(census_tracts,census_tracts$cl)
-
+    
     ## adding cluster data
     census_df <- as(census_tracts,"data.frame")
     newerhoods_df <- clusters %>% group_by(cl) %>% summarise_if(is.numeric,mean)
     newerhoods_df <- as.data.frame(newerhoods_df)
     newerhoods_df <- newerhoods_df[!is.na(newerhoods_df$cl),]
     newerhoods_df$labels <-  get_labels(newerhoods_df)
-
+    
     newerhoods <- SpatialPolygonsDataFrame(newerhoods,newerhoods_df)
-
+    
     return(newerhoods)
   }) %>% debounce(10)
-
+  
   ## Add the ability to download the results as GeoJSON
   output$downloadGEOJson<- downloadHandler(
     filename = function() {
@@ -240,7 +242,21 @@ function(input, output, session) {
       paste("clusters",".png",sep="")
     },
     content = function(file){
-      mapshot(map_reactive(), file=file)
+      nh <- clus_res()
+      bbox <- nh@bbox
+      map_dl <- get_stamenmap(bbox = c(left=bbox[1,1], bottom=bbox[2,1],
+                                       right=bbox[1,2],top=bbox[2,2]),
+                              maptype = "toner-lite", source = "stamen", zoom = 11)
+      
+      tt <- tidy(nh,region = "cl")
+      tt <- as.data.frame(tt, stringsAsFactors = FALSE)
+      
+      p <- ggmap(map_dl) + 
+        geom_polygon(data = fortify(tt),
+                     aes(long, lat, group = group, fill=id),
+                     colour = "white", alpha = 0.6) + 
+        theme(legend.position="none") 
+      ggsave(file, plot = p, device = "png")
     }
   )
   
@@ -270,46 +286,46 @@ function(input, output, session) {
                           na.color = "#A9A9A9A9")
       newerhoods$colour <- pal(newerhoods$cl%%length(map_cols))
     }
-
+    
     return(newerhoods)
   })
-
+  
   ##### Interactive Map #####
   map_reactive <- reactive({
-      leaflet() %>%
-        setView(-73.885,40.71,11) %>%
-        addProviderTiles("MapBox", options = providerTileOptions(
-          id= "mapbox.light",
-          accessToken = Sys.getenv('MAPBOX_ACCESS_TOKEN'))
-        ) %>%
-        addPolygons(data=newerhoods(),
-                    fillColor = newerhoods()$colour,
-                    stroke = TRUE,
-                    weight = 1,
-                    opacity = 0.5,
-                    color = "lightgrey",
+    leaflet() %>%
+      setView(-73.885,40.71,11) %>%
+      addProviderTiles("MapBox", options = providerTileOptions(
+        id= "mapbox.light",
+        accessToken = Sys.getenv('MAPBOX_ACCESS_TOKEN'))
+      ) %>%
+      addPolygons(data=newerhoods(),
+                  fillColor = newerhoods()$colour,
+                  stroke = TRUE,
+                  weight = 1,
+                  opacity = 0.5,
+                  color = "lightgrey",
+                  fillOpacity = 0.6,
+                  ## highights
+                  highlight = highlightOptions(
+                    weight = 4,
+                    color = ifelse(input$enable_heatmap == FALSE,"orange","green"),
+                    opacity = 0.8,
                     fillOpacity = 0.6,
-                    ## highights
-                    highlight = highlightOptions(
-                      weight = 4,
-                      color = ifelse(input$enable_heatmap == FALSE,"orange","green"),
-                      opacity = 0.8,
-                      fillOpacity = 0.6,
-                      bringToFront = F),
-                    ## labels
-                    label = newerhoods()$labels %>% lapply(HTML),
-                    labelOptions = labelOptions(
-                      style = list("font-weight"="normal",
-                                   padding = "3px 8px"),
-                      textsize = "15px",
-                      direction = "auto")
-                    )
+                    bringToFront = F),
+                  ## labels
+                  label = newerhoods()$labels %>% lapply(HTML),
+                  labelOptions = labelOptions(
+                    style = list("font-weight"="normal",
+                                 padding = "3px 8px"),
+                    textsize = "15px",
+                    direction = "auto")
+      )
   })
-
+  
   output$map <-renderLeaflet({
     map_reactive()  
   })
-
+  
   ## To do: Simplify this. Feels like too many observes
   ## Adding Heatmap Legend
   ## function to add legend to plot
@@ -327,11 +343,11 @@ function(input, output, session) {
     }else{
       proxy %>% clearControls()}
   }
-
+  
   observe({add_legend(input$enable_heatmap)})
   observeEvent(clus_res(),{add_legend(input$enable_heatmap)})
-
-
+  
+  
   ### Baseline Map
   baselines <- c("cds","ntas","pumas","precincts","school_dists")
   add_baselines <- function(){
@@ -351,14 +367,14 @@ function(input, output, session) {
       }
     }
   }
-
+  
   observeEvent({input$enable_heatmap},{add_baselines()})
   observeEvent({clus_res()},{add_baselines()})
-
+  
   observeEvent(input$baseline,{
     if(input$baseline != "none"){
       baseline_map <- get(input$baseline)
-
+      
       proxy <- leafletProxy("map")
       proxy %>% hideGroup(baselines)
       proxy %>% showGroup(input$baseline)
