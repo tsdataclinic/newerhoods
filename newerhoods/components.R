@@ -46,21 +46,6 @@ modal_feedback <-
     trigger = "Feedback"
   )
 
-modal_upload <- 
-  bsModal(
-    id = "modal_upload",
-    title="Upload Data",
-    body= list(upload_file,
-      upload_geo_id,
-      upload_lat_lon,
-      upload_boro_ct,
-      upload_tract_id,
-      upload_feature,
-      upload_done),
-    size="medium",
-    trigger = "upload"
-  )
-
 
 ### Info
 info <- 
@@ -121,7 +106,7 @@ upload_tract_id <- conditionalPanel(
 upload_feature <- selectInput("user_columns","Select columns to aggregate",
               choices = NULL, multiple = TRUE)
 
-upload_done <- actionButton("upload_done","Next",class="btn-primary")
+upload_done <- actionButton("upload_done","Done",class="btn-primary")
 
 
 # upload_file <- conditionalPanel(
@@ -175,6 +160,21 @@ upload_done <- actionButton("upload_done","Next",class="btn-primary")
 # upload_done <- conditionalPanel(
 #   condition = "input.upload",
 #   actionButton("upload_done","Next",class="btn-primary"))
+
+modal_upload <- 
+  bsModal(
+    id = "modal_upload",
+    title="Upload Data",
+    body= list(upload_file,
+               upload_geo_id,
+               upload_lat_lon,
+               upload_boro_ct,
+               upload_tract_id,
+               upload_feature,
+               upload_done),
+    size="medium",
+    trigger = "upload"
+  )
 
 ### Inputs
 input_housing <- checkboxGroupInput(

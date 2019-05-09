@@ -42,6 +42,9 @@ require(ClustGeo)
 source("settings_local.R")
 source("support_functions.R")
 
+##
+options(shiny.maxRequestSize=50*1024^2)
+
 ## function to validate input
 validate_selection <- function(a,b,c){
   if(a == "" & b == "" & c == ""){
@@ -82,7 +85,8 @@ function(input, output, session) {
   })
   
   user_data <- observeEvent(input$upload_done,{
-    toggleModal(session,modalId = "modal_upload",toggle="close")
+    # toggleModal(session,modalId = "modal_upload",toggle="close")
+    # removeModal(session,modalId = "modal_upload")
     if(input$geo == 'lat_lon'){
       ## convert points to rates fatures
       user_df <- point_data_to_feature_columns(raw_user_data(),lat=input$lat,lon=input$lon,cols=input$user_columns)
