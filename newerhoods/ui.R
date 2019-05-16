@@ -42,6 +42,7 @@ ui <- function(req) {
           modal_credits,
           modal_plots,
           modal_feedback,
+          modal_example,
           modal_upload,
           info,
           # upload_switch,
