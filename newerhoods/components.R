@@ -267,7 +267,7 @@ download_dropdown <- dropdownButton(
   br(),
   downloadButton("downloadPNG","png"),
   br(),
-  bookmarkButton(icon=icon("share-alt",lib="font-awesome")),
+  bookmarkButton(label="Share",icon=icon("share-alt",lib="font-awesome"),id="share"),
   
   circle = TRUE, status = "danger",
   icon = icon("download",lib="font-awesome"), width = "300px",

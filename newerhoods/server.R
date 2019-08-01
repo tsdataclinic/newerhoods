@@ -42,7 +42,7 @@ require(ClustGeo)
 source("settings_local.R")
 source("support_functions.R")
 
-##
+## General settings
 options(shiny.maxRequestSize=50*1024^2)
 
 ## function to validate input
@@ -65,6 +65,13 @@ merged_features <- features
 
 ## Server
 function(input, output, session) {
+  
+  # Need to exclude the buttons from themselves being bookmarked
+  # setBookmarkExclude("share")
+  observeEvent(input$share, {
+    session$doBookmark()
+  })
+  
   raw_user_data <- reactive({
     req(input$file)
     raw_user_df <- read.csv(input$file$datapath)

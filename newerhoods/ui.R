@@ -22,7 +22,7 @@ require(shinycssloaders)
 source("components.R")
 
 # UI
-ui <- function(req) {
+ui <- function(request) {
   bootstrapPage(
     theme = "custom.css",
     title = "NewerHoods",
