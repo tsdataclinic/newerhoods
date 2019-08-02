@@ -1,1 +1,1 @@
-enableBookmarking(store="server")
+enableBookmarking(store="url")

@@ -20,6 +20,7 @@ require(shinycssloaders)
 
 ### Definitions
 source("components.R")
+source("global.R")
 
 # UI
 ui <- function(request) {

@@ -41,6 +41,7 @@ require(ClustGeo)
 
 source("settings_local.R")
 source("support_functions.R")
+source("global.R")
 
 ## General settings
 options(shiny.maxRequestSize=50*1024^2)
@@ -67,7 +68,9 @@ merged_features <- features
 function(input, output, session) {
   
   # Need to exclude the buttons from themselves being bookmarked
-  # setBookmarkExclude("share")
+  bookmark_excluded_inputs <- c("upload","geo","lat","lon","boro","ct","boro_ct",
+                                "user_columns","user_features","share")
+  setBookmarkExclude(names=bookmark_excluded_inputs,session=session)
   observeEvent(input$share, {
     session$doBookmark()
   })
