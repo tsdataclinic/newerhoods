@@ -41,10 +41,10 @@ require(ClustGeo)
 
 source("settings_local.R")
 source("support_functions.R")
-source("global.R")
 
 ## General settings
 options(shiny.maxRequestSize=50*1024^2)
+# enableBookmarking(store="url")
 
 ## function to validate input
 validate_selection <- function(a,b,c){
@@ -67,13 +67,23 @@ merged_features <- features
 ## Server
 function(input, output, session) {
   
-  # Need to exclude the buttons from themselves being bookmarked
-  bookmark_excluded_inputs <- c("upload","geo","lat","lon","boro","ct","boro_ct",
-                                "user_columns","user_features","share")
-  setBookmarkExclude(names=bookmark_excluded_inputs,session=session)
-  observeEvent(input$share, {
-    session$doBookmark()
-  })
+  # bookmark_excluded_inputs <- c("upload","geo","lat","lon","boro","ct","boro_ct",
+  #                               "user_columns","user_features","share")
+  # setBookmarkExclude(names=bookmark_excluded_inputs,session=session)
+  # observeEvent(input$share, {
+  #   session$doBookmark()
+  # })
+  
+  # onRestore(function(state) {
+  #   input_clusters <- state$input$num_clusters
+  #   input_enable_heatmap <- state$input$enable_heatmap
+  #   input_baseline <- state$input$baseline
+  # 
+  #   updateSliderInput(session, "num_clusters", value = input_clusters)
+  #   updateMaterialSwitch(session, "enable_heatmap", value = input_enable_heatmap)
+  #   updateSelectInput(session, "baseline", selected = input_baseline)
+  # 
+  # })
   
   raw_user_data <- reactive({
     req(input$file)

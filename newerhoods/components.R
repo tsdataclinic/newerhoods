@@ -73,20 +73,20 @@ upload_switch<- materialSwitch(
 )
 
 upload_file <- fileInput("file","Choose a File",
-            multiple = FALSE,
-            accept = c("text/csv","text/comma-separated-values",
-                       "text/plain",".csv")
+                         multiple = FALSE,
+                         accept = c("text/csv","text/comma-separated-values",
+                                    "text/plain",".csv")
 )
 
 # Select Geographic id
 upload_geo_id <- radioButtons(
-    inputId = "geo",
-    label = "Select Geographic Identifier", 
-    choices = c("Latitude & Longitude" = "lat_lon",
-                "Borough & Census Tract" = "boro_tract",
-                "Combined Tract ID" = "boro_ct"),
-    selected = NULL,
-    inline = FALSE)
+  inputId = "geo",
+  label = "Select Geographic Identifier", 
+  choices = c("Latitude & Longitude" = "lat_lon",
+              "Borough & Census Tract" = "boro_tract",
+              "Combined Tract ID" = "boro_ct"),
+  selected = NULL,
+  inline = FALSE)
 
 # Select lat/lon columns
 upload_lat_lon <- conditionalPanel(
@@ -112,7 +112,7 @@ upload_tract_id <- conditionalPanel(
 
 # Select feature columns
 upload_feature <- selectInput("user_columns","Select columns to aggregate",
-              choices = NULL, multiple = TRUE)
+                              choices = NULL, multiple = TRUE)
 
 upload_done <- actionButton("upload_done","Done",class="btn-primary")
 
@@ -185,22 +185,27 @@ modal_upload <-
   )
 
 ### Inputs
-input_housing <- checkboxGroupInput(
-  inputId = 'housing',label="HOUSING",
-  choices=c("Age of buildings"="bldg_age","Median sale price"="sale_price"),
-  selected = "bldg_age"
-)
-
-input_housing_sales <- conditionalPanel(condition="input.housing.includes('sale_price')",
-                                        radioButtons(
-                                          inputId = 'sales_features',label="",
-                                          choices=c("1y average"="med_price_1y|sd_price_1y",
-                                                    "3y average"="med_price_3y|sd_price_3y",
-                                                    "5y average"="med_price_5y|sd_price_5y"
-                                          ),selected = NULL))
+input_housing <- function(){
+  checkboxGroupInput(
+    inputId = 'housing',label="HOUSING",
+    choices=c("Age of buildings"="bldg_age","Median sale price"="sale_price"),
+    selected = "bldg_age"
+  )
+}
 
 
-input_crime <- 
+input_housing_sales <- function(){
+  conditionalPanel(condition="input.housing.includes('sale_price')",
+                   radioButtons(
+                     inputId = 'sales_features',label="",
+                     choices=c("1y average"="med_price_1y|sd_price_1y",
+                               "3y average"="med_price_3y|sd_price_3y",
+                               "5y average"="med_price_5y|sd_price_5y"
+                     ),selected = NULL))
+}
+
+
+input_crime <- function(){
   checkboxGroupInput(
     inputId = 'crime_features', label="CRIME",
     c("Violations"="violation_rate",
@@ -208,8 +213,9 @@ input_crime <-
       "Misdemeanors"="misdemeanor_rate"
     )
   )
+}
 
-input_noise <- 
+input_noise <- function(){
   checkboxGroupInput(
     inputId = 'call_features',label="311 COMPLAINTS",
     c("Ice cream truck"="icecream_rate",
@@ -217,17 +223,21 @@ input_noise <-
       "Loud music/party"="party_rate"
     )
   )
+}
 
-input_clusters <-
+input_clusters <- function(){
   sliderInput("num_clusters",
               label="Number of neighborhoods",
               ticks = FALSE,
               min = 5,
               max = 200,
               value = 100)
+}
 
-input_enable_heatmap <- 
+input_enable_heatmap <- function(){
   materialSwitch(inputId = "enable_heatmap", label = "Cluster map", status = "info")
+}
+
 
 # info_plot_type <- shiny_iconlink() %>%
 #   bs_attach_modal(id_modal = "modal_plots")
@@ -239,7 +249,7 @@ info_plot_type <- shiny_iconlink() %>%
                           chosen characteristics.",
                    placement = "top")
 
-input_baseline <- 
+input_baseline <- function(){
   selectInput('baseline',label='Compare against',
               choices=list("None"="none",
                            "Community Districts (59)"="cds",
@@ -248,6 +258,7 @@ input_baseline <-
                            "Police Precincts (77)"="precincts",
                            "School Districts (33)"="school_dists"),
               selected = "none")
+}
 
 input_user_features <- 
   pickerInput(inputId = 'user_features',#label=h6("311 Complaints"),
@@ -262,12 +273,11 @@ input_user_features <-
 # }
 
 download_dropdown <- dropdownButton(
-
   downloadButton("downloadGEOJson","GeoJSON",icon=icon("file-download")),
   br(),
   downloadButton("downloadPNG","png"),
   br(),
-  bookmarkButton(label="Share",icon=icon("share-alt",lib="font-awesome"),id="share"),
+  bookmarkButton(label="Share",icon=icon("share-alt",lib="font-awesome")),
   
   circle = TRUE, status = "danger",
   icon = icon("download",lib="font-awesome"), width = "300px",
@@ -277,19 +287,21 @@ download_dropdown <- dropdownButton(
 
 
 
-map_control_panel <- div(
+
+map_control_panel <- function(){div(
   class="flex flex-between map-control", 
   div(class="xsflex", 
-      input_clusters,
-      input_baseline
+      input_clusters(),
+      input_baseline()
   ),
   div(
     class="flex flex-end auto heatmap-group", 
-    input_enable_heatmap,
+    input_enable_heatmap(),
     div(class="heat-map-label", "Heat map"),
     info_plot_type
   )
 )
+}
 
 help_link <- actionLink(inputId = "Help",label="Help")
 feedback_link <- actionLink(inputId = 'Feedback',label="Feedback")
