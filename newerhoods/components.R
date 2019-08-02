@@ -266,23 +266,24 @@ input_user_features <-
               options=list(`actions-box`=TRUE,title="User Features"),
               multiple=TRUE)
 
-## Download dropdown
-# myDownloadButton <- function (outputId, label = "Download", class = NULL,icon=icon("download"),...) {
-#   aTag <- tags$a(id = outputId, class = paste("btn btn-default shiny-download-link", class),
-#                  href = "", target = "_blank", download = NA, icon, label, ...)
-# }
+myDownloadButton <- function(id,label, icon, title="", ...){
+  actionButton(id, label, icon, title = title, ...)
+}
 
 download_dropdown <- dropdownButton(
-  downloadButton("downloadGEOJson","GeoJSON",icon=icon("file-download")),
+  myDownloadButton(id = "downloadGEOJson",label="GeoJSON",
+                   icon=icon("file-download",lib="font-awesome"),class="btn-download"),
   br(),
-  downloadButton("downloadPNG","png"),
+  myDownloadButton(id ="downloadPNG",label="png",
+                   icon=icon("file-image",lib="font-awesome"),class="btn-download"),
   br(),
-  bookmarkButton(label="Share",icon=icon("share-alt",lib="font-awesome")),
+  bookmarkButton(label="Share",icon=icon("link",lib="font-awesome"),class="btn-download"),
   
-  circle = TRUE, status = "danger",
-  icon = icon("download",lib="font-awesome"), width = "300px",
+  circle = TRUE, status = "danger",size="sm",
+  icon = icon("download",lib="font-awesome"), width = "150px",
   
-  tooltip = tooltipOptions(title = "Click to see download options")
+  tooltip = tooltipOptions(title = "Click to see download options",
+                           placement="top")
 )
 
 
