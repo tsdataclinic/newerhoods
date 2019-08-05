@@ -103,6 +103,7 @@ function(input, output, session) {
   })
   
   outputOptions(output, "nrows", suspendWhenHidden = FALSE)
+  
   ## updating columns to select from
   observe({
     req(input$file)
@@ -187,9 +188,11 @@ function(input, output, session) {
     
     generated_feature_names <- gsub("USER_","",colnames(user_df))
     generated_feature_names <- generated_feature_names[generated_feature_names != "boro_ct201"]
-    # generated_feature_names <- 
+    pretty_names <- get_pretty_names(generated_feature_names,type="checkbox")
+    
     # updateSelectInput(session, "user_features", choices= generated_feature_names)
-    updateCheckboxGroupInput(session, "user_features", choices= generated_feature_names)
+    updateCheckboxGroupInput(session, "user_features", choiceValues=generated_feature_names,
+                             choiceNames = pretty_names)
     merged_features <<- left_join(features,user_df,by="boro_ct201")
     
     return(user_df)
@@ -338,8 +341,7 @@ function(input, output, session) {
   )
   
   newerhoods <- reactive({
-    
-    
+  
     enable_heatmap <- input$enable_heatmap
     
     newerhoods <- clus_res()

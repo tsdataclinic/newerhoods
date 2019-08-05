@@ -302,7 +302,7 @@ input_baseline <- function(){
 #               multiple=TRUE))
 
 input_user_features <- conditionalPanel(condition = "output.nrows",
-                        checkboxGroupInput(inputId = 'user_features',label="USER Features",
+                        checkboxGroupInput(inputId = 'user_features',label="GENERATED FEATURES",
                                     choices=NULL))
 
 
