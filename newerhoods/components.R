@@ -75,8 +75,10 @@ upload_link <- actionButton("upload","Upload your data",icon=icon("upload",lib="
 
 upload_file <- fileInput("file","Choose a File",
                          multiple = FALSE,
-                         accept = c("text/csv","text/comma-separated-values",
-                                    "text/plain",".csv")
+                         accept = c(
+                           "text/csv","text/comma-separated-values,text/plain",
+                           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                           ".csv",".xlsx",".xls")
 )
 
 # Select Geographic id

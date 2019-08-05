@@ -88,7 +88,12 @@ function(input, output, session) {
   
   raw_user_data <- reactive({
     req(input$file)
-    raw_user_df <- read.csv(input$file$datapath)
+    if(tolower(tools::file_ext(input$file$datapath)) %in% c("csv", "txt")){
+      raw_user_df <- read.csv(input$file$datapath)  
+    }else if(tolower(tools::file_ext(input$file$datapath)) %in% c("xls","xlsx")){
+      raw_user_df <- read_excel(input$file$datapath)
+      raw_user_df <- as.data.frame(raw_user_df)
+    }
     # merged_features <<- features
     raw_user_df
   })
@@ -135,7 +140,6 @@ function(input, output, session) {
       
     }else if(input$geo == "boro_ct"){
       boro_ct_match <- common_matches[11:12]
-      print(boro_ct_match)
       boro_ct_match <- boro_ct_match[!is.na(boro_ct_match)]
       updateSelectInput(session, "boro_ct", selected = ifelse(length(boro_ct_match) ==1,col_names[boro_ct_match],character(0)))
     }
@@ -168,7 +172,6 @@ function(input, output, session) {
       user_df <- user_df %>% group_by(boro_ct201) %>% 
         dplyr::select(input$user_columns) %>%
         summarise_all(funs(mean))
-      print(head(user_df))
       user_df <- as.data.frame(user_df)
       colnames(user_df) <- c("boro_ct201",paste0("USER_",input$user_columns))
     }else{
@@ -304,11 +307,9 @@ function(input, output, session) {
   ## Add the ability to download the results as GeoJSON
   output$downloadGEOJson<- downloadHandler(
     filename = function() {
-      print("test")
       paste("clusters",".geojson",sep="")
     },
     content = function(file){
-      print("test")
       write(as.geojson(clus_res()), file )
     }
   )
