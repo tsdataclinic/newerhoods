@@ -37,7 +37,7 @@ points_to_feature <- function(df,col1,col2,colname){
 }
 
 
-point_data_to_feature_columns <- function(df,lat,lon,cols){
+point_data_to_feature_columns <- function(df,lat,lon,cols=NULL){
   ## function to take a data frame with lat and lon columns and convert to features
   ## of rates based on population and area using counts and sum of selected columns
   ## also included the median value for each tracts of the column(s) selected 
@@ -49,7 +49,7 @@ point_data_to_feature_columns <- function(df,lat,lon,cols){
   df <- df[!is.na(df$latitude) | !is.na(df$longitude),]
   coordinates(df) <- ~ longitude + latitude
   
-  print(getwd())
+  # print(getwd())
   load("clean_data/census_tracts.RData")
   proj4string(df) <- proj4string(census_tracts)
   
@@ -68,21 +68,30 @@ point_data_to_feature_columns <- function(df,lat,lon,cols){
   
   ## merging observations with tracts
   res <- over(df, census_tracts)
-  cols_to_merge <- as.data.frame(df[,cols])
-  res <- cbind(res$boro_ct201,cols_to_merge)
-  res <- res[,!(colnames(res) %in% c("latitude","longitude"))]
-  colnames(res) <- c("boro_ct201",cols)
+
+  if(!is.null(cols)){
+    cols_to_merge <- as.data.frame(df[,cols])
+    res <- cbind(res$boro_ct201,cols_to_merge)
+    colnames(res) <- c("boro_ct201",cols,c("latitude","longitude"))
+  }
   
+  res <- res[,!(colnames(res) %in% c("latitude","longitude"))]
   res_count <- res %>% group_by(boro_ct201) %>% 
     summarise(count=n())
   
-  res_aggs <- res %>% group_by(boro_ct201) %>% 
-    summarise_all(funs(sum=sum,median=median)) %>% 
-    left_join(res_count,by="boro_ct201") 
-
-  res_aggs <- as.data.frame(res_aggs)
-  colnames(res_aggs) <- c("boro_ct201",paste0(cols,rep(c("_sum","_median"),each=length(cols))),"count")
+  if(!is.null(cols)){
+    colnames(res) <- c("boro_ct201",cols)  
     
+    res_aggs <- res %>% group_by(boro_ct201) %>% 
+      summarise_all(funs(sum=sum,median=median)) %>% 
+      left_join(res_count,by="boro_ct201") 
+    
+    res_aggs <- as.data.frame(res_aggs)
+    colnames(res_aggs) <- c("boro_ct201",paste0(cols,rep(c("_sum","_median"),each=length(cols))),"count")
+  }else{
+    res_aggs <- as.data.frame(res_count)
+  }
+  
   df_rates <- merge(census_pop,res_aggs,by="boro_ct201",all.x=TRUE)
   df_rates <- merge(df_rates,tract_area,by="boro_ct201",all.x=TRUE)
   df_rates <- df_rates[df_rates$pop_2010 >= 500,]
@@ -92,14 +101,16 @@ point_data_to_feature_columns <- function(df,lat,lon,cols){
   
   # df_rates <- as.data.frame(table(res$boro_ct201),stringsAsFactors = FALSE)
   # colnames(df_rates) <- c("boro_ct201","count")
-  # 
+  
   sum_cols <- colnames(df_rates)[grepl("_sum$",colnames(df_rates))]
   df_rates$rate_by_pop <- df_rates$count*1000/df_rates$pop_2010 ## rate per 1000 people
   df_rates$rate_by_area <- df_rates$count*1000000/(2.59*df_rates$tract_area) ## rate per sq. mile
   
-  for(i in c(1:length(sum_cols))){
-    df_rates[,gsub("_sum$","_rate_by_pop",sum_cols[i])] <- df_rates[,sum_cols[i]]*1000/df_rates$pop_2010 
-    df_rates[, gsub("_sum$","_rate_by_area",sum_cols[i])] <- df_rates[,sum_cols[i]]*1000000/(2.59*df_rates$tract_area) ## rate per sq. mile
+  if(length(sum_cols) > 0){
+    for(i in c(1:length(sum_cols))){
+      df_rates[,gsub("_sum$","_rate_by_pop",sum_cols[i])] <- df_rates[,sum_cols[i]]*1000/df_rates$pop_2010 
+      df_rates[, gsub("_sum$","_rate_by_area",sum_cols[i])] <- df_rates[,sum_cols[i]]*1000000/(2.59*df_rates$tract_area) ## rate per sq. mile
+    }  
   }
   
   df_rates <- df_rates[,!grepl("_sum$|pop_2010$|tract_area",colnames(df_rates))]
