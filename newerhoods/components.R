@@ -92,17 +92,17 @@ upload_geo_id <- radioButtons(
 # Select lat/lon columns
 upload_lat_lon <- conditionalPanel(
   condition = "input.geo == 'lat_lon'",
-  selectInput("lat","Select Latitude column",
+  selectInput("lat","Select latitude column",
               choices = NULL, multiple = FALSE),
-  selectInput("lon","Select Longitude column",
+  selectInput("lon","Select longitude column",
               choices = NULL, multiple = FALSE))
 
 # Select boto/ct columns
 upload_boro_ct <- conditionalPanel(
   condition = "input.geo == 'boro_tract'",
-  selectInput("boro","Select Borough column",
+  selectInput("boro","Select borough column",
               choices = NULL, multiple = FALSE),
-  selectInput("ct","Select Tract column",
+  selectInput("ct","Select tract column",
               choices = NULL, multiple = FALSE))
 
 # Select boro_ct columns

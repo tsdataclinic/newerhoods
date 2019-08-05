@@ -102,13 +102,56 @@ function(input, output, session) {
   observe({
     req(input$file)
     col_names <- colnames(raw_user_data())
-    updateSelectInput(session, "lat", choices= col_names)
-    updateSelectInput(session, "lon", choices= col_names)
-    updateSelectInput(session, "boro", choices= col_names)
-    updateSelectInput(session, "ct", choices= col_names)
-    updateSelectInput(session, "boro_ct", choices= col_names)
-    updateSelectInput(session, "user_columns", choices= col_names)
+    
+    common_geo_col_names <- c("lat","latitude","lon","longitude",
+                              "boro","borough","boro_code","ct","ct2010","tract",
+                              "boro_ct2010","boro_ct201")
+    common_matches <- match(common_geo_col_names,col_names)
+    
+    updateSelectInput(session, "lat", choices= col_names,selected = NULL)
+    updateSelectInput(session, "lon", choices= col_names,selected = NULL)
+    updateSelectInput(session, "boro", choices= col_names,selected = NULL)
+    updateSelectInput(session, "ct", choices= col_names,selected = NULL)
+    updateSelectInput(session, "boro_ct", choices= col_names,selected = NULL)
+    updateSelectInput(session, "user_columns", choices= col_names,selected = NULL)
+    
+    if(input$geo == "lat_lon"){
+      lat_match <- common_matches[1:2]
+      lat_match <- lat_match[!is.na(lat_match)]
+      updateSelectInput(session, "lat", selected = ifelse(length(lat_match) ==1,col_names[lat_match],character(0)))
+      
+      lon_match <- common_matches[3:4]
+      lon_match <- lon_match[!is.na(lon_match)]
+      updateSelectInput(session, "lon", selected = ifelse(length(lon_match) ==1,col_names[lon_match],character(0)))
+      
+    }else if(input$geo == "boro_tract"){
+      boro_match <- common_matches[5:7]
+      boro_match <- boro_match[!is.na(boro_match)]
+      updateSelectInput(session, "boro", selected = ifelse(length(boro_match) ==1,col_names[boro_match],character(0)))
+      
+      tract_match <- common_matches[8:10]
+      tract_match <- tract_match[!is.na(tract_match)]
+      updateSelectInput(session, "ct", selected = ifelse(length(tract_match) ==1,col_names[tract_match],character(0)))
+      
+    }else if(input$geo == "boro_ct"){
+      boro_ct_match <- common_matches[11:12]
+      print(boro_ct_match)
+      boro_ct_match <- boro_ct_match[!is.na(boro_ct_match)]
+      updateSelectInput(session, "boro_ct", selected = ifelse(length(boro_ct_match) ==1,col_names[boro_ct_match],character(0)))
+    }
   })
+  
+  observeEvent({input$lat 
+    input$lon 
+    input$boro 
+    input$ct
+    input$boro_ct},{
+      col_names <- colnames(raw_user_data())
+      geo_cols <- c(input$lat, input$lon, input$boro, input$ct, input$boro_ct)
+      geo_cols <- geo_cols[!is.na(geo_cols)]
+      feature_cols <- col_names[!(col_names %in% geo_cols)]
+      updateSelectInput(session, "user_columns", choices= feature_cols)
+    })
   
   user_data <- observeEvent(input$upload_done,{
     # toggleModal(session,modalId = "modal_upload",toggle="close")
@@ -121,10 +164,11 @@ function(input, output, session) {
     }else if(input$geo == 'boro_tract'){
       ## reformat the boro and tract columns and combine for merging
       user_df <- raw_user_data()
-      user_df$boro_ct201 <- paste0(user_df[,input$boro],str_pad(user_df[,input$ct],6,side="right",pad="0"))
+      user_df$boro_ct201 <- paste0(user_df[,input$boro],str_pad(user_df[,input$ct],6,side="left",pad="0"))
       user_df <- user_df %>% group_by(boro_ct201) %>% 
-        dplyr::select(input$user_features) %>%
+        dplyr::select(input$user_columns) %>%
         summarise_all(funs(mean))
+      print(head(user_df))
       user_df <- as.data.frame(user_df)
       colnames(user_df) <- c("boro_ct201",paste0("USER_",input$user_columns))
     }else{
