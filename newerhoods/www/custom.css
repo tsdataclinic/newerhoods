@@ -428,6 +428,7 @@ a:hover {
 
 .selectize-control {
   margin-bottom: 0;
+  min-width: 275px;
 }
 
 .auto .form-group {
