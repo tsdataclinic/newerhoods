@@ -293,11 +293,16 @@ input_baseline <- function(){
               selected = "none")
 }
 
+# input_user_features <- conditionalPanel(condition = "output.nrows",
+#   pickerInput(inputId = 'user_features',label="USER Features",
+#               choices=NULL,
+#               options=list(`actions-box`=TRUE,title="User Features"),
+#               multiple=TRUE))
+
 input_user_features <- conditionalPanel(condition = "output.nrows",
-  pickerInput(inputId = 'user_features',label="USER Features",
-              choices=NULL,
-              options=list(`actions-box`=TRUE,title="User Features"),
-              multiple=TRUE))
+                        checkboxGroupInput(inputId = 'user_features',label="USER Features",
+                                    choices=NULL))
+
 
 myDownloadButton <- function(id,label, icon, title="", ...){
   actionButton(id, label, icon, title = title, ...)

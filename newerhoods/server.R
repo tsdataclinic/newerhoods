@@ -140,7 +140,9 @@ function(input, output, session) {
     
     generated_feature_names <- gsub("USER_","",colnames(user_df))
     generated_feature_names <- generated_feature_names[generated_feature_names != "boro_ct201"]
-    updateSelectInput(session, "user_features", choices= generated_feature_names)
+    # generated_feature_names <- 
+    # updateSelectInput(session, "user_features", choices= generated_feature_names)
+    updateCheckboxGroupInput(session, "user_features", choices= generated_feature_names)
     merged_features <<- left_join(features,user_df,by="boro_ct201")
     
     return(user_df)

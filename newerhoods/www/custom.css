@@ -426,6 +426,11 @@ a:hover {
   width: 230px;
 }
 
+.hr {
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+
 .selectize-control {
   margin-bottom: 0;
   min-width: 275px;
