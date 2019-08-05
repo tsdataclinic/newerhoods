@@ -63,14 +63,15 @@ info <-
 
 ## Upload inputs
 
-upload_link <- actionLink(inputId = "upload",label="Upload Data")
+upload_link <- actionButton("upload","Upload your data",icon=icon("upload",lib="font-awesome"),class="btn-custom")
+  #actionLink(inputId = "upload",label="Upload Data")
 
-upload_switch<- materialSwitch(
-  inputId = "upload",
-  label = "Upload data?",
-  value = FALSE,
-  status = "primary"
-)
+# upload_switch<- materialSwitch(
+#   inputId = "upload",
+#   label = "Upload data?",
+#   value = FALSE,
+#   status = "primary"
+# )
 
 upload_file <- fileInput("file","Choose a File",
                          multiple = FALSE,
@@ -114,8 +115,37 @@ upload_tract_id <- conditionalPanel(
 upload_feature <- selectInput("user_columns","Select columns to aggregate",
                               choices = NULL, multiple = TRUE)
 
-upload_done <- actionButton("upload_done","Done",class="btn-primary")
+upload_done <- actionButton("upload_done","Done",class="btn-custom", "data-dismiss" = "modal")
 
+modified_bsModal <- function(id, title, trigger, ..., size) {
+  if(!missing(size)) {
+    if(size == "large") {
+      size = "modal-lg"
+    } else if(size == "small") {
+      size = "modal-sm"
+    }
+    size <- paste("modal-dialog", size)
+  } else {
+    size <- "modal-dialog"
+  }
+  bsTag <- shiny::tags$div(class = "modal sbs-modal fade", id = id, tabindex = "-1", "data-sbs-trigger" = trigger,
+                           shiny::tags$div(class = size,
+                                           shiny::tags$div(class = "modal-content",
+                                                           shiny::tags$div(class = "modal-header",
+                                                                           shiny::tags$button(type = "button", class = "close", "data-dismiss" = "modal", shiny::tags$span(shiny::HTML("&times;"))),
+                                                                           shiny::tags$h4(class = "modal-title", title)
+                                                           ),
+                                                            shiny::tags$div(class = "modal-body", list(...))#,
+                                                           # shiny::tags$div(class = "modal-footer",
+                                                           #                 shiny::tags$button(type = "button", class = "btn btn-default", "data-dismiss" = "modal", "Close")
+                                                           # )
+                                           )
+                           )
+  )
+  shinyBSDep <- htmltools::htmlDependency("shinyBS", packageVersion("shinyBS"), src = c("href" = "sbs"), script = "shinyBS.js", stylesheet = "shinyBS.css")
+  htmltools::attachDependencies(bsTag, shinyBSDep)
+  
+}
 
 # upload_file <- conditionalPanel(
 #   condition = "input.upload",
@@ -169,8 +199,10 @@ upload_done <- actionButton("upload_done","Done",class="btn-primary")
 #   condition = "input.upload",
 #   actionButton("upload_done","Next",class="btn-primary"))
 
+
+
 modal_upload <- 
-  bsModal(
+  modified_bsModal(
     id = "modal_upload",
     title="Upload Data",
     body= list(upload_file,
@@ -179,7 +211,8 @@ modal_upload <-
                upload_boro_ct,
                upload_tract_id,
                upload_feature,
-               upload_done),
+               tags$hr(),
+               div(align="right",upload_done)),
     size="medium",
     trigger = "upload"
   )
@@ -260,11 +293,11 @@ input_baseline <- function(){
               selected = "none")
 }
 
-input_user_features <- 
-  pickerInput(inputId = 'user_features',#label=h6("311 Complaints"),
+input_user_features <- conditionalPanel(condition = "output.nrows",
+  pickerInput(inputId = 'user_features',label="USER Features",
               choices=NULL,
               options=list(`actions-box`=TRUE,title="User Features"),
-              multiple=TRUE)
+              multiple=TRUE))
 
 myDownloadButton <- function(id,label, icon, title="", ...){
   actionButton(id, label, icon, title = title, ...)
@@ -282,7 +315,7 @@ download_dropdown <- dropdownButton(
   circle = TRUE, status = "danger",size="sm",
   icon = icon("download",lib="font-awesome"), width = "150px",
   
-  tooltip = tooltipOptions(title = "Click to see download options",
+  tooltip = tooltipOptions(title = "Click to see download options.",
                            placement="top")
 )
 

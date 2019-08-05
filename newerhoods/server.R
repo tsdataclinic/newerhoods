@@ -10,6 +10,7 @@
 require(dplyr)
 require(readxl)
 require(broom)
+require(stringr)
 
 ## UI/UX packages
 require(shiny)
@@ -92,6 +93,11 @@ function(input, output, session) {
     raw_user_df
   })
   
+  output$nrows <- reactive({
+    nrow(raw_user_data())
+  })
+  
+  outputOptions(output, "nrows", suspendWhenHidden = FALSE)
   ## updating columns to select from
   observe({
     req(input$file)

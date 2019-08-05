@@ -271,6 +271,7 @@ a:hover {
   font-size: 13px;
   line-height: 1.54;
   letter-spacing: 0.6px;
+  margin-bottom: 0px;
 }
 
 .btn-custom:hover,
@@ -455,11 +456,13 @@ a:hover {
   text-align: left;
 }
 
-.form-group.shiny-input-radiogroup.shiny-input-container.shiny-bound-input {
+.radiogroup-custom {
   padding-left: 25px;
 }
 
-
+.progress-bar {
+  background-color: #e27327;
+}
 
 /* responsive */
 @media (max-width: 1280px) {
