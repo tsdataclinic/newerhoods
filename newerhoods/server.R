@@ -112,7 +112,7 @@ function(input, output, session) {
     common_geo_col_names <- c("lat","latitude","lon","longitude",
                               "boro","borough","boro_code","ct","ct2010","tract",
                               "boro_ct2010","boro_ct201")
-    common_matches <- match(common_geo_col_names,col_names)
+    common_matches <- match(common_geo_col_names,tolower(col_names))
     
     updateSelectInput(session, "lat", choices= col_names,selected = NULL)
     updateSelectInput(session, "lon", choices= col_names,selected = NULL)

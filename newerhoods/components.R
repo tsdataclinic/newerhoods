@@ -1,3 +1,13 @@
+medium_link <- tags$a(icon("medium", lib = "font-awesome"),href="https://medium.com/@dataclinic")
+github_link <- tags$a(icon("github-square", lib = "font-awesome"),href="https://github.com/tsdataclinic/newerhoods")
+twitter_link <- tags$a(icon("twitter-square", lib = "font-awesome"),href="https://twitter.com/tsdataclinic?lang=en")
+
+social_links <- div(class="links flex",
+                    div(class="imglink",medium_link),
+                    div(class="imglink",github_link),
+                    div(class="imglink",twitter_link)
+                    )
+
 header_nav <- withTags(
   header(class ="header",
          div(class="content col-xs-11", 
@@ -5,7 +15,8 @@ header_nav <- withTags(
                  a(href="https://www.twosigma.com/about/data-clinic/", target="_blank",
                    div(class="navbar-title", "NewerHoods"),
                    div(class="navbar-subtitle", "FROM TWO SIGMA DATA CLINIC")
-                 )
+                 ),
+                 div(class="social-header",social_links)
              )
          )
   )

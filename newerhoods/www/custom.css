@@ -20,6 +20,23 @@ a
   color: #0099a6;
 }
 
+.social-header {
+  position: absolute;
+  left: auto;
+  right: 0;
+  bottom: -8px;
+  top: auto;
+}
+
+.imglink {
+  color: #0099a6;
+  /*position: absolute;
+  right: 60px;
+  left: auto;*/
+  padding-left: 10px;
+  font-size: xx-large;
+}
+
 .hint {
   color: #929292;
 }
