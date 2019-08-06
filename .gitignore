@@ -3,7 +3,8 @@
 ## Don't want to push data folder to github
 data/raw/
 data/intermediary/  
-
+fig_output/
+newerhoods/shiny_bookmarks/
 ## Don't want to push local settings
 settings_local.R
 
