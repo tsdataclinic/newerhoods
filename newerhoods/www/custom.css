@@ -34,7 +34,7 @@ a
   right: 60px;
   left: auto;*/
   padding-left: 10px;
-  font-size: xx-large;
+  font-size: x-large;
 }
 
 .hint {
@@ -471,8 +471,22 @@ a:hover {
   min-width: 233px;
 }
 
+.popover-content {
+  font-size: 11px;
+  font-family: Lato;
+  /*z-index: 2000;
+  position: relative;*/
+}
+
+/*.tooltip.fade.left.in {
+  z-index: 2000;
+  position:fixed;
+}*/
+
 .tooltip {
   min-width: 240px;
+  font-size: 12px;
+  font-family: Lato;
 }
 
 .tooltip-inner {

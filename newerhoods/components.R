@@ -90,7 +90,9 @@ upload_file <- fileInput("file","Choose a File",
                            "text/csv","text/comma-separated-values,text/plain",
                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                            ".csv",".xlsx",".xls")
-)
+) %>% shinyInput_label_embed(shiny_iconlink() %>%
+                               bs_embed_tooltip(title="Choose a data file to upload. Currently supported formats: comma-separated txt and csv files, and xls/xlsx files.",
+                                                placement = "left"))
 
 # Select Geographic id
 upload_geo_id <- radioButtons(
@@ -100,7 +102,12 @@ upload_geo_id <- radioButtons(
               "Borough & Census Tract" = "boro_tract",
               "Combined Tract ID" = "boro_ct"),
   selected = NULL,
-  inline = FALSE)
+  inline = FALSE) %>% shinyInput_label_embed(shiny_iconlink() %>%
+                                               bs_embed_tooltip(title="Lat/Lon follows standard definition (EPSG:4326 WGS 84).
+                                                                Borogh code and tract ID uses Census 2010 definitions. Borough code ranges from  1 to 5, Tract id can be 1 to 6 digits long.
+                                                                Combined Tract ID is a 7 digit number, fomred by concatenating the Borough code and Tract ID.",
+                                                                placement = "left",container="body"))
+
 
 # Select lat/lon columns
 upload_lat_lon <- conditionalPanel(
@@ -126,7 +133,11 @@ upload_tract_id <- conditionalPanel(
 
 # Select feature columns
 upload_feature <- selectInput("user_columns","Select columns to aggregate",
-                              choices = NULL, multiple = TRUE)
+                              choices = NULL, multiple = TRUE) %>% 
+  shinyInput_label_embed(shiny_iconlink() %>%
+                           bs_embed_tooltip(title ="When lat & lon identifier is used, count and density based features
+are generated in addition to aggregations of the selected (if any) columns. In the other cases, please select at least one column from the dataset to use as a feature.",
+                                            placement = "left",container="body"))
 
 upload_done <- actionButton("upload_done","Done",class="btn-custom", "data-dismiss" = "modal")
 
@@ -160,66 +171,14 @@ modified_bsModal <- function(id, title, trigger, ..., size) {
   
 }
 
-# upload_file <- conditionalPanel(
-#   condition = "input.upload",
-#   fileInput("file","Choose a File",
-#             multiple = FALSE,
-#             accept = c("text/csv","text/comma-separated-values",
-#                        "text/plain",".csv"))
-# )
-# 
-# # Select Geographic id
-# upload_geo_id <- conditionalPanel(
-#   condition = "input.upload",
-#   radioButtons(
-#     inputId = "geo",
-#     label = "Select Geographic Identifier", 
-#     choices = c("Latitude & Longitude" = "lat_lon",
-#                 "Borough & Census Tract" = "boro_tract",
-#                 "Combined Tract ID" = "boro_ct"),
-#     selected = NULL,
-#     inline = FALSE))
-# 
-# # Select lat/lon columns
-# upload_lat_lon <- conditionalPanel(
-#   condition = "input.upload && input.geo == 'lat_lon'",
-#   selectInput("lat","Select Latitude column",
-#               choices = NULL, multiple = FALSE),
-#   selectInput("lon","Select Longitude column",
-#               choices = NULL, multiple = FALSE))
-# 
-# # Select boto/ct columns
-# upload_boro_ct <- conditionalPanel(
-#   condition = "input.upload && input.geo == 'boro_tract'",
-#   selectInput("boro","Select Borough column",
-#               choices = NULL, multiple = FALSE),
-#   selectInput("ct","Select Tract column",
-#               choices = NULL, multiple = FALSE))
-# 
-# # Select boro_ct columns
-# upload_tract_id <- conditionalPanel(
-#   condition = "input.upload && input.geo == 'boro_ct'",
-#   selectInput("boro_ct","Select combined tract identifier",
-#               choices = NULL, multiple = FALSE))
-# 
-# # Select feature columns
-# upload_feature <- conditionalPanel(
-#   condition = "input.upload",
-#   selectInput("user_columns","Select columns to aggregate",
-#               choices = NULL, multiple = TRUE))
-# 
-# upload_done <- conditionalPanel(
-#   condition = "input.upload",
-#   actionButton("upload_done","Next",class="btn-primary"))
-
-
-
 modal_upload <- 
   modified_bsModal(
     id = "modal_upload",
     title="Upload Data",
     body= list(upload_file,
+               # info_upload_file,
                upload_geo_id,
+               # info_geo_id,
                upload_lat_lon,
                upload_boro_ct,
                upload_tract_id,
@@ -333,7 +292,7 @@ download_dropdown <- dropdownButton(
   circle = TRUE, status = "danger",size="sm",
   icon = icon("download",lib="font-awesome"), width = "150px",
   
-  tooltip = tooltipOptions(title = "Click to see download options.",
+  tooltip = tooltipOptions(title = "Click to see options to download/share results.",
                            placement="top")
 )
 

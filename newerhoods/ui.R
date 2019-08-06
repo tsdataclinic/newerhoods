@@ -43,7 +43,7 @@ ui <- function(request){
           modal_credits,
           modal_plots,
           modal_feedback,
-          modal_example,
+          # modal_example,
           modal_upload,
           div(align="center",
                upload_link),
