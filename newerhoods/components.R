@@ -292,7 +292,7 @@ download_dropdown <- dropdownButton(
   circle = TRUE, status = "danger",size="sm",
   icon = icon("download",lib="font-awesome"), width = "150px",
   
-  tooltip = tooltipOptions(title = "Click to see options to download/share results.",
+  tooltip = tooltipOptions(title = "Click to see options to download and share results.",
                            placement="top")
 )
 

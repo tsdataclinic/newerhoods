@@ -34,6 +34,8 @@ require(sp)
 require(spdep)
 library(mapview)
 require(ggmap)
+require(tmap)
+require(tmaptools)
 
 ## clustering
 require(cluster)
@@ -360,10 +362,11 @@ function(input, output, session) {
                     '#0093ee','#136bb0','#1d4c7b',
                     '#1d293a','#017f7c','#015d5f','#003b3e')
       
-      pal <- colorNumeric(map_cols,
-                          c(0:(length(map_cols)-1)),
-                          na.color = "#A9A9A9A9")
-      newerhoods$colour <- pal(newerhoods$cl%%length(map_cols))
+      newerhoods$colour  <- map_coloring(newerhoods, palette=map_cols)
+      # pal <- colorNumeric(map_cols,
+      #                     c(0:(length(map_cols)-1)),
+      #                     na.color = "#A9A9A9A9")
+      # newerhoods$colour <- pal(newerhoods$cl%%length(map_cols))
     }
     
     return(newerhoods)
