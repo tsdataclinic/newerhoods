@@ -299,6 +299,7 @@ a:hover {
 }
 
 .btn-download {
+  padding: 6px 12px;
   border-radius: 2px;
   border: solid 2px #0099a6;
   color: #0099a6;
@@ -317,11 +318,30 @@ a:hover {
   border: solid 2px #0099a6;
 }
 
+.shiny-download-link {
+  padding: 8px 0px;
+}
+
+.shiny-download-link:hover {
+  background-color: #0099a6;
+  color: white;
+}
+
+.shiny-download-link:active,
+.shiny-download-link:focus {
+  color: #0099a6;
+}
+
+
 .btn-danger {
   background-color: #0099a6;
   border-color: #0099a6;
 }
 
+.btn-download:hover ~ .shiny-download-link {
+  background-color: #0099a6;
+  color: white;
+}
 
 .btn-danger:hover,
 .btn-danger:focus,
@@ -350,6 +370,7 @@ a:hover {
   right: 5px;
   left: auto;
   top: 40px;
+  min-width: 130px;
 }
 .orange-border {
   height: 4px;

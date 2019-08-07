@@ -309,41 +309,8 @@ function(input, output, session) {
     return(newerhoods)
   }) %>% debounce(10)
   
-  ## Add the ability to download the results as GeoJSON
-  output$downloadGEOJson<- downloadHandler(
-    filename = function() {
-      paste("clusters",".geojson",sep="")
-    },
-    content = function(file){
-      write(as.geojson(clus_res()), file )
-    }
-  )
-  
-  output$downloadPNG<- downloadHandler(
-    filename = function() {
-      paste("clusters",".png",sep="")
-    },
-    content = function(file){
-      nh <- clus_res()
-      bbox <- nh@bbox
-      map_dl <- get_stamenmap(bbox = c(left=bbox[1,1], bottom=bbox[2,1],
-                                       right=bbox[1,2],top=bbox[2,2]),
-                              maptype = "toner-lite", source = "stamen", zoom = 11)
-      
-      tt <- tidy(nh,region = "cl")
-      tt <- as.data.frame(tt, stringsAsFactors = FALSE)
-      
-      p <- ggmap(map_dl) + 
-        geom_polygon(data = fortify(tt),
-                     aes(long, lat, group = group, fill=id),
-                     colour = "white", alpha = 0.6) + 
-        theme(legend.position="none") 
-      ggsave(file, plot = p, device = "png")
-    }
-  )
-  
   newerhoods <- reactive({
-  
+    
     enable_heatmap <- input$enable_heatmap
     
     newerhoods <- clus_res()
@@ -371,6 +338,7 @@ function(input, output, session) {
     
     return(newerhoods)
   })
+  
   
   ##### Interactive Map #####
   map_reactive <- reactive({
@@ -465,4 +433,41 @@ function(input, output, session) {
       proxy %>% hideGroup(baselines)
     }
   })
+  
+  ## Add the ability to download the results as GeoJSON
+  output$downloadGEOJson<- downloadHandler(
+    filename = function() {
+      paste("newerhoods",".geojson",sep="")
+    },
+    content = function(file){
+      write(as.geojson(clus_res()), file )
+    }
+  )
+  
+  ## Add the ability to download the results as a PNG
+  output$downloadPNG<- downloadHandler(
+    filename = function() {
+      paste("newerhoods",".png",sep="")
+    },
+    content = function(file){
+      nh <- newerhoods()
+      bbox <- nh@bbox
+      map_dl <- get_stamenmap(bbox = c(left=bbox[1,1], bottom=bbox[2,1],
+                                       right=bbox[1,2],top=bbox[2,2]),
+                              maptype = "toner-lite", source = "stamen", zoom = 11)
+
+      tt <- tidy(nh,region = "cl")
+      tt <- as.data.frame(tt, stringsAsFactors = FALSE)
+
+      p <- ggmap(map_dl) +
+        geom_polygon(data = fortify(tt),
+                     aes(long, lat, group = group, fill=id),
+                     colour = "white", alpha = 0.6) +
+        theme(legend.position="none")
+      ggsave(file, plot = p, device = "png")
+    }
+  )
+  
 }
+
+

@@ -276,21 +276,39 @@ input_user_features <- conditionalPanel(condition = "output.nrows",
                                     choices=NULL))
 
 
-myDownloadButton <- function(id,label, icon, title="", ...){
-  actionButton(id, label, icon, title = title, ...)
+myDownloadButton <- function(outputId,label,class=NULL,icon=icon("download"), ...){
+  # actionButton(id, label, icon, title = title, ...)
+  aTag <- tags$a(outputId = outputId, class = paste("btn btn-default shiny-download-link", class),
+                 href = "", target = "_blank", download = NA, icon("download"), label, ...)
+}
+
+myactionButton <- function (inputId, label, icon = NULL, width = NULL,class, ...){
+  value <- restoreInput(id = inputId, default = NULL)
+  tags$button(id = inputId, style = if (!is.null(width)) 
+    paste0("width: ", validateCssUnit(width), ";"), type = "button", 
+    class = class, `data-val` = value, 
+    list(icon, label), ...)
+}
+
+myDownloadBttn <- function(outputId, label = "Download",icon = icon("download"),action_class){
+  bttn <- myactionButton(inputId = paste0(outputId, "_bttn"), 
+                     label = tags$a(id = outputId, class = "shiny-download-link", 
+                                    href = "", target = "_blank", download = NA, label),
+                     icon = icon,class=action_class)
+  bttn
 }
 
 download_dropdown <- dropdownButton(
-  myDownloadButton(id = "downloadGEOJson",label="GeoJSON",
-                   icon=icon("file-download",lib="font-awesome"),class="btn-download"),
+  myDownloadBttn(outputId = "downloadGEOJson",label="GeoJSON",
+                   icon=icon("file-download",lib="font-awesome"),action_class="btn-download"),
   br(),
-  myDownloadButton(id ="downloadPNG",label="png",
-                   icon=icon("file-image",lib="font-awesome"),class="btn-download"),
+  myDownloadBttn(outputId ="downloadPNG",label="Image",
+                   icon=icon("file-image",lib="font-awesome"),action_class="btn-download"),
   br(),
   bookmarkButton(label="Share",icon=icon("link",lib="font-awesome"),class="btn-download"),
   
   circle = TRUE, status = "danger",size="sm",
-  icon = icon("download",lib="font-awesome"), width = "150px",
+  icon = icon("download",lib="font-awesome"), width = "130px",
   
   tooltip = tooltipOptions(title = "Click to see options to download and share results.",
                            placement="top")
