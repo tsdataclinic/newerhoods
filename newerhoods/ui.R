@@ -17,6 +17,7 @@ require(shinyWidgets)
 require(leaflet)
 require(markdown)
 require(shinycssloaders)
+require(shinyFeedback)
 
 ### Definitions
 source("components.R")
