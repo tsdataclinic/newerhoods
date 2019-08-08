@@ -20,6 +20,23 @@ a
   color: #0099a6;
 }
 
+.social-header {
+  position: absolute;
+  left: auto;
+  right: 0;
+  bottom: -8px;
+  top: auto;
+}
+
+.imglink {
+  color: #0099a6;
+  /*position: absolute;
+  right: 60px;
+  left: auto;*/
+  padding-left: 10px;
+  font-size: x-large;
+}
+
 .hint {
   color: #929292;
 }
@@ -271,6 +288,7 @@ a:hover {
   font-size: 13px;
   line-height: 1.54;
   letter-spacing: 0.6px;
+  margin-bottom: 0px;
 }
 
 .btn-custom:hover,
@@ -280,6 +298,83 @@ a:hover {
   border: solid 2px #e27327;
 }
 
+.btn-download {
+  padding: 6px 12px;
+  border-radius: 2px;
+  border: solid 2px #0099a6;
+  color: #0099a6;
+  text-transform: uppercase;
+  font-weight: bold;
+  font-size: 11px;
+  line-height: 1.54;
+  letter-spacing: 0.6px;
+  width: 100%;
+}
+
+.btn-download:hover,
+.btn-download:focus {
+  background-color: #0099a6;
+  color: white;
+  border: solid 2px #0099a6;
+}
+
+.shiny-download-link {
+  padding: 8px 0px;
+}
+
+.shiny-download-link:hover {
+  background-color: #0099a6;
+  color: white;
+}
+
+.shiny-download-link:active,
+.shiny-download-link:focus {
+  color: #0099a6;
+}
+
+.snackbar {
+  z-index: 2;
+}
+
+.btn-danger {
+  background-color: #0099a6;
+  border-color: #0099a6;
+}
+
+.btn-download:hover ~ .shiny-download-link {
+  background-color: #0099a6;
+  color: white;
+}
+
+.btn-danger:hover,
+.btn-danger:focus,
+.btn-danger:active,
+.open>.dropdown-toggle.btn-danger:focus,
+.open>.dropdown-toggle.btn-danger:hover,
+.btn-danger:active:focus, 
+.btn-danger.active, 
+.btn-danger:active, 
+.open>.dropdown-toggle.btn-danger {
+  background-color: #0099a6;
+  border-color: #0099a6;
+}
+
+.btn.btn-circle-sm {
+  position: absolute;
+    right: 5px;
+    left: auto;
+    top: 5px;
+    z-index: 20;
+}
+
+.dropdown-menu {
+  padding:15px 5px;
+  position: absolute;
+  right: 5px;
+  left: auto;
+  top: 40px;
+  min-width: 130px;
+}
 .orange-border {
   height: 4px;
   background-image: url("assets/border-orange.svg");
@@ -372,8 +467,14 @@ a:hover {
   width: 230px;
 }
 
+.hr {
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+
 .selectize-control {
   margin-bottom: 0;
+  min-width: 275px;
 }
 
 .auto .form-group {
@@ -394,16 +495,34 @@ a:hover {
   min-width: 233px;
 }
 
+.popover-content {
+  font-size: 11px;
+  font-family: Lato;
+  /*z-index: 2000;
+  position: relative;*/
+}
+
+/*.tooltip.fade.left.in {
+  z-index: 2000;
+  position:fixed;
+}*/
+
 .tooltip {
   min-width: 240px;
+  font-size: 12px;
+  font-family: Lato;
 }
 
 .tooltip-inner {
   text-align: left;
 }
 
-.form-group.shiny-input-radiogroup.shiny-input-container.shiny-bound-input {
+.radiogroup-custom {
   padding-left: 25px;
+}
+
+.progress-bar {
+  background-color: #e27327;
 }
 
 /* responsive */
@@ -428,3 +547,4 @@ a:hover {
     display: block;
   }
 }
+

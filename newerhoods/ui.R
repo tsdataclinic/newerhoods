@@ -17,13 +17,16 @@ require(shinyWidgets)
 require(leaflet)
 require(markdown)
 require(shinycssloaders)
+require(shinyFeedback)
 
 ### Definitions
 source("components.R")
 
 # UI
-ui <- function(req) {
+ui <- function(request){
   bootstrapPage(
+    # useShinyjs(),
+    useShinyFeedback(),
     theme = "custom.css",
     title = "NewerHoods",
     tags$head(
@@ -42,17 +45,22 @@ ui <- function(req) {
           modal_credits,
           modal_plots,
           modal_feedback,
+          # modal_example,
           modal_upload,
-          info,
+          div(align="center",
+              upload_link),
+          tags$hr(),
           # upload_switch,
-          upload_link,
-          # tags$hr(),
-          input_housing,
-          input_housing_sales,
-          input_crime,
-          input_noise,
+          info,
+          input_housing(),
+          div(class="radiogroup-custom",input_housing_sales()),
+          input_crime(),
+          input_noise(),
           input_user_features,
-          actionButton("select","Apply",class="btn-custom")
+          actionButton("select","Apply",class="btn-custom"),
+          snackbar(
+            id = "FeatureSelection",
+            message = "Please select atleast one feature!")
         ),
         intro_links
       ),
@@ -64,7 +72,7 @@ ui <- function(req) {
           download_dropdown,
           withSpinner(leafletOutput("map", height = "535"),type=3,
                       color.background = "white",color="#0099a6"),
-          map_control_panel
+          map_control_panel()
         ),
         bsTooltip("select", "Click to select or update features to be used for clustering",
                   "right", options = list(container = "body"))

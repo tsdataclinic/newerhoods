@@ -1,6 +1,20 @@
 Follow these steps to begin creating NewerHoods of your own.
 
-#### Step 1 Select features of interest
+#### Step 1 Upload Data
+If you have a dataset you wish to analyse using this tool, you can start by clicking "Upload your data". 
+This will prompt you to select the file and fill out the required details to ingest and transform the data for analysis. 
+Once you click "Done", you'll notice a list of generated features based on your inputs appearing in the sidebar.  
+
+While we continue to develop this feature, here are some of the current limitations you'll have to keep in mind:
+
+- Uploaded datasets are currently functional only with comma-separated text or csv files (i.e, tab, semicolon or space separated files might not work). Although, .xls/.xlsx files should work. 
+- The maximum file size currently allowed is 250MB. 
+- If you're having trouble when uploading your dataset, have a look at the [Sample Datasets](https://github.com/tsdataclinic/newerhoods/tree/master/newerhoods/sample_data) to ensure it's in the right format. 
+
+
+Alternatively, you can simply use the tool with its in-built datasets and features detailed below.  
+
+#### Step 2 Select features of interest
 Select one or more chracteristics under Housing, Crime, and 311 Complaints from the sidebar and click Apply. The tool will return clusters based on your selection(s) and produce an output map. You can use the same button to update your selection at any stage. Details on each of the features are as below.
 
 ##### Housing
