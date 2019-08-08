@@ -335,13 +335,13 @@ map_control_panel <- function(){div(
 help_link <- actionLink(inputId = "Help",label="Help")
 feedback_link <- actionLink(inputId = 'Feedback',label="Feedback")
 credits_link <- actionLink(inputId = 'Credits',label="About")
-example_link <- actionLink(inputId = 'Example',label="Examples")
+# example_link <- actionLink(inputId = 'Example',label="Examples")
 
 intro_links <- 
   div(class="links flex",
       div(class="mainlink",credits_link),
       div(class="mainslink",help_link),
-      div(class="mainslink",example_link),
+      # div(class="mainslink",example_link),
       div(class="mainslink",feedback_link)
   )
 

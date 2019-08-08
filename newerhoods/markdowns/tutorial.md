@@ -8,7 +8,7 @@ Once you click "Done", you'll notice a list of generated features based on your 
 While we continue to develop this feature, here are some of the current limitations you'll have to keep in mind:
 
 - Uploaded datasets are currently functional only with comma-separated text or csv files (i.e, tab, semicolon or space separated files might not work). Although, .xls/.xlsx files should work. 
-- The maximum file size currently allowed is 50MB. 
+- The maximum file size currently allowed is 250MB. 
 - If you're having trouble when uploading your dataset, have a look at the [Sample Datasets](https://github.com/tsdataclinic/newerhoods/tree/master/newerhoods/sample_data) to ensure it's in the right format. 
 
 

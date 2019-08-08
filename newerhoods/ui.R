@@ -25,6 +25,7 @@ source("components.R")
 ui <- function(request){
   bootstrapPage(
     # useShinyjs(),
+    useShinyFeedback(),
     theme = "custom.css",
     title = "NewerHoods",
     tags$head(
@@ -46,7 +47,7 @@ ui <- function(request){
           # modal_example,
           modal_upload,
           div(align="center",
-               upload_link),
+              upload_link),
           tags$hr(),
           # upload_switch,
           info,
@@ -55,7 +56,10 @@ ui <- function(request){
           input_crime(),
           input_noise(),
           input_user_features,
-          actionButton("select","Apply",class="btn-custom")
+          actionButton("select","Apply",class="btn-custom"),
+          snackbar(
+            id = "FeatureSelection",
+            message = "Please select atleast one feature!")
         ),
         intro_links
       ),

@@ -20,6 +20,7 @@ require(leaflet)
 require(htmltools)
 library(grDevices)
 require(raster)
+require(shinyFeedback)
 ## Spatial packages
 
 ## spatial libraries with issues in deployment
@@ -46,7 +47,7 @@ source("settings_local.R")
 source("support_functions.R")
 
 ## General settings
-options(shiny.maxRequestSize=50*1024^2)
+options(shiny.maxRequestSize=250*1024^2)
 # enableBookmarking(store="url")
 
 ## function to validate input
@@ -112,8 +113,8 @@ function(input, output, session) {
     col_names <- colnames(raw_user_data())
     
     common_geo_col_names <- c("lat","latitude","lon","longitude",
-                              "boro","borough","boro_code","ct","ct2010","tract",
-                              "boro_ct2010","boro_ct201")
+                              "boro","borocode","borough","boro_code","ct","ct2010","tract","census.tract",
+                              "boro_ct2010","boro_ct201","boro_ct")
     common_matches <- match(common_geo_col_names,tolower(col_names))
     
     updateSelectInput(session, "lat", choices= col_names,selected = NULL)
@@ -126,25 +127,25 @@ function(input, output, session) {
     if(input$geo == "lat_lon"){
       lat_match <- common_matches[1:2]
       lat_match <- lat_match[!is.na(lat_match)]
-      updateSelectInput(session, "lat", selected = ifelse(length(lat_match) ==1,col_names[lat_match],character(0)))
+      updateSelectInput(session, "lat", selected = ifelse(length(lat_match) >=1,col_names[lat_match[1]],character(0)))
       
       lon_match <- common_matches[3:4]
       lon_match <- lon_match[!is.na(lon_match)]
-      updateSelectInput(session, "lon", selected = ifelse(length(lon_match) ==1,col_names[lon_match],character(0)))
+      updateSelectInput(session, "lon", selected = ifelse(length(lon_match) >=1,col_names[lon_match[1]],character(0)))
       
     }else if(input$geo == "boro_tract"){
-      boro_match <- common_matches[5:7]
+      boro_match <- common_matches[5:8]
       boro_match <- boro_match[!is.na(boro_match)]
-      updateSelectInput(session, "boro", selected = ifelse(length(boro_match) ==1,col_names[boro_match],character(0)))
+      updateSelectInput(session, "boro", selected = ifelse(length(boro_match) >=1,col_names[boro_match[1]],character(0)))
       
-      tract_match <- common_matches[8:10]
+      tract_match <- common_matches[9:12]
       tract_match <- tract_match[!is.na(tract_match)]
-      updateSelectInput(session, "ct", selected = ifelse(length(tract_match) ==1,col_names[tract_match],character(0)))
+      updateSelectInput(session, "ct", selected = ifelse(length(tract_match) >=1,col_names[tract_match[1]],character(0)))
       
     }else if(input$geo == "boro_ct"){
-      boro_ct_match <- common_matches[11:12]
+      boro_ct_match <- common_matches[13:15]
       boro_ct_match <- boro_ct_match[!is.na(boro_ct_match)]
-      updateSelectInput(session, "boro_ct", selected = ifelse(length(boro_ct_match) ==1,col_names[boro_ct_match],character(0)))
+      updateSelectInput(session, "boro_ct", selected = ifelse(length(boro_ct_match) >=1,col_names[boro_ct_match[1]],character(0)))
     }
   })
   
@@ -157,27 +158,41 @@ function(input, output, session) {
       geo_cols <- c(input$lat, input$lon, input$boro, input$ct, input$boro_ct)
       geo_cols <- geo_cols[!is.na(geo_cols)]
       feature_cols <- col_names[!(col_names %in% geo_cols)]
-      updateSelectInput(session, "user_columns", choices= feature_cols)
+      col_types <- sapply(raw_user_data(), class)
+      numeric_cols <- col_names[col_types %in% c("integer","numeric")]
+      feature_cols <- feature_cols[feature_cols %in% numeric_cols]
+      updateSelectInput(session, "user_columns", choices= feature_cols,selected = NULL)
     })
   
   user_data <- observeEvent(input$upload_done,{
+    req(input$file)
     # toggleModal(session,modalId = "modal_upload",toggle="close")
     # removeModal(session,modalId = "modal_upload")
     if(input$geo == 'lat_lon'){
+      print(input$lat)
+      print(input$lon)
+      req(input$lat,input$lon)
       ## convert points to rates fatures
-      user_df <- point_data_to_feature_columns(raw_user_data(),lat=input$lat,lon=input$lon,cols=input$user_columns)
+      
+      user_df <- point_data_to_feature_columns(raw_user_data(),lat=input$lat,
+                                               lon=input$lon,cols=input$user_columns) 
+      
       colnames(user_df) <- paste0("USER_",colnames(user_df))
       colnames(user_df)[1] <- "boro_ct201"
     }else if(input$geo == 'boro_tract'){
+      req(input$boro,input$ct,input$user_columns)
       ## reformat the boro and tract columns and combine for merging
       user_df <- raw_user_data()
-      user_df$boro_ct201 <- paste0(user_df[,input$boro],str_pad(user_df[,input$ct],6,side="left",pad="0"))
+      padded_tract_id <- str_pad(user_df[,input$ct],5,side="right",pad="0")
+      user_df$boro_ct201 <- paste0(user_df[,input$boro],str_pad(padded_tract_id,6,side="left",pad="0"))
       user_df <- user_df %>% group_by(boro_ct201) %>% 
         dplyr::select(input$user_columns) %>%
         summarise_all(funs(mean))
       user_df <- as.data.frame(user_df)
       colnames(user_df) <- c("boro_ct201",paste0("USER_",input$user_columns))
+      user_df$boro_ct201 <- as.character(user_df$boro_ct201)
     }else{
+      req(input$boro_ct,input$user_columns)
       ## reformat the combined boro-tract column
       user_df <- raw_user_data()
       user_df$boro_ct201 <- as.character(user_df[,input$boro_ct])
@@ -186,6 +201,7 @@ function(input, output, session) {
         summarise_all(funs(mean))
       user_df <- as.data.frame(user_df)
       colnames(user_df) <- c("boro_ct201",paste0("USER_",input$user_columns))
+      user_df$boro_ct201 <- as.character(user_df$boro_ct201)
     }
     
     generated_feature_names <- gsub("USER_","",colnames(user_df))
@@ -196,7 +212,7 @@ function(input, output, session) {
     updateCheckboxGroupInput(session, "user_features", choiceValues=generated_feature_names,
                              choiceNames = pretty_names)
     merged_features <<- left_join(features,user_df,by="boro_ct201")
-    
+    merged_features[is.na(merged_features)] <<- 0
     return(user_df)
   })
   
@@ -216,12 +232,23 @@ function(input, output, session) {
       selection <- gsub("^\\|","",selection)
     }
     
+    # print(selection)
     validate(
-      need(selection != "", "Please select at least one feature.")
-    )
+      need(!is.null(input$crime_features) | !is.null(input$housing) | 
+             !is.null(input$call_features) | !is.null(input$user_features) , 
+           "Please select at least one feature"))
+    # showNotification(ui="Please select at least one feature",type="error")
     selection
   }, ignoreNULL = FALSE) # change to false for initial load
   
+  
+  observeEvent(input$select,{
+    if((is.null(input$crime_features) & is.null(input$housing) & 
+        is.null(input$call_features) * is.null(input$user_features))){
+      showSnackbar("FeatureSelection")  
+    }  
+    
+  })
   
   tree <- eventReactive(user_selection(),{
     
@@ -318,10 +345,18 @@ function(input, output, session) {
     if(enable_heatmap==TRUE){
       heatmap_palette <- c('#ffffb2','#fed976','#feb24c',
                            '#fd8d3c','#fc4e2a','#e31a1c','#b10026')
-      pal_heatmap <- colorQuantile(heatmap_palette,newerhoods$dist,
-                                   n=length(heatmap_palette),
-                                   na.color = "#A9A9A9A9")
+      probs <- seq(from=0,to=1,length.out = length(heatmap_palette))
+      bins <- quantile(newerhoods$dist, probs, na.rm = TRUE, names = FALSE)
+      bins = bins + seq_along(bins) * .Machine$double.eps
+      
+      pal_heatmap <-  colorBin(heatmap_palette, domain = NULL, bins = bins, na.color = "#A9A9A9A9")
+        
+        # colorQuantile(heatmap_palette,newerhoods$dist,
+        #                            n=length(heatmap_palette),
+        #                            na.color = "#A9A9A9A9")
       newerhoods$colour <- pal_heatmap(newerhoods$dist)
+      
+      # output$heatmap_palette <- heatmap_palette
     }else{
       map_cols <- c('#b7e882','#f4f062','#8fe2b4',
                     '#237de0','#8dcd5c','#a327ad',
@@ -339,6 +374,7 @@ function(input, output, session) {
     return(newerhoods)
   })
   
+  # outputOptions(output, "heatmap_palette", suspendWhenHidden = FALSE)
   
   ##### Interactive Map #####
   map_reactive <- reactive({
@@ -383,12 +419,13 @@ function(input, output, session) {
   add_legend <- function(enable_heatmap){
     proxy <- leafletProxy("map")
     # heatmap_palette <- c('#0093ee','#136bb0','#1d4c7b','#017f7c','#015d5f','#003b3e', '#1d293a')
+    # heatmap_palette <- output$heatmap_palette
     heatmap_palette <- c('#ffffb2','#fed976','#feb24c',
                          '#fd8d3c','#fc4e2a','#e31a1c','#b10026')
     if(enable_heatmap == TRUE){
       proxy %>% addLegend(position="bottomright",
-                          colors = heatmap_palette[7:1],
-                          labels = c("Low","","","","","","High")[7:1],
+                          colors = heatmap_palette[length(heatmap_palette):1],
+                          labels = c("Low",rep("",(length(heatmap_palette)-2)),"High")[length(heatmap_palette):1],
                           opacity = 1)
     }else{
       proxy %>% clearControls()}
@@ -455,10 +492,10 @@ function(input, output, session) {
       map_dl <- get_stamenmap(bbox = c(left=bbox[1,1], bottom=bbox[2,1],
                                        right=bbox[1,2],top=bbox[2,2]),
                               maptype = "toner-lite", source = "stamen", zoom = 11)
-
+      
       tt <- tidy(nh,region = "cl")
       tt <- as.data.frame(tt, stringsAsFactors = FALSE)
-
+      
       p <- ggmap(map_dl) +
         geom_polygon(data = fortify(tt),
                      aes(long, lat, group = group, fill=id),

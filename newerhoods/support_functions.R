@@ -44,8 +44,11 @@ point_data_to_feature_columns <- function(df,lat,lon,cols=NULL){
   ## Spatial columns need to be lat and lon, transformations not supported as yet. 
   
   ## creating the spatial dataframe
-  colnames(df[,c(lat,lon)]) <- c("latitude","longitude")
-  
+  lat_idx <- match(lat,colnames(df))
+  lon_idx <- match(lon,colnames(df))
+  colnames(df)[lat_idx] <- "latitude"
+  colnames(df)[lon_idx] <- "longitude"
+  # print(colnames(df[,c(lat,lon)]))
   df <- df[!is.na(df$latitude) | !is.na(df$longitude),]
   coordinates(df) <- ~ longitude + latitude
   
@@ -55,7 +58,7 @@ point_data_to_feature_columns <- function(df,lat,lon,cols=NULL){
   
   ## projecting tracts to get areas (EPSG 3395 used to get accurate measures in square meters)
   census_tracts_projected <- spTransform(census_tracts,CRS("+init=epsg:3395"))
-  tract_area <- data.frame(boro_ct201=census_tracts_projected$boro_ct201,tract_area=area(census_tracts_projected))
+  tract_area <- data.frame(boro_ct201=census_tracts_projected$boro_ct201,tract_area=raster::area(census_tracts_projected))
   
   ## loading population to get rates
   census_pop <- read_xlsx("clean_data/2010census_population.xlsx",skip=7,
