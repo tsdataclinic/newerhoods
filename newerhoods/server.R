@@ -307,6 +307,8 @@ function(input, output, session) {
     
     cluster_vals <- cluster_vals[,c("cl",paste0(feature_set,"_mean"))]
     
+    
+    
     ## distance between clusters to use for heatmap
     cluster_vals$dist <- eucd_dist(cluster_vals)
     
@@ -333,14 +335,14 @@ function(input, output, session) {
     
     newerhoods <- SpatialPolygonsDataFrame(newerhoods,newerhoods_df)
     
-    return(newerhoods)
+    return(list(clusters,newerhoods))
   }) %>% debounce(10)
   
   newerhoods <- reactive({
     
     enable_heatmap <- input$enable_heatmap
     
-    newerhoods <- clus_res()
+    newerhoods <- clus_res()[[2]]
     
     if(enable_heatmap==TRUE){
       heatmap_palette <- c('#ffffb2','#fed976','#feb24c',
@@ -471,13 +473,30 @@ function(input, output, session) {
     }
   })
   
+  ## Add the ability to download the results as a csv
+  output$downloadCSV<- downloadHandler(
+    filename = function() {
+      paste("newerhoods",".csv",sep="")
+    },
+    content = function(file){
+      ## prettifying csv before download
+      cluster_results <- clus_res()[[1]]
+      cluster_results <- cluster_results[,-which(names(cluster_results) == "dist")]
+      colnames(cluster_results)[which(colnames(cluster_results)=="cl")] <- "cluster_id" 
+      colnames(cluster_results)[which(colnames(cluster_results)=="boro_ct201")] <- "boro_tract_2010" 
+      
+      write.csv(cluster_results, file, row.names = FALSE)
+    }
+  )
+  
+  
   ## Add the ability to download the results as GeoJSON
   output$downloadGEOJson<- downloadHandler(
     filename = function() {
       paste("newerhoods",".geojson",sep="")
     },
     content = function(file){
-      write(as.geojson(clus_res()), file )
+      write(as.geojson(clus_res()[[2]]), file )
     }
   )
   

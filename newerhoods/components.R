@@ -299,8 +299,11 @@ myDownloadBttn <- function(outputId, label = "Download",icon = icon("download"),
 }
 
 download_dropdown <- dropdownButton(
+  myDownloadBttn(outputId = "downloadCSV",label="CSV",
+                 icon=icon("file-download",lib="font-awesome"),action_class="btn-download"),
+  br(),
   myDownloadBttn(outputId = "downloadGEOJson",label="GeoJSON",
-                   icon=icon("file-download",lib="font-awesome"),action_class="btn-download"),
+                   icon=icon("file-archive",lib="font-awesome"),action_class="btn-download"),
   br(),
   myDownloadBttn(outputId ="downloadPNG",label="Image",
                    icon=icon("file-image",lib="font-awesome"),action_class="btn-download"),
