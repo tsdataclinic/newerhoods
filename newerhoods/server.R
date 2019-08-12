@@ -47,7 +47,7 @@ source("settings_local.R")
 source("support_functions.R")
 
 ## General settings
-options(shiny.maxRequestSize=250*1024^2)
+options(shiny.maxRequestSize=500*1024^2)
 # enableBookmarking(store="url")
 
 ## function to validate input
