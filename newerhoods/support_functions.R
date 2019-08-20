@@ -181,53 +181,6 @@ get_labels <- function(df){
   
 }
 
-shiny_data <- function(){
-  ### Loading data
-  load("newerhoods/clean_data/sales_features_2017.RData")
-  load("newerhoods/clean_data/crime_rates.RData")
-  load("newerhoods/clean_data/nyc311_rates.RData")
-  load("newerhoods/clean_data/census_tracts.RData")
-  census_pop <- read_xlsx("newerhoods/clean_data/2010census_population.xlsx",skip=7,
-                          col_names=c("borough","county_code","borough_code",
-                                      "2010_tract","pop_2000","pop_2010",
-                                      "change","pct_change","acres","pop_per_acre"))
-  
-  census_tracts$boro_code <- as.integer(census_tracts$boro_code)
-  census_pop$boro_ct201 <- paste0(census_pop$borough_code,census_pop$`2010_tract`)
-  
-  census_tracts <- merge(census_tracts,census_pop[,c("boro_ct201","pop_2010")],by="boro_ct201")
-  
-  features <- left_join(sales_features,crime_rates,by="boro_ct201")
-  features <- left_join(features,nyc311_rates,by="boro_ct201")
-  features <- left_join(features,census_pop[,c("boro_ct201","pop_2010")],by="boro_ct201")
-  
-  #### subsetting tracts to cluster
-  tracts_to_exclude <- c(census_pop$boro_ct201[census_pop$pop_2010 <= 500]) ##Rosevelt Island ,"1023802"
-  reduced_tracts <- census_tracts[!(census_tracts$boro_ct201 %in% tracts_to_exclude),]
-  
-  ## distances between centroids of tracts
-  tract_centroids <- gCentroid(reduced_tracts,byid=TRUE)
-  D1c <- dist(tract_centroids@coords)
-  
-  ### excluding tracts with 0 neighbors
-  # list.nb <- poly2nb(reduced_tracts)
-  # A <- nb2mat(list.nb,style = "B",zero.policy = TRUE)
-  # zero_neighbors <- reduced_tracts$boro_ct201[as.integer(which(rowSums(A) == 0,arr.ind = TRUE))]
-  # tracts_to_exclude <- c(tracts_to_exclude,zero_neighbors)
-  # reduced_tracts <- census_tracts[!(census_tracts$boro_ct201 %in% tracts_to_exclude),]
-  # 
-  features <- features[!(features$boro_ct201 %in% tracts_to_exclude),]
-  
-  list.nb <- poly2nb(reduced_tracts)
-  A <- nb2mat(list.nb,style = "B",zero.policy = TRUE)
-
-  diag(A) <- 1
-  D1a <- as.dist(1-A)
-  D1 <- (1+D1c) * D1a
-  
-  save(features,D1,census_tracts,reduced_tracts,file="newerhoods/clean_data/pre_compiled_data.RData")
-}
-
 get_pretty_names <- function(feature_names,type){
   
   x <- gsub("_median|rate_by_pop$|rate_by_area$|count","",feature_names)
@@ -290,4 +243,33 @@ get_pretty_names <- function(feature_names,type){
   }else{
     return(legend_names)
   }
+}
+
+
+load_baseline_maps <- function(){
+  source_folder <- "data/boundaries/processed/"
+  files <- list.files(source_folder,"*.rds")
+  for(i in c(1:length(files))){
+    tmp <- readRDS(file=paste0(source_folder,files[i]))
+    assign(gsub(".rds","",files[i]),tmp)
+  }
+}
+
+
+get_baseline_choices <- function(){
+  ### check for all shapefiles in raw data in boundaries directory
+  info_json <- jsonlite::fromJSON("data/boundaries/info.json")
+  info_df <- info_json$maps 
+  slug_names <- slugify(info_df$name)
+  
+  choices <- vector("list",(length(slug_names)+1))
+  names(choices) <- c("None",info_df$name)
+  choices[1:(length(slug_names)+1)] <- c("none",slug_names)
+  
+  return(choices)
+}
+
+slugify <- function(t){
+  slug_text <- gsub("[[:space:]]","_",trimws(gsub("[[:punct:]]","",tolower(t))))
+  return(slug_text)
 }

@@ -1,3 +1,5 @@
+source("support_functions.R")
+
 medium_link <- tags$a(icon("medium", lib = "font-awesome"),href="https://medium.com/@dataclinic", target="_blank")
 github_link <- tags$a(icon("github-square", lib = "font-awesome"),href="https://github.com/tsdataclinic/newerhoods", target="_blank")
 twitter_link <- tags$a(icon("twitter-square", lib = "font-awesome"),href="https://twitter.com/tsdataclinic?lang=en", target="_blank")
@@ -254,14 +256,18 @@ info_plot_type <- shiny_iconlink() %>%
                           chosen characteristics.",
                    placement = "top")
 
+baseline_choices <- list("None"="none",
+                         "Community Districts (59)"="cds",
+                         "Public use Microdata Areas (55)"="pumas",
+                         "Neighborhood Tabulation Areas (195)"="ntas",
+                         "Police Precincts (77)"="precincts",
+                         "School Districts (33)"="school_dists")
+
+baseline_choices <- get_baseline_choices()
+
 input_baseline <- function(){
   selectInput('baseline',label='Compare against',
-              choices=list("None"="none",
-                           "Community Districts (59)"="cds",
-                           "Public use Microdata Areas (55)"="pumas",
-                           "Neighborhood Tabulation Areas (195)"="ntas",
-                           "Police Precincts (77)"="precincts",
-                           "School Districts (33)"="school_dists"),
+              choices= baseline_choices,
               selected = "none")
 }
 

@@ -309,6 +309,7 @@ a:hover {
   line-height: 1.54;
   letter-spacing: 0.6px;
   width: 100%;
+  background-color: #fff;
 }
 
 .btn-download:hover,

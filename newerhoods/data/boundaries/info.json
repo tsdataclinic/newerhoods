@@ -1,0 +1,34 @@
+{
+  "maps" : [  
+    { "folder"  : "Community Districts",
+      "name"    : "Community Districts",
+      "source"  : "https://data.cityofnewyork.us/City-Government/Community-Districts/yfnk-k7r4"
+      },
+      
+    { "folder"  : "nynta_18d",
+      "name"    : "Neighborhood Tabulation Areas",
+      "source"  : "https://www1.nyc.gov/site/planning/data-maps/open-data/dwn-nynta.page"
+    },
+    
+    { "folder"  : "Police Precincts",
+      "name"    : "Police Precincts",
+      "source"  : "https://data.cityofnewyork.us/Public-Safety/Police-Precincts/78dh-3ptz"
+    },
+    
+    { "folder"  : "Public Use Microdata Areas (PUMA)",
+      "name"    : "Public use Microdata Areas",
+      "source"  : "https://data.cityofnewyork.us/Housing-Development/Public-Use-Microdata-Areas-PUMA-/cwiz-gcty"
+    },
+    
+    { "folder"  : "School Districts",
+      "name"    : "School Districts",
+      "source"  : "https://data.cityofnewyork.us/Education/School-Districts/r8nu-ymqj"
+    },
+    
+    { "folder"  : "City Council Districts",
+      "name"    : "City Council Districts",
+      "source"  : "https://data.cityofnewyork.us/City-Government/City-Council-Districts/yusd-j4xi"
+    }
+    
+  ]
+}

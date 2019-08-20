@@ -11,6 +11,7 @@ require(dplyr)
 require(readxl)
 require(broom)
 require(stringr)
+library(jsonlite)
 
 ## UI/UX packages
 require(shiny)
@@ -50,21 +51,8 @@ source("support_functions.R")
 options(shiny.maxRequestSize=500*1024^2)
 # enableBookmarking(store="url")
 
-## function to validate input
-validate_selection <- function(a,b,c){
-  if(a == "" & b == "" & c == ""){
-    "Please select atleast one feature"
-  }
-}
-
 ## loading pre-cleaned data
-
-load(file="clean_data/pre_compiled_data.RData")
-load(file="clean_data/cds.RData")
-load(file="clean_data/ntas.RData")
-load(file="clean_data/precincts.RData")
-load(file="clean_data/pumas.RData")
-load(file="clean_data/school_dists.RData")
+load(file="data/processed/pre_compiled_data.RData")
 
 merged_features <- features
 
@@ -233,7 +221,7 @@ function(input, output, session) {
     }
     
     # print(selection)
-    validate(
+    shiny::validate(
       need(!is.null(input$crime_features) | !is.null(input$housing) | 
              !is.null(input$call_features) | !is.null(input$user_features) , 
            "Please select at least one feature"))
@@ -438,17 +426,31 @@ function(input, output, session) {
   
   
   ### Baseline Map
-  baselines <- c("cds","ntas","pumas","precincts","school_dists")
+  
+  ## load baseline maps
+  # load_baseline_maps()
+  source_folder <- "data/boundaries/processed/"
+  files <- list.files(source_folder,"*.rds")
+  for(i in c(1:length(files))){
+    tmp <- readRDS(file=paste0(source_folder,files[i]))
+    assign(gsub(".rds","",files[i]),tmp)
+  }
+  
+  # baselines <- c("cds","ntas","pumas","precincts","school_dists")
+  baselines <- as.vector(unlist(get_baseline_choices()))[-1] ## "none" is always the first. excluding that
+    # gsub(".rds","",files)
+    
   add_baselines <- function(){
     for(i in c(1:length(baselines))){
       baseline_map <- get(baselines[i])
+        # readRDS(file=paste0(source_folder,files[i]))
       proxy <- leafletProxy("map")
       proxy %>% 
         addPolylines(data=baseline_map, 
                      stroke=TRUE,
                      weight=2,
                      opacity=0.75,
-                     color="white",
+                     color=ifelse(input$enable_heatmap,"grey","white"),
                      dashArray="5",
                      group = baselines[i])
       if(baselines[i] != input$baseline){
