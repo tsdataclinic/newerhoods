@@ -17,3 +17,10 @@ Add a json element such as below to the array and fill out the details.
 `folder` is the folder name you created in step 1 within which you placed the shapefile
 `name` is the name you want to give to this. This will be displayed in the "Compare with" dropdown in the UI
 `source` is the URL from which you got the shapefile. This helps us keep track of all our data sources
+
+3. Lastly, run the following code which processes the newly uploaded shapefile.
+
+```{r}
+source("newerhoods/process_data.R")
+process_baseline_maps()
+```
