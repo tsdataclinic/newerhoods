@@ -18,7 +18,7 @@ points_to_feature <- function(df,col1,col2,colname){
   colnames(df_rates) <- c("boro_ct201","count")
 
   ## loading population to get rates
-  census_pop <- read_xlsx("./data/2010census_population.xlsx",skip=7,
+  census_pop <- read_xlsx("./data/census/2010census_population.xlsx",skip=7,
                           col_names=c("borough","county_code","borough_code",
                                       "2010_tract","pop_2000","pop_2010",
                                       "change","pct_change","acres","pop_per_acre"))
@@ -53,7 +53,7 @@ point_data_to_feature_columns <- function(df,lat,lon,cols=NULL){
   coordinates(df) <- ~ longitude + latitude
   
   # print(getwd())
-  load("clean_data/census_tracts.RData")
+  load("data/census/census_tracts.RData")
   proj4string(df) <- proj4string(census_tracts)
   
   ## projecting tracts to get areas (EPSG 3395 used to get accurate measures in square meters)
@@ -61,7 +61,7 @@ point_data_to_feature_columns <- function(df,lat,lon,cols=NULL){
   tract_area <- data.frame(boro_ct201=census_tracts_projected$boro_ct201,tract_area=raster::area(census_tracts_projected))
   
   ## loading population to get rates
-  census_pop <- read_xlsx("clean_data/2010census_population.xlsx",skip=7,
+  census_pop <- read_xlsx("data/census/2010census_population.xlsx",skip=7,
                           col_names=c("borough","county_code","borough_code",
                                       "2010_tract","pop_2000","pop_2010",
                                       "change","pct_change","acres","pop_per_acre"))
@@ -272,4 +272,39 @@ get_baseline_choices <- function(){
 slugify <- function(t){
   slug_text <- gsub("[[:space:]]","_",trimws(gsub("[[:punct:]]","",tolower(t))))
   return(slug_text)
+}
+
+
+get_homogeneity <- function(k,alpha,D0,D1,D0_sq,D1_sq,T0,T1){
+  
+  cl <- cutree(hclustgeo(alpha=alpha,D0,D1),k)
+  C <- cl2mat(cl)
+  
+  Q0 <- 1 - sum(D0_sq*C)/T0
+  Q1 <- 1 - sum(D1_sq*C)/T1
+  
+  return(2-sum(c(Q0,Q1)))
+}
+
+get_sil_width <- function(k,D0,res){
+  c <- cutree(res,k)
+  avg_sil <- summary(silhouette(c,D0))$avg.width
+  return(avg_sil)
+}
+
+cl2mat <- function(cl){
+  unique_cl <- unique(cl)
+  n <- length(cl)
+  M <- matrix(0,nrow=n,ncol=n)
+  for(i in c(1:length(unique_cl))){
+    idx <- which(cl==unique_cl[i])
+    M[idx,idx] <- 1/(2*n*length(idx))
+  }
+  return(M)
+}
+
+
+Mode <- function(x) {
+  ux <- unique(x)
+  ux[which.max(tabulate(match(x, ux)))]
 }

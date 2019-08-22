@@ -12,6 +12,8 @@ require(readxl)
 require(broom)
 require(stringr)
 library(jsonlite)
+library(furrr)
+library(tictoc)
 
 ## UI/UX packages
 require(shiny)
@@ -49,10 +51,11 @@ source("support_functions.R")
 
 ## General settings
 options(shiny.maxRequestSize=500*1024^2)
+options(future.globals.maxSize= 750*1024^2)
 # enableBookmarking(store="url")
 
 ## loading pre-cleaned data
-load(file="data/processed/pre_compiled_data.RData")
+load(file="data/features/processed/pre_compiled_data.RData")
 
 merged_features <- features
 
@@ -238,6 +241,7 @@ function(input, output, session) {
     
   })
   
+  
   tree <- eventReactive(user_selection(),{
     
     features_to_use <- grepl(user_selection(),colnames(merged_features))
@@ -246,8 +250,47 @@ function(input, output, session) {
     ### Clustering the data based on selected features
     D0 <- dist(scale(merged_features[,features_to_use]))
     
+    
+    #### Finding optimal parameters
+    # plan(sequential) #78.202 sec elapsed
+    plan(multiprocess) #70.614 sec elapsed
+    tic()
+    
+    range_k <- seq(5,200,by=5)
+    res <- hclust(D0, method = "ward.D")
+    avg_sil <- range_k %>% future_map_dbl(get_sil_width,D0,res)
+    
+    cl_metric <- data.frame(k=range_k,avg_sil=avg_sil)
+    cl_metric$groups <- cut(range_k,breaks=4)
+    s <- cl_metric %>% group_by(groups) %>% summarize(K=max(k),k_opt=k[which.max(avg_sil)])  
+    
+    opt_k <- s$k_opt
+    range_alpha <- seq(0.1,0.5,by=0.05)
+    
+    grid_search <- expand.grid(k=opt_k,alpha=range_alpha)
+    
+    D0_sq <- as.matrix((D0))^2
+    D1_sq <- as.matrix((D1))^2
+    n <- dim(D0_sq)[1]
+    T0 <- (sum(D0_sq)/(2*n^2))
+    T1 <- (sum(D1_sq)/(2*n^2))
+    
+    cl_stat <- grid_search %>% future_pmap(.f=get_homogeneity,D0=D0,D1=D1,D0_sq=D0_sq,
+                                           D1_sq=D1_sq,T0=T0,T1=T1)
+    
+    cl_stat <- unlist(cl_stat);
+    grid_search$val <- cl_stat
+    
+    opt_params <- grid_search %>% group_by(k) %>% summarise(opt_alpha=alpha[which.min(val)])
+    print(opt_params)
+    opt_alpha <- Mode(opt_params$opt_alpha)
+      # as.numeric(row.names(sort(table(opt_params$opt_alpha),decreasing=TRUE))[1])
+      # opt_params$opt_alpha[which.min(input$num_clusters-opt_params$k)]
+    print(opt_alpha)
+    toc()
+    
     set.seed(1729)
-    tree <- hclustgeo(D0,D1,alpha=0.1)
+    tree <- hclustgeo(D0,D1,alpha=opt_alpha)
     
     return(tree)
   },ignoreNULL = FALSE)
@@ -445,8 +488,8 @@ function(input, output, session) {
       baseline_map <- get(baselines[i])
         # readRDS(file=paste0(source_folder,files[i]))
       proxy <- leafletProxy("map")
-      proxy %>% 
-        addPolylines(data=baseline_map, 
+      proxy %>%
+        addPolylines(data=baseline_map,
                      stroke=TRUE,
                      weight=2,
                      opacity=0.75,
@@ -454,18 +497,18 @@ function(input, output, session) {
                      dashArray="5",
                      group = baselines[i])
       if(baselines[i] != input$baseline){
-        proxy %>% hideGroup(baselines[i])  
+        proxy %>% hideGroup(baselines[i])
       }
     }
   }
-  
+
   observeEvent({input$enable_heatmap},{add_baselines()})
   observeEvent({clus_res()},{add_baselines()})
   
   observeEvent(input$baseline,{
     if(input$baseline != "none"){
       baseline_map <- get(input$baseline)
-      
+        
       proxy <- leafletProxy("map")
       proxy %>% hideGroup(baselines)
       proxy %>% showGroup(input$baseline)
