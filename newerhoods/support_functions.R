@@ -9,7 +9,7 @@ points_to_feature <- function(df,col1,col2,colname){
   df <- df[!is.na(df$latitude) | !is.na(df$longitude),]
   coordinates(df) <- ~ longitude + latitude
   
-  load("newerhoods/clean_data/census_tracts.RData")
+  load("data/census/census_tracts.RData")
   proj4string(df) <- proj4string(census_tracts)
   
   ## getting counts for each tract
@@ -283,7 +283,7 @@ get_homogeneity <- function(k,alpha,D0,D1,D0_sq,D1_sq,T0,T1){
   Q0 <- 1 - sum(D0_sq*C)/T0
   Q1 <- 1 - sum(D1_sq*C)/T1
   
-  return(2-sum(c(Q0,Q1)))
+  return(list(Q0,Q1))
 }
 
 get_sil_width <- function(k,D0,res){
@@ -307,4 +307,22 @@ cl2mat <- function(cl){
 Mode <- function(x) {
   ux <- unique(x)
   ux[which.max(tabulate(match(x, ux)))]
+}
+
+
+get_opt <- function(alpha,gain){
+  
+  df <- data.frame(alpha=alpha,gain=gain)
+  df <- df[order(alpha),]
+  
+  for(i in c(1:nrow(df))){
+    if(df$gain[i] < 0){
+      if(i == 1){
+        return(0.1)
+      }else{
+        return(df$alpha[i-1])  
+      }
+    }
+  }
+  return(df$alpha[nrow(df)])
 }

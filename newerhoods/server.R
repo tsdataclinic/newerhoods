@@ -160,8 +160,6 @@ function(input, output, session) {
     # toggleModal(session,modalId = "modal_upload",toggle="close")
     # removeModal(session,modalId = "modal_upload")
     if(input$geo == 'lat_lon'){
-      print(input$lat)
-      print(input$lon)
       req(input$lat,input$lon)
       ## convert points to rates fatures
       
@@ -242,30 +240,42 @@ function(input, output, session) {
   })
   
   
-  tree <- eventReactive(user_selection(),{
-    
+  dist_mat <- eventReactive(user_selection(),{
     features_to_use <- grepl(user_selection(),colnames(merged_features))
     feature_set <- unlist(strsplit(user_selection(),"\\|"))
     
     ### Clustering the data based on selected features
     D0 <- dist(scale(merged_features[,features_to_use]))
     
+    return(D0)
+  },ignoreNULL = FALSE)
+  
+  optimized_params <- reactive({
+    
+    ##
+    D0 <- dist_mat()/max(dist_mat())
+    D1 <- D1/max(D1)
     
     #### Finding optimal parameters
-    # plan(sequential) #78.202 sec elapsed
-    plan(multiprocess) #70.614 sec elapsed
+    # plan(multisession) ## using 4 processors
+    plan(multiprocess(workers=4)) ## using 4 processors
     tic()
     
-    range_k <- seq(5,200,by=5)
+    range_k <-seq(5,200,by=5)
     res <- hclust(D0, method = "ward.D")
     avg_sil <- range_k %>% future_map_dbl(get_sil_width,D0,res)
-    
+
     cl_metric <- data.frame(k=range_k,avg_sil=avg_sil)
     cl_metric$groups <- cut(range_k,breaks=4)
-    s <- cl_metric %>% group_by(groups) %>% summarize(K=max(k),k_opt=k[which.max(avg_sil)])  
-    
+    s <- cl_metric %>% group_by(groups) %>% summarize(K=max(k),k_opt=k[which.max(avg_sil)])
+
     opt_k <- s$k_opt
-    range_alpha <- seq(0.1,0.5,by=0.05)
+    
+    # toc()
+    
+    # plan(multiprocess(workers=4)) ## using 4 processors
+    # tic()
+    range_alpha <- c(0,seq(0.1,0.5,by=0.05),1)
     
     grid_search <- expand.grid(k=opt_k,alpha=range_alpha)
     
@@ -278,22 +288,39 @@ function(input, output, session) {
     cl_stat <- grid_search %>% future_pmap(.f=get_homogeneity,D0=D0,D1=D1,D0_sq=D0_sq,
                                            D1_sq=D1_sq,T0=T0,T1=T1)
     
-    cl_stat <- unlist(cl_stat);
-    grid_search$val <- cl_stat
+    rm("D0_sq","D1_sq","T0","T1") ## removing large objects
     
-    opt_params <- grid_search %>% group_by(k) %>% summarise(opt_alpha=alpha[which.min(val)])
-    print(opt_params)
-    opt_alpha <- Mode(opt_params$opt_alpha)
-      # as.numeric(row.names(sort(table(opt_params$opt_alpha),decreasing=TRUE))[1])
-      # opt_params$opt_alpha[which.min(input$num_clusters-opt_params$k)]
-    print(opt_alpha)
+    grid_search <- cbind(grid_search,data.frame(matrix(unlist(cl_stat),ncol=2,byrow=TRUE)))
+    colnames(grid_search)[3:4] <- c("Q0","Q1")
+    
+    # print(grid_search)
+    
+    opt_params <- grid_search %>% group_by(k) %>% 
+      mutate(Q0norm=Q0/max(Q0),Q1norm=Q1/max(Q1)) %>%
+      mutate(Q0gain=(Q0norm-lag(Q0norm,1))/Q0,Q1gain=(Q1norm-lag(Q1norm,1))/Q1) %>%
+      mutate(tot_gain=(Q0gain+Q1gain)) %>%
+      filter(alpha > 0, alpha < 1) %>%
+      group_by(k) %>%
+      mutate(opt_alpha=get_opt(alpha,tot_gain)) %>%
+      summarise(alpha=mean(opt_alpha))
     toc()
     
+    return(opt_params)
+  })
+  
+  alpha_for_k <- reactive({
+    op <- optimized_params()
+    opt_alpha <- op$alpha[which.min(abs(input$num_clusters - op$k))]
+    return(opt_alpha)
+  })
+  
+  tree <- reactive({
+    
     set.seed(1729)
-    tree <- hclustgeo(D0,D1,alpha=opt_alpha)
+    tree <- hclustgeo(dist_mat(),D1,alpha=alpha_for_k())
     
     return(tree)
-  },ignoreNULL = FALSE)
+  })
   
   clus_res <- reactive({
     ### Subset data based on user selection of features
@@ -383,10 +410,10 @@ function(input, output, session) {
       bins = bins + seq_along(bins) * .Machine$double.eps
       
       pal_heatmap <-  colorBin(heatmap_palette, domain = NULL, bins = bins, na.color = "#A9A9A9A9")
-        
-        # colorQuantile(heatmap_palette,newerhoods$dist,
-        #                            n=length(heatmap_palette),
-        #                            na.color = "#A9A9A9A9")
+      
+      # colorQuantile(heatmap_palette,newerhoods$dist,
+      #                            n=length(heatmap_palette),
+      #                            na.color = "#A9A9A9A9")
       newerhoods$colour <- pal_heatmap(newerhoods$dist)
       
       # output$heatmap_palette <- heatmap_palette
@@ -481,12 +508,12 @@ function(input, output, session) {
   
   # baselines <- c("cds","ntas","pumas","precincts","school_dists")
   baselines <- as.vector(unlist(get_baseline_choices()))[-1] ## "none" is always the first. excluding that
-    # gsub(".rds","",files)
-    
+  # gsub(".rds","",files)
+  
   add_baselines <- function(){
     for(i in c(1:length(baselines))){
       baseline_map <- get(baselines[i])
-        # readRDS(file=paste0(source_folder,files[i]))
+      # readRDS(file=paste0(source_folder,files[i]))
       proxy <- leafletProxy("map")
       proxy %>%
         addPolylines(data=baseline_map,
@@ -501,14 +528,14 @@ function(input, output, session) {
       }
     }
   }
-
+  
   observeEvent({input$enable_heatmap},{add_baselines()})
   observeEvent({clus_res()},{add_baselines()})
   
   observeEvent(input$baseline,{
     if(input$baseline != "none"){
       baseline_map <- get(input$baseline)
-        
+      
       proxy <- leafletProxy("map")
       proxy %>% hideGroup(baselines)
       proxy %>% showGroup(input$baseline)

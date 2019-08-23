@@ -1,12 +1,14 @@
+library(igraph)
+
 source("support_functions.R")
 
 ### Construct pre-merged rds files for the datasets of interest from a collection of local files
 shiny_data <- function(){
   
   ## Load data files
-  load("newerhoods/data/featureset/sales_features_2017.RData")
-  load("newerhoods/data/featureset/crime_rates.RData")
-  load("newerhoods/data/featureset/nyc311_rates.RData")
+  load("newerhoods/data/features/interim/sales_features_2017.RData")
+  load("newerhoods/data/features/interim/crime_rates.RData")
+  load("newerhoods/data/features/interim/nyc311_rates.RData")
   
   
   
@@ -33,7 +35,6 @@ shiny_data <- function(){
   
   
   
-
   ## Pre-compute D1 for clustering
   tract_centroids <- gCentroid(reduced_tracts,byid=TRUE)
   D1c <- dist(tract_centroids@coords) ## euclidean distance between tract centroids
@@ -44,14 +45,21 @@ shiny_data <- function(){
   ## adjecency between tracts, 1 if tracts adjescent, 0 if not
   A <- nb2mat(list.nb,style = "B",zero.policy = TRUE) 
   
+  
+  ## graph based D1
+  # g <- graph_from_adjacency_matrix(as.matrix(D1c)*A,mode = "undirected",weighted=TRUE)
+  # D1g <- distances(g,mode="all")
+  # D1g[is.infinite(D1g)] <- as.matrix(D1c)[is.infinite(D1g)]
+  # 
   ## complementing of the adjecency matrix, 1 if tracts not adjacent, 0 if they are
   diag(A) <- 1 
   D1a <- as.dist(1-A) 
   ## multiplying euclidean distance with complement of the adjecency to get a composite measure
   ## such that adjacent tracts have a distance of 0, and rest have distance 1 + their euclidean dist
   D1 <- (1+D1c) * D1a
+  # D1 <- as.dist(D1g) *D1a
   
-  save(features,D1,census_tracts,reduced_tracts,file="newerhoods/clean_data/pre_compiled_data.RData")
+  save(features,D1,census_tracts,reduced_tracts,file="newerhoods/data/features/processed/pre_compiled_data.RData")
 }
 
 
