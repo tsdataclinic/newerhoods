@@ -407,9 +407,9 @@ function(input, output, session) {
                            '#fd8d3c','#fc4e2a','#e31a1c','#b10026')
       probs <- seq(from=0,to=1,length.out = length(heatmap_palette))
       bins <- quantile(newerhoods$dist, probs, na.rm = TRUE, names = FALSE)
-      bins = bins + seq_along(bins) * .Machine$double.eps
-      
-      pal_heatmap <-  colorBin(heatmap_palette, domain = NULL, bins = bins, na.color = "#A9A9A9A9")
+      bins <- bins + seq_along(bins) * .Machine$double.eps
+      bins[1] <- min(newerhoods$dist)
+      pal_heatmap <-  colorBin(heatmap_palette, domain = NULL, bins = bins, na.color = "#A9A9A9")
       
       # colorQuantile(heatmap_palette,newerhoods$dist,
       #                            n=length(heatmap_palette),
