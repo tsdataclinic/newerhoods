@@ -1,4 +1,5 @@
 source("support_functions.R")
+source("process_data.R")
 
 medium_link <- tags$a(icon("medium", lib = "font-awesome"),href="https://medium.com/@dataclinic", target="_blank")
 github_link <- tags$a(icon("github-square", lib = "font-awesome"),href="https://github.com/tsdataclinic/newerhoods", target="_blank")
@@ -196,7 +197,7 @@ input_housing <- function(){
   checkboxGroupInput(
     inputId = 'housing',label="HOUSING",
     choices=c("Age of buildings"="bldg_age","Median sale price"="sale_price"),
-    selected = "bldg_age"
+    selected = "sale_price"
   )
 }
 
@@ -208,29 +209,31 @@ input_housing_sales <- function(){
                      choices=c("1y average"="med_price_1y|sd_price_1y",
                                "3y average"="med_price_3y|sd_price_3y",
                                "5y average"="med_price_5y|sd_price_5y"
-                     ),selected = NULL))
+                     ),selected = "med_price_3y|sd_price_3y"))
 }
 
+feature_inputs <- get_features_ui(process_features_json())
+eval(parse(text=feature_inputs$exprs))
 
-input_crime <- function(){
-  checkboxGroupInput(
-    inputId = 'crime_features', label="CRIME",
-    c("Violations"="violation_rate",
-      "Felonies"="felony_rate",
-      "Misdemeanors"="misdemeanor_rate"
-    )
-  )
-}
+# input_crime <- function(){
+#   checkboxGroupInput(
+#     inputId = 'crime_features', label="CRIME",
+#     c("Violations"="violation_rate",
+#       "Felonies"="felony_rate",
+#       "Misdemeanors"="misdemeanor_rate"
+#     )
+#   )
+# }
 
-input_noise <- function(){
-  checkboxGroupInput(
-    inputId = 'call_features',label="311 COMPLAINTS",
-    c("Ice cream truck"="icecream_rate",
-      "Barking dog"="animal_rate",
-      "Loud music/party"="party_rate"
-    )
-  )
-}
+# input_noise <- function(){
+#   checkboxGroupInput(
+#     inputId = 'call_features',label="311 COMPLAINTS",
+#     c("Ice cream truck"="icecream_rate",
+#       "Barking dog"="animal_rate",
+#       "Loud music/party"="party_rate"
+#     )
+#   )
+# }
 
 input_clusters <- function(){
   sliderInput("num_clusters",

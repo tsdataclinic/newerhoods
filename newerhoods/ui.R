@@ -11,7 +11,7 @@ require(shiny)
 require(shinyBS)
 require(shinyjs)
 require(htmltools)
-require(bsplus)
+library(bsplus)
 require(shinythemes)
 require(shinyWidgets)
 require(leaflet)
@@ -54,6 +54,7 @@ ui <- function(request){
           info,
           input_housing(),
           div(class="radiogroup-custom",input_housing_sales()),
+          eval(parse(text=feature_inputs$vars)),
           input_crime(),
           input_noise(),
           input_user_features,

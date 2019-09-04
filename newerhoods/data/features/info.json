@@ -1,0 +1,64 @@
+{
+  "datasets" : [  
+    { "file_name"       : "crime_rates",
+      "input_id"         : "crime_features",
+      "category_name"   : "Crime",
+      "feature_columns" : [
+                      { "column_name"   :"violation_rate",
+                        "checkbox_name" :"Violations",
+                        "legend_name"   :"Violations",
+                        "legend_units"  :"/1000 people",
+                        "is_rate"       :true,
+                        "exclude_tracts":true
+                        },
+                        
+                      { "column_name"   :"felony_rate",
+                        "checkbox_name" :"Felonies",
+                        "legend_name"   :"Felonies",
+                        "legend_units"  :"/1000 people",
+                        "is_rate"       :true,
+                        "exclude_tracts":true
+                        },
+                        
+                      { "column_name"   :"misdemeanor_rate",
+                        "checkbox_name" :"Misdemeanors",
+                        "legend_name"   :"Misdemeanors",
+                        "legend_units"  :"/1000 people",
+                        "is_rate"       :true,
+                        "exclude_tracts":true
+                        }
+                    ]
+      },
+      
+    { "file_name"       : "nyc311_rates",
+      "input_id"         : "call_features",
+      "category_name"   : "311 Complaints",
+      "feature_columns" : [
+                      { "column_name"   :"party_rate",
+                        "checkbox_name" :"Loud music/party",
+                        "legend_name"   :"Loud Music/Parties",
+                        "legend_units"  :"/1000 people",
+                        "is_rate"       :true,
+                        "exclude_tracts":true
+                        },
+                        
+                      { "column_name"   :"animal_rate",
+                        "checkbox_name" :"Barking dog",
+                        "legend_name"   :"Barking Dogs",
+                        "legend_units"  :"/1000 people",
+                        "is_rate"       :true,
+                        "exclude_tracts":true
+                        },
+                        
+                      { "column_name"   :"icecream_rate",
+                        "checkbox_name" :"Ice cream truck",
+                        "legend_name"   :"Noisy Ice Cream Trucks",
+                        "legend_units"  :"/1000 people",
+                        "is_rate"       :true,
+                        "exclude_tracts":true
+                        }
+                    ]
+      }
+    
+  ]
+}

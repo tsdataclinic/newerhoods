@@ -378,12 +378,12 @@ a:hover {
 }
 .orange-border {
   height: 4px;
-  background-image: url("assets/border-orange.svg");
+  background-image: url("border-orange.svg");
 }
 
 .blue-border {
   height: 4px;
-  background-image: url("assets/border-blue.svg");
+  background-image: url("border-blue.svg");
 }
 
 .leaflet-control-attribution {

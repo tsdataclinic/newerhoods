@@ -254,6 +254,7 @@ function(input, output, session) {
     
     ##
     D0 <- dist_mat()/max(dist_mat())
+    D1 <- D1reduced
     D1 <- D1/max(D1)
     
     #### Finding optimal parameters
@@ -317,6 +318,7 @@ function(input, output, session) {
   tree <- reactive({
     
     set.seed(1729)
+    D1 <- D1reduced
     tree <- hclustgeo(dist_mat(),D1,alpha=alpha_for_k())
     
     return(tree)
@@ -440,10 +442,11 @@ function(input, output, session) {
   map_reactive <- reactive({
     leaflet() %>%
       setView(-73.885,40.71,11) %>%
-      addProviderTiles("MapBox", options = providerTileOptions(
-        id= "mapbox.light",
-        accessToken = Sys.getenv('MAPBOX_ACCESS_TOKEN'))
-      ) %>%
+      # addProviderTiles("MapBox", options = providerTileOptions(
+      #   id= "mapbox.light",
+      #   accessToken = Sys.getenv('MAPBOX_ACCESS_TOKEN'))
+      # ) %>%
+      addProviderTiles("Stamen.TonerLite") %>%
       addPolygons(data=newerhoods(),
                   fillColor = newerhoods()$colour,
                   stroke = TRUE,
