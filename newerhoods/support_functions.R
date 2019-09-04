@@ -138,7 +138,7 @@ get_labels <- function(df){
 
   stats_selected <- colnames(df)[grepl("_mean",colnames(df))]
   stats_names <- gsub("_mean","",stats_selected)
-  excluded_stats <- c("sd_price_1y","sd_price_3y","sd_price_5y")
+  # excluded_stats <- c("sd_price_1y","sd_price_3y","sd_price_5y")
   
   stats_names <- stats_names[!(stats_names %in% excluded_stats)]
   

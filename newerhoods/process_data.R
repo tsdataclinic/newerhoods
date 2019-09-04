@@ -104,17 +104,25 @@ process_features_json <- function(){
   feature_columns_info <- info_json$datasets$feature_columns
   
   for(i in seq_along(feature_columns_info)){
+    script <- ifelse(is.null(info_json$datasets$ui_script[i]),
+                     NULL,info_json$datasets$ui_script[i])
+    vars <- ifelse(is.null(info_json$datasets$ui_vars[i]),
+                   NULL,paste(info_json$datasets$ui_vars[i],collapse = ","))
     if(i == 1){
-      feature_set_info <- cbind(feature_columns[[i]],
+      feature_set_info <- cbind(feature_columns_info[[i]],
                            file_name=info_json$datasets$file_name[i],
                            category_name=info_json$datasets$category_name[i],
                            inputID=info_json$datasets$input_id[i],
+                           ui_script=script,
+                           ui_vars=vars,
                            stringsAsFactors = FALSE)
     }else{
-      tmp <- cbind(feature_columns[[i]],
+      tmp <- cbind(feature_columns_info[[i]],
                    file_name=info_json$datasets$file_name[i],
                    category_name=info_json$datasets$category_name[i],
                    inputID=info_json$datasets$input_id[i],
+                   ui_script=script,
+                   ui_vars=vars,
                    stringsAsFactors = FALSE)
       feature_set_info <- rbind(feature_set_info,tmp)
     }

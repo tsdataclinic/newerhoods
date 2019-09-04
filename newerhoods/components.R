@@ -195,9 +195,9 @@ modal_upload <-
 ### Inputs
 input_housing <- function(){
   checkboxGroupInput(
-    inputId = 'housing',label="HOUSING",
-    choices=c("Age of buildings"="bldg_age","Median sale price"="sale_price"),
-    selected = "sale_price"
+    inputId = 'housing',label='HOUSING',
+    choices=c('Age of buildings'='bldg_age','Median sale price'='sale_price'),
+    selected = 'sale_price'
   )
 }
 
@@ -205,11 +205,11 @@ input_housing <- function(){
 input_housing_sales <- function(){
   conditionalPanel(condition="input.housing.includes('sale_price')",
                    radioButtons(
-                     inputId = 'sales_features',label="",
-                     choices=c("1y average"="med_price_1y|sd_price_1y",
-                               "3y average"="med_price_3y|sd_price_3y",
-                               "5y average"="med_price_5y|sd_price_5y"
-                     ),selected = "med_price_3y|sd_price_3y"))
+                     inputId = 'sales_features',label='',
+                     choices=c('1y average'='med_price_1y|sd_price_1y',
+                               '3y average'='med_price_3y|sd_price_3y',
+                               '5y average'='med_price_5y|sd_price_5y'
+                     ),selected = 'med_price_3y|sd_price_3y'))
 }
 
 feature_inputs <- get_features_ui(process_features_json())

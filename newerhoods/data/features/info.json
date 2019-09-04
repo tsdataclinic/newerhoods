@@ -1,7 +1,9 @@
 {
   "datasets" : [  
     { "file_name"       : "crime_rates",
-      "input_id"         : "crime_features",
+      "input_id"        : "crime_features",
+      "ui_script"       : null,
+      "ui_vars"         : null,
       "category_name"   : "Crime",
       "feature_columns" : [
                       { "column_name"   :"violation_rate",
@@ -31,8 +33,42 @@
       },
       
     { "file_name"       : "nyc311_rates",
-      "input_id"         : "call_features",
+      "input_id"        : "call_features",
       "category_name"   : "311 Complaints",
+      "ui_script"       : null,
+      "ui_vars"         : null,
+      "feature_columns" : [
+                      { "column_name"   :"party_rate",
+                        "checkbox_name" :"Loud music/party",
+                        "legend_name"   :"Loud Music/Parties",
+                        "legend_units"  :"/1000 people",
+                        "is_rate"       :true,
+                        "exclude_tracts":true
+                        },
+                        
+                      { "column_name"   :"animal_rate",
+                        "checkbox_name" :"Barking dog",
+                        "legend_name"   :"Barking Dogs",
+                        "legend_units"  :"/1000 people",
+                        "is_rate"       :true,
+                        "exclude_tracts":true
+                        },
+                        
+                      { "column_name"   :"icecream_rate",
+                        "checkbox_name" :"Ice cream truck",
+                        "legend_name"   :"Noisy Ice Cream Trucks",
+                        "legend_units"  :"/1000 people",
+                        "is_rate"       :true,
+                        "exclude_tracts":true
+                        }
+                    ]
+      },
+      
+    { "file_name"       : "sales_features",
+      "input_id"        : "call_features",
+      "category_name"   : "311 Complaints",
+      "ui_script"       : "input_housing <- function(){checkboxGroupInput(inputId =                               'housing',label='HOUSING',choices=c('Age of buildings'                                  ='bldg_age','Median sale price'='sale_price'),selected =                                'sale_price')} input_housing_sales <- function(){conditionalPa                           nel(condition='input.housing.includes('sale_price')',radioButt                           ons(inputId = 'sales_features',label='',choices=c('1y average'                           ='med_price_1y|sd_price_1y','3y average'='med_price_3y|sd_pric                           e_3y','5y average'='med_price_5y|sd_price_5y'),selected =                               'med_price_3y|sd_price_3y'))}",
+      "ui_vars"         : ["input_housing","input_housing_sales"],
       "feature_columns" : [
                       { "column_name"   :"party_rate",
                         "checkbox_name" :"Loud music/party",

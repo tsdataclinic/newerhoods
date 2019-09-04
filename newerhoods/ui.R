@@ -55,8 +55,8 @@ ui <- function(request){
           input_housing(),
           div(class="radiogroup-custom",input_housing_sales()),
           eval(parse(text=feature_inputs$vars)),
-          input_crime(),
-          input_noise(),
+          # input_crime(),
+          # input_noise(),
           input_user_features,
           actionButton("select","Apply",class="btn-custom"),
           snackbar(
