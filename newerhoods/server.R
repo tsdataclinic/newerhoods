@@ -59,6 +59,7 @@ load(file="data/features/processed/pre_compiled_data.RData")
 
 merged_features <- features
 
+optimize_params <- FALSE
 ## Server
 function(input, output, session) {
   
@@ -207,7 +208,11 @@ function(input, output, session) {
   
   
   user_selection <- eventReactive(input$select,{
-    selection <- c(input$crime_features,input$housing,input$call_features)
+    inputs <- paste0("c(",paste(feature_inputs$input_ids,collapse = ","),")")
+    selection <- eval(parse(text=inputs))
+    # c(input$crime_features,input$housing,input$call_features)
+    
+    ## additional conditions
     if("sale_price" %in% selection){
       selection <- selection[selection != "sale_price"]  
       selection <- c(selection,input$sales_features)
@@ -221,24 +226,18 @@ function(input, output, session) {
       selection <- gsub("^\\|","",selection)
     }
     
-    # print(selection)
-    shiny::validate(
-      need(!is.null(input$crime_features) | !is.null(input$housing) | 
-             !is.null(input$call_features) | !is.null(input$user_features) , 
-           "Please select at least one feature"))
-    # showNotification(ui="Please select at least one feature",type="error")
     selection
-  }, ignoreNULL = FALSE) # change to false for initial load
+  }, ignoreNULL = FALSE) # change to false to load initial state
+  
   
   
   observeEvent(input$select,{
+    ## To change
     if((is.null(input$crime_features) & is.null(input$housing) & 
-        is.null(input$call_features) * is.null(input$user_features))){
+        is.null(input$call_features) & is.null(input$user_features))){
       showSnackbar("FeatureSelection")  
     }  
-    
   })
-  
   
   dist_mat <- eventReactive(user_selection(),{
     features_to_use <- grepl(user_selection(),colnames(merged_features))
@@ -252,60 +251,64 @@ function(input, output, session) {
   
   optimized_params <- reactive({
     
-    ##
-    D0 <- dist_mat()/max(dist_mat())
-    D1 <- D1reduced
-    D1 <- D1/max(D1)
-    
-    #### Finding optimal parameters
-    # plan(multisession) ## using 4 processors
-    plan(multiprocess(workers=4)) ## using 4 processors
-    tic()
-    
-    range_k <-seq(5,200,by=5)
-    res <- hclust(D0, method = "ward.D")
-    avg_sil <- range_k %>% future_map_dbl(get_sil_width,D0,res)
-
-    cl_metric <- data.frame(k=range_k,avg_sil=avg_sil)
-    cl_metric$groups <- cut(range_k,breaks=4)
-    s <- cl_metric %>% group_by(groups) %>% summarize(K=max(k),k_opt=k[which.max(avg_sil)])
-
-    opt_k <- s$k_opt
-    
-    # toc()
-    
-    # plan(multiprocess(workers=4)) ## using 4 processors
-    # tic()
-    range_alpha <- c(0,seq(0.1,0.5,by=0.05),1)
-    
-    grid_search <- expand.grid(k=opt_k,alpha=range_alpha)
-    
-    D0_sq <- as.matrix((D0))^2
-    D1_sq <- as.matrix((D1))^2
-    n <- dim(D0_sq)[1]
-    T0 <- (sum(D0_sq)/(2*n^2))
-    T1 <- (sum(D1_sq)/(2*n^2))
-    
-    cl_stat <- grid_search %>% future_pmap(.f=get_homogeneity,D0=D0,D1=D1,D0_sq=D0_sq,
-                                           D1_sq=D1_sq,T0=T0,T1=T1)
-    
-    rm("D0_sq","D1_sq","T0","T1") ## removing large objects
-    
-    grid_search <- cbind(grid_search,data.frame(matrix(unlist(cl_stat),ncol=2,byrow=TRUE)))
-    colnames(grid_search)[3:4] <- c("Q0","Q1")
-    
-    # print(grid_search)
-    
-    opt_params <- grid_search %>% group_by(k) %>% 
-      mutate(Q0norm=Q0/max(Q0),Q1norm=Q1/max(Q1)) %>%
-      mutate(Q0gain=(Q0norm-lag(Q0norm,1))/Q0,Q1gain=(Q1norm-lag(Q1norm,1))/Q1) %>%
-      mutate(tot_gain=(Q0gain+Q1gain)) %>%
-      filter(alpha > 0, alpha < 1) %>%
-      group_by(k) %>%
-      mutate(opt_alpha=get_opt(alpha,tot_gain)) %>%
-      summarise(alpha=mean(opt_alpha))
-    toc()
-    
+    if(optimize_params){
+      
+      ##
+      D0 <- dist_mat()/max(dist_mat())
+      D1 <- D1/max(D1)
+      
+      #### Finding optimal parameters
+      # plan(multisession) ## using 4 processors
+      plan(multiprocess(workers=4)) ## using 4 processors
+      tic()
+      
+      range_k <-seq(5,200,by=5)
+      res <- hclust(D0, method = "ward.D")
+      avg_sil <- range_k %>% future_map_dbl(get_sil_width,D0,res)
+      
+      cl_metric <- data.frame(k=range_k,avg_sil=avg_sil)
+      cl_metric$groups <- cut(range_k,breaks=4)
+      s <- cl_metric %>% group_by(groups) %>% summarize(K=max(k),k_opt=k[which.max(avg_sil)])
+      
+      opt_k <- s$k_opt
+      
+      # toc()
+      
+      # plan(multiprocess(workers=4)) ## using 4 processors
+      # tic()
+      range_alpha <- c(0,seq(0.1,0.5,by=0.05),1)
+      
+      grid_search <- expand.grid(k=opt_k,alpha=range_alpha)
+      
+      D0_sq <- as.matrix((D0))^2
+      D1_sq <- as.matrix((D1))^2
+      n <- dim(D0_sq)[1]
+      T0 <- (sum(D0_sq)/(2*n^2))
+      T1 <- (sum(D1_sq)/(2*n^2))
+      
+      cl_stat <- grid_search %>% future_pmap(.f=get_homogeneity,D0=D0,D1=D1,D0_sq=D0_sq,
+                                             D1_sq=D1_sq,T0=T0,T1=T1)
+      
+      rm("D0_sq","D1_sq","T0","T1") ## removing large objects
+      
+      grid_search <- cbind(grid_search,data.frame(matrix(unlist(cl_stat),ncol=2,byrow=TRUE)))
+      colnames(grid_search)[3:4] <- c("Q0","Q1")
+      
+      # print(grid_search)
+      
+      opt_params <- grid_search %>% group_by(k) %>% 
+        mutate(Q0norm=Q0/max(Q0),Q1norm=Q1/max(Q1)) %>%
+        mutate(Q0gain=(Q0norm-lag(Q0norm,1))/Q0,Q1gain=(Q1norm-lag(Q1norm,1))/Q1) %>%
+        mutate(tot_gain=(Q0gain+Q1gain)) %>%
+        filter(alpha > 0, alpha < 1) %>%
+        group_by(k) %>%
+        mutate(opt_alpha=get_opt(alpha,tot_gain)) %>%
+        summarise(alpha=mean(opt_alpha))
+      toc()
+      
+    }else{
+      opt_params <- data.frame(alpha=0.2,k=50)
+    }
     return(opt_params)
   })
   
@@ -318,7 +321,6 @@ function(input, output, session) {
   tree <- reactive({
     
     set.seed(1729)
-    D1 <- D1reduced
     tree <- hclustgeo(dist_mat(),D1,alpha=alpha_for_k())
     
     return(tree)
@@ -523,7 +525,7 @@ function(input, output, session) {
                      stroke=TRUE,
                      weight=2,
                      opacity=0.75,
-                     color=ifelse(input$enable_heatmap,"grey","white"),
+                     color="white",
                      dashArray="5",
                      group = baselines[i])
       if(baselines[i] != input$baseline){

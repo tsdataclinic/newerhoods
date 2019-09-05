@@ -22,6 +22,7 @@ shiny_data <- function(){
     }
   }
   
+  features$boro_ct201 <- as.character(features$boro_ct201)
   # load("newerhoods/data/features/transformed/sales_features_2017.RData")
   # load("newerhoods/data/features/transformed/crime_rates.RData")
   # load("newerhoods/data/features/transformed/nyc311_rates.RData")
@@ -29,11 +30,11 @@ shiny_data <- function(){
   
   
   ## Load census files
-  load("newerhoods/data/census/census_tracts.RData")
-  census_pop <- read_xlsx("newerhoods/data/census/2010census_population.xlsx",skip=7,
+  load("data/census/census_tracts.RData")
+  census_pop <- read_xlsx("data/census/2010census_population.xlsx",skip=7,
                           col_names=c("borough","county_code","borough_code",
                                       "2010_tract","pop_2000","pop_2010",
-                                      "change","pct_change","acres","pop_per_acre"))
+                                      "change","pct_change","acres","pop_per_acre"),)
   
   census_tracts$boro_code <- as.integer(census_tracts$boro_code)
   census_pop$boro_ct201 <- paste0(census_pop$borough_code,census_pop$`2010_tract`)
@@ -41,42 +42,21 @@ shiny_data <- function(){
   census_tracts <- merge(census_tracts,census_pop[,c("boro_ct201","pop_2010")],by="boro_ct201")
   
   ##### subsetting tracts to cluster
-  tracts_to_exclude <- c(census_pop$boro_ct201[census_pop$pop_2010 < 500]) ##Rosevelt Island ,"1023802"
+  census_tracts$density <- census_tracts$pop_2010*10^4/census_tracts$shape_area
+  tracts_to_exclude <- c(census_pop$boro_ct201[census_tracts$density < 0.3])
   reduced_tracts <- census_tracts[!(census_tracts$boro_ct201 %in% tracts_to_exclude),]
   
   ## Merge data sets with census
   # features <- left_join(sales_features,crime_rates,by="boro_ct201")
   # features <- left_join(features,nyc311_rates,by="boro_ct201")
   features <- left_join(features,census_pop[,c("boro_ct201","pop_2010")],by="boro_ct201")
-  
+  features <- features[match(reduced_tracts$boro_ct201,features$boro_ct201),]
   
   ## Pre-compute D1 for clustering
-  tract_centroids <- gCentroid(census_tracts,byid=TRUE)
-  D1c <- dist(tract_centroids@coords) ## euclidean distance between tract centroids
-  
-  features <- features[!(features$boro_ct201 %in% tracts_to_exclude),]
-  list.nb <- poly2nb(census_tracts)
-  ## adjecency between tracts, 1 if tracts adjescent, 0 if not
-  A <- nb2mat(list.nb,style = "B",zero.policy = TRUE) 
-  
-  ## graph based D1
-  # g <- graph_from_adjacency_matrix(as.matrix(D1c)*A,mode = "undirected",weighted=TRUE)
-  # D1g <- distances(g,mode="all")
-  # D1g[is.infinite(D1g)] <- as.matrix(D1c)[is.infinite(D1g)]
-  # 
-  ## complementing of the adjecency matrix, 1 if tracts not adjacent, 0 if they are
-  diag(A) <- 1 
-  D1a <- as.dist(1-A) 
-  ## multiplying euclidean distance with complement of the adjecency to get a composite measure
-  ## such that adjacent tracts have a distance of 0, and rest have distance 1 + their euclidean dist
-  D1 <- (1+D1c) * D1a
-  
-  ################################
-  
-  ## D1 from reduced tracts
   tract_centroids <- gCentroid(reduced_tracts,byid=TRUE)
   D1c <- dist(tract_centroids@coords) ## euclidean distance between tract centroids
   
+  features <- features[!(features$boro_ct201 %in% tracts_to_exclude),]
   list.nb <- poly2nb(reduced_tracts)
   ## adjecency between tracts, 1 if tracts adjescent, 0 if not
   A <- nb2mat(list.nb,style = "B",zero.policy = TRUE) 
@@ -91,10 +71,9 @@ shiny_data <- function(){
   D1a <- as.dist(1-A) 
   ## multiplying euclidean distance with complement of the adjecency to get a composite measure
   ## such that adjacent tracts have a distance of 0, and rest have distance 1 + their euclidean dist
-  D1reduced <- (1+D1c) * D1a
-  # D1 <- as.dist(D1g) *D1a
-  
-  save(features,D1,D1reduced,census_tracts,reduced_tracts,file="newerhoods/data/features/processed/pre_compiled_data.RData")
+  D1 <- (1+D1c) * D1a
+
+  save(features,D1,census_tracts,reduced_tracts,file="data/features/processed/pre_compiled_data.RData")
 }
 
 
@@ -104,31 +83,25 @@ process_features_json <- function(){
   feature_columns_info <- info_json$datasets$feature_columns
   
   for(i in seq_along(feature_columns_info)){
-    script <- ifelse(is.null(info_json$datasets$ui_script[i]),
-                     NULL,info_json$datasets$ui_script[i])
-    vars <- ifelse(is.null(info_json$datasets$ui_vars[i]),
-                   NULL,paste(info_json$datasets$ui_vars[i],collapse = ","))
     if(i == 1){
       feature_set_info <- cbind(feature_columns_info[[i]],
                            file_name=info_json$datasets$file_name[i],
                            category_name=info_json$datasets$category_name[i],
                            inputID=info_json$datasets$input_id[i],
-                           ui_script=script,
-                           ui_vars=vars,
+                           create_ui_expr=info_json$datasets$create_ui[i],
                            stringsAsFactors = FALSE)
     }else{
       tmp <- cbind(feature_columns_info[[i]],
                    file_name=info_json$datasets$file_name[i],
                    category_name=info_json$datasets$category_name[i],
                    inputID=info_json$datasets$input_id[i],
-                   ui_script=script,
-                   ui_vars=vars,
+                   create_ui_expr=info_json$datasets$create_ui[i],
                    stringsAsFactors = FALSE)
       feature_set_info <- rbind(feature_set_info,tmp)
     }
   }
   
-  feature_set_info$legend_html <- paste0("<strong>",feature_set_info$legend_name,
+  feature_set_info$label_html <- paste0("<strong>",feature_set_info$legend_name,
                                     ": </strong> %g ",feature_set_info$legend_units)
   feature_set_info$category_slug <- slugify(feature_set_info$category_name)
   return(feature_set_info)
@@ -147,7 +120,7 @@ process_features_json <- function(){
 
 
 get_features_ui <- function(feature_set_info){
-  categories <- unique(feature_set_info$category_name)
+  categories <- unique(feature_set_info$category_name[feature_set_info$create_ui_expr])
   expressions <- vector("character",length(categories))
   variables <- vector("character",length(categories))
   for(i in seq_along(categories)){
@@ -163,11 +136,10 @@ get_features_ui <- function(feature_set_info){
             checkboxGroupInput(
             inputId = '",tmp$inputID[1],"', label = '",
             str_to_upper(categories[i]),"', choices = c(",choices,"))}")
-    
-    variables[i] <- paste0("input_",tmp$category_slug[1],"()")
-    
   }
-  return(list(exprs=expressions,vars=variables))
+  variables <- paste0("input_",unique(feature_set_info$category_slug[feature_set_info$create_ui_expr]),"()")
+  input_ids <- paste0("input$",unique(feature_set_info$inputID))
+  return(list(exprs=expressions,vars=variables,input_ids=input_ids))
 }
 
 process_baseline_maps <- function(){

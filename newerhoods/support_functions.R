@@ -138,41 +138,32 @@ get_labels <- function(df){
 
   stats_selected <- colnames(df)[grepl("_mean",colnames(df))]
   stats_names <- gsub("_mean","",stats_selected)
-  # excluded_stats <- c("sd_price_1y","sd_price_3y","sd_price_5y")
   
-  stats_names <- stats_names[!(stats_names %in% excluded_stats)]
+  ### Columns defined in feature dictionary
   
-  pretty_names <- c("<strong>2017 Median Sale Price: </strong> $%g /sq.ft.",
-                    "<strong>2015-17 Median Sale Price: </strong> $%g /sq.ft.",
-                    "<strong>2013-17 Median Sale Price: </strong> $%g /sq.ft.",
-                    "<strong># Residential units: </strong> %g ",
-                    "<strong>Building Age: </strong> %g years",
-                    "<strong>Violations: </strong> %g /1000 people",
-                    "<strong>Felonies: </strong> %g /1000 people",
-                    "<strong>Misdemeanors: </strong> %g /1000 people",
-                    "<strong>Noisy Ice Cream Trucks: </strong> %g /1000 people",
-                    "<strong>Barking Dogs: </strong> %g /1000 people",
-                    "<strong>Loud Music/Parties: </strong> %g /1000 people")
+  # get feature dict
+  feature_info <- process_features_json()
   
-  all_stats <- c("med_price_1y","med_price_3y","med_price_5y","res_units","bldg_age",
-  "violation_rate","felony_rate","misdemeanor_rate","icecream_rate","animal_rate","party_rate")
+  # subset to ones in stats selected
+  label_df <- feature_info[feature_info$column_name %in% stats_names
+                               ,c("column_name","label_html")]
   
-  ## matching columns with existing ones
-  matched_columns <- match(stats_names,all_stats)
-  # matched_columns <- matched_columns[!is.na(matched_columns)]
-  label_names <- rep(NA,length(matched_columns))
-  label_names[!is.na(matched_columns)] <- pretty_names[matched_columns[!is.na(matched_columns)]]
-  label_names[is.na(matched_columns)] <- get_pretty_names(gsub("USER_","",stats_names[is.na(matched_columns)]),
-                                                          type="legend")
+  ### Columns from user uploaded data
+  user_columns <- stats_names[grepl("USER_",stats_names)]
+  if(length(user_columns) > 0){
+    user_columns_legends <- get_pretty_names(gsub("USER_","",user_columns),
+                                             type="legend")
     
-  # paste0("<strong>",gsub("USER_","",stats_names[is.na(matched_columns)]),": </strong> %g")
+    user_label_df <- data.frame(column_name=user_columns,label_html=user_columns_legends)
+    label_df <- rbind(label_df,user_label_df)
+  }
   
-  stat_columns <- paste0(stats_names,"_mean")
+  label_df$column_name <- paste0(label_df$column_name,"_mean")
   
-  content <- matrix(NA,nrow=dim(df)[1],ncol=length(matched_columns))
-  for(i in c(1:length(matched_columns))){
-    content[,i] <- sprintf(label_names[i],
-                           round(unlist(df[,stat_columns[i]]),2))
+  content <- matrix(NA,nrow=dim(df)[1],ncol=dim(label_df)[1])
+  for(i in c(1:(dim(label_df)[1]))){
+    content[,i] <- sprintf(label_df$label_html[i],
+                           round(unlist(df[,label_df$column_name[i]]),2))
   }
   
   labels <- apply(content,1,FUN= function(x) {paste(x,collapse="<br/>")})

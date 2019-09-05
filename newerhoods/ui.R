@@ -54,7 +54,7 @@ ui <- function(request){
           info,
           input_housing(),
           div(class="radiogroup-custom",input_housing_sales()),
-          eval(parse(text=feature_inputs$vars)),
+          lapply(as.list(feature_inputs$vars),FUN=function(x) eval(parse(text=x))),
           # input_crime(),
           # input_noise(),
           input_user_features,
