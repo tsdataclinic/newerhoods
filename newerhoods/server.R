@@ -360,7 +360,6 @@ function(input, output, session) {
     user_rate_features <- feature_set[grepl("USER",feature_set)]
     user_rate_features <- user_rate_features[grepl("rate",user_rate_features)]
     rate_features <- c(rate_features,user_rate_features)
-    print(rate_features)
     
     if(length(rate_features) > 0){
       cluster_vals[,rate_features] <- cluster_vals[,rate_features]*cluster_vals$pop_2010/1000
