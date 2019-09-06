@@ -605,17 +605,17 @@ function(input, output, session) {
       p <- p +
         geom_polygon(data = fortify(tt),
                      aes(long, lat, group = group, fill=id),
-                     colour = "white", alpha = 0.6, size = 0) +
+                     alpha = 0.6, size = 0) +
         scale_fill_manual(values=nh$colour) +
         theme(legend.position="none")
       
       if(input$baseline != "none"){
         bl_sp <- get(input$baseline)
         # Coerce the baseline spatial df into a regular df suitable for geom_polygon
+        # TODO get rid of "binding character and factor vector, coercing into character vector" warnings
         bl_sp@data$id <- rownames(bl_sp@data)
         bl_df <- tidy(bl_sp, region = "id")
         bl_df <- as.data.frame(bl_df, stringsAsFactors = FALSE)
-        bl_df <- fortify(bl_df)
         p <- p +
           geom_polygon(data = bl_df, 
                        aes(long, lat, group = group, fill = NA), 
