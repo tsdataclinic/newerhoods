@@ -260,10 +260,10 @@ function(input, output, session) {
       
       #### Finding optimal parameters
       # plan(multisession) ## using 4 processors
-      plan(multiprocess(workers=4)) ## using 4 processors
+      # plan(multiprocess(workers=4)) ## using 4 processors
       tic()
       
-      range_k <-seq(5,200,by=5)
+      range_k <-seq(5,200,by=15)
       res <- hclust(D0, method = "ward.D")
       avg_sil <- range_k %>% future_map_dbl(get_sil_width,D0,res)
       
@@ -272,7 +272,11 @@ function(input, output, session) {
       s <- cl_metric %>% group_by(groups) %>% summarize(K=max(k),k_opt=k[which.max(avg_sil)])
       
       opt_k <- s$k_opt
+      clus_buttons <- c("clus_rec_1","clus_rec_2","clus_rec_3","clus_rec_4")
       
+      for(i in c(1:4)){
+        updateActionButton(session,inputId = clus_buttons[i],label = opt_k[i])
+      }
       # toc()
       
       # plan(multiprocess(workers=4)) ## using 4 processors
@@ -308,10 +312,34 @@ function(input, output, session) {
       toc()
       
     }else{
-      opt_params <- data.frame(alpha=0.2,k=50)
+      sample_k <- sort(sample(c(5:200),4,replace = FALSE))
+      opt_params <- data.frame(alpha=rep(0.2,4),k=sample_k)
+      
+      clus_buttons <- c("clus_rec_1","clus_rec_2","clus_rec_3","clus_rec_4")
+      
+      for(i in c(1:4)){
+        updateActionButton(session,inputId = clus_buttons[i],label = sample_k[i])
+      }
+      
     }
     return(opt_params)
   })
+  
+  observeEvent({input$clus_rec_1},
+               {op <- optimized_params()
+               updateSliderInput(session,"num_clusters",value=op$k[1])})
+  
+  observeEvent({input$clus_rec_2},
+               {op <- optimized_params()
+               updateSliderInput(session,"num_clusters",value=op$k[2])})
+  
+  observeEvent({input$clus_rec_3},
+               {op <- optimized_params()
+               updateSliderInput(session,"num_clusters",value=op$k[3])})
+  
+  observeEvent({input$clus_rec_4},
+               {op <- optimized_params()
+               updateSliderInput(session,"num_clusters",value=op$k[4])})
   
   alpha_for_k <- reactive({
     op <- optimized_params()
