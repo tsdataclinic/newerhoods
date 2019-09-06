@@ -604,6 +604,7 @@ function(input, output, session) {
         geom_polygon(data = fortify(tt),
                      aes(long, lat, group = group, fill=id),
                      colour = "white", alpha = 0.6) +
+        scale_fill_manual(values=nh$colour) +
         theme(legend.position="none")
       ggsave(file, plot = p, device = "png")
     }
