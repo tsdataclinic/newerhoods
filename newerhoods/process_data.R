@@ -43,20 +43,20 @@ shiny_data <- function(){
   
   ##### subsetting tracts to cluster
   census_tracts$density <- census_tracts$pop_2010*10^4/census_tracts$shape_area
-  tracts_to_exclude <- c(census_pop$boro_ct201[census_tracts$density < 0.3])
+  tracts_to_exclude <- census_tracts$boro_ct201[census_tracts$density < 0.3]
   reduced_tracts <- census_tracts[!(census_tracts$boro_ct201 %in% tracts_to_exclude),]
   
   ## Merge data sets with census
   # features <- left_join(sales_features,crime_rates,by="boro_ct201")
   # features <- left_join(features,nyc311_rates,by="boro_ct201")
   features <- left_join(features,census_pop[,c("boro_ct201","pop_2010")],by="boro_ct201")
+  features <- features[!(features$boro_ct201 %in% tracts_to_exclude),]
   features <- features[match(reduced_tracts$boro_ct201,features$boro_ct201),]
   
   ## Pre-compute D1 for clustering
   tract_centroids <- gCentroid(reduced_tracts,byid=TRUE)
   D1c <- dist(tract_centroids@coords) ## euclidean distance between tract centroids
   
-  features <- features[!(features$boro_ct201 %in% tracts_to_exclude),]
   list.nb <- poly2nb(reduced_tracts)
   ## adjecency between tracts, 1 if tracts adjescent, 0 if not
   A <- nb2mat(list.nb,style = "B",zero.policy = TRUE) 

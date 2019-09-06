@@ -32,7 +32,7 @@ Legend text function
 In server.R
 ----------------
 Include created variables in user selection logic *Almost DONE* _missing from snackbar_
-Subset tracts based on the columns selected 
+Subset tracts based on the columns selected *DONE*
 estimate rates based on is_rate flag in feature info 
 
   

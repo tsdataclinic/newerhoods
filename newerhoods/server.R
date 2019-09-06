@@ -7,44 +7,44 @@
 #    http://shiny.rstudio.com/
 
 ## Data handling packages
-require(dplyr)
-require(readxl)
-require(broom)
-require(stringr)
+library(dplyr)
+library(readxl)
+library(broom)
+library(stringr)
 library(jsonlite)
 library(furrr)
 library(tictoc)
 
 ## UI/UX packages
-require(shiny)
-require(shinyWidgets)
-require(shinyjs)
-require(leaflet)
-require(htmltools)
+library(shiny)
+library(shinyWidgets)
+library(shinyjs)
+library(leaflet)
+library(htmltools)
 library(grDevices)
-require(raster)
-require(shinyFeedback)
+library(raster)
+library(shinyFeedback)
 ## Spatial packages
 
 ## spatial libraries with issues in deployment
-# if (!require(gpclib)) install.packages("gpclib", type="source")
+# if (!library(gpclib)) install.packages("gpclib", type="source")
 # gpclibPermit()
 
 library(rgeos)
 library(geojson)
-require(rgdal)
-require(maptools)
-require(sp)
-require(spdep)
+library(rgdal)
+library(maptools)
+library(sp)
+library(spdep)
 library(mapview)
-require(ggmap)
-require(tmap)
-require(tmaptools)
+library(ggmap)
+library(tmap)
+library(tmaptools)
 
 ## clustering
-require(cluster)
-require(fpc)
-require(ClustGeo)
+library(cluster)
+library(fpc)
+library(ClustGeo)
 
 source("settings_local.R")
 source("support_functions.R")

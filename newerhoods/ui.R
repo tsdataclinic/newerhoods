@@ -7,17 +7,17 @@
 #    http://shiny.rstudio.com/
 #
 
-require(shiny)
-require(shinyBS)
-require(shinyjs)
-require(htmltools)
+library(shiny)
+library(shinyBS)
+library(shinyjs)
+library(htmltools)
 library(bsplus)
-require(shinythemes)
-require(shinyWidgets)
-require(leaflet)
-require(markdown)
-require(shinycssloaders)
-require(shinyFeedback)
+library(shinythemes)
+library(shinyWidgets)
+library(leaflet)
+library(markdown)
+library(shinycssloaders)
+library(shinyFeedback)
 
 ### Definitions
 source("components.R")
