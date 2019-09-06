@@ -3,7 +3,7 @@ library(stringr)
 source("support_functions.R")
 
 ### Construct pre-merged rds files for the datasets of interest from a collection of local files
-shiny_data <- function(){
+generate_data <- function(){
   
   #### Load data files
   
@@ -87,14 +87,12 @@ process_features_json <- function(){
       feature_set_info <- cbind(feature_columns_info[[i]],
                            file_name=info_json$datasets$file_name[i],
                            category_name=info_json$datasets$category_name[i],
-                           inputID=info_json$datasets$input_id[i],
                            create_ui_expr=info_json$datasets$create_ui[i],
                            stringsAsFactors = FALSE)
     }else{
       tmp <- cbind(feature_columns_info[[i]],
                    file_name=info_json$datasets$file_name[i],
                    category_name=info_json$datasets$category_name[i],
-                   inputID=info_json$datasets$input_id[i],
                    create_ui_expr=info_json$datasets$create_ui[i],
                    stringsAsFactors = FALSE)
       feature_set_info <- rbind(feature_set_info,tmp)
@@ -104,20 +102,13 @@ process_features_json <- function(){
   feature_set_info$label_html <- paste0("<strong>",feature_set_info$legend_name,
                                     ": </strong> %g ",feature_set_info$legend_units)
   feature_set_info$category_slug <- slugify(feature_set_info$category_name)
+  feature_set_info$inputID <- feature_set_info$category_slug
+  
+  feature_set_info$inputID[grepl("^[[:digit:]]",feature_set_info$inputID)] <- str_c("x",feature_set_info$inputID[
+    grepl("^[[:digit:]]",feature_set_info$inputID)])
+  
   return(feature_set_info)
 }
-
-
-'input_crime <- function(){
-  checkboxGroupInput(
-    inputId = "crime_features", label="CRIME",
-    choices = c("Violations"="violation_rate",
-      "Felonies"="felony_rate",
-      "Misdemeanors"="misdemeanor_rate"
-    )
-  )
-}'
-
 
 get_features_ui <- function(feature_set_info){
   categories <- unique(feature_set_info$category_name[feature_set_info$create_ui_expr])

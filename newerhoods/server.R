@@ -84,9 +84,9 @@ function(input, output, session) {
   raw_user_data <- reactive({
     req(input$file)
     if(tolower(tools::file_ext(input$file$datapath)) %in% c("csv", "txt")){
-      raw_user_df <- read.csv(input$file$datapath)  
+      raw_user_df <- read.csv(input$file$datapath,row.names = NULL)  
     }else if(tolower(tools::file_ext(input$file$datapath)) %in% c("xls","xlsx")){
-      raw_user_df <- read_excel(input$file$datapath)
+      raw_user_df <- read_excel(input$file$datapath,row.names = NULL)
       raw_user_df <- as.data.frame(raw_user_df)
     }
     # merged_features <<- features
@@ -231,13 +231,14 @@ function(input, output, session) {
   
   
   
-  observeEvent(input$select,{
-    ## To change
-    if((is.null(input$crime_features) & is.null(input$housing) & 
-        is.null(input$call_features) & is.null(input$user_features))){
-      showSnackbar("FeatureSelection")  
-    }  
-  })
+  # observeEvent(input$select,{
+  #   ## To change
+  #   if((is.null(input$crime_features) & is.null(input$housing) & 
+  #       is.null(input$call_features) & is.null(input$user_features))){
+  #     showSnackbar("FeatureSelection")  
+  #   }  
+  # })
+  # 
   
   dist_mat <- eventReactive(user_selection(),{
     features_to_use <- grepl(user_selection(),colnames(merged_features))
@@ -353,8 +354,16 @@ function(input, output, session) {
     cluster_pop <- cluster_vals %>% group_by(cl) %>% summarise(pop = sum(pop_2010),n = n())
     
     ## Going from rates back to total cases to make cluster aggregation easier
-    if(sum(grepl("rate",feature_set)) > 0){
-      cluster_vals[,grepl("rate",colnames(cluster_vals))] <- cluster_vals[,grepl("rate",colnames(cluster_vals))]*cluster_vals$pop_2010/1000
+    feature_info <- process_features_json()
+    rate_features <- feature_info$column_name[feature_info$is_rate]
+    rate_features <- rate_features[rate_features %in% feature_set]
+    user_rate_features <- feature_set[grepl("USER",feature_set)]
+    user_rate_features <- user_rate_features[grepl("rate",user_rate_features)]
+    rate_features <- c(rate_features,user_rate_features)
+    print(rate_features)
+    
+    if(length(rate_features) > 0){
+      cluster_vals[,rate_features] <- cluster_vals[,rate_features]*cluster_vals$pop_2010/1000
     }
     
     ## Summarising over each cluster and calculating mean statistics
