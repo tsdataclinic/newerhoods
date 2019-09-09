@@ -7,44 +7,44 @@
 #    http://shiny.rstudio.com/
 
 ## Data handling packages
-require(dplyr)
-require(readxl)
-require(broom)
-require(stringr)
+library(dplyr)
+library(readxl)
+library(broom)
+library(stringr)
 library(jsonlite)
 library(furrr)
 library(tictoc)
 
 ## UI/UX packages
-require(shiny)
-require(shinyWidgets)
-require(shinyjs)
-require(leaflet)
-require(htmltools)
+library(shiny)
+library(shinyWidgets)
+library(shinyjs)
+library(leaflet)
+library(htmltools)
 library(grDevices)
-require(raster)
-require(shinyFeedback)
+library(raster)
+library(shinyFeedback)
 ## Spatial packages
 
 ## spatial libraries with issues in deployment
-# if (!require(gpclib)) install.packages("gpclib", type="source")
+# if (!library(gpclib)) install.packages("gpclib", type="source")
 # gpclibPermit()
 
 library(rgeos)
 library(geojson)
-require(rgdal)
-require(maptools)
-require(sp)
-require(spdep)
+library(rgdal)
+library(maptools)
+library(sp)
+library(spdep)
 library(mapview)
-require(ggmap)
-require(tmap)
-require(tmaptools)
+library(ggmap)
+library(tmap)
+library(tmaptools)
 
 ## clustering
-require(cluster)
-require(fpc)
-require(ClustGeo)
+library(cluster)
+library(fpc)
+library(ClustGeo)
 
 source("settings_local.R")
 source("support_functions.R")
@@ -84,9 +84,9 @@ function(input, output, session) {
   raw_user_data <- reactive({
     req(input$file)
     if(tolower(tools::file_ext(input$file$datapath)) %in% c("csv", "txt")){
-      raw_user_df <- read.csv(input$file$datapath)  
+      raw_user_df <- read.csv(input$file$datapath,row.names = NULL)  
     }else if(tolower(tools::file_ext(input$file$datapath)) %in% c("xls","xlsx")){
-      raw_user_df <- read_excel(input$file$datapath)
+      raw_user_df <- read_excel(input$file$datapath,row.names = NULL)
       raw_user_df <- as.data.frame(raw_user_df)
     }
     # merged_features <<- features
@@ -231,13 +231,14 @@ function(input, output, session) {
   
   
   
-  observeEvent(input$select,{
-    ## To change
-    if((is.null(input$crime_features) & is.null(input$housing) & 
-        is.null(input$call_features) & is.null(input$user_features))){
-      showSnackbar("FeatureSelection")  
-    }  
-  })
+  # observeEvent(input$select,{
+  #   ## To change
+  #   if((is.null(input$crime_features) & is.null(input$housing) & 
+  #       is.null(input$call_features) & is.null(input$user_features))){
+  #     showSnackbar("FeatureSelection")  
+  #   }  
+  # })
+  # 
   
   dist_mat <- eventReactive(user_selection(),{
     features_to_use <- grepl(user_selection(),colnames(merged_features))
@@ -259,10 +260,10 @@ function(input, output, session) {
       
       #### Finding optimal parameters
       # plan(multisession) ## using 4 processors
-      plan(multiprocess(workers=4)) ## using 4 processors
+      # plan(multiprocess(workers=4)) ## using 4 processors
       tic()
       
-      range_k <-seq(5,200,by=5)
+      range_k <-seq(5,200,by=15)
       res <- hclust(D0, method = "ward.D")
       avg_sil <- range_k %>% future_map_dbl(get_sil_width,D0,res)
       
@@ -271,7 +272,11 @@ function(input, output, session) {
       s <- cl_metric %>% group_by(groups) %>% summarize(K=max(k),k_opt=k[which.max(avg_sil)])
       
       opt_k <- s$k_opt
+      clus_buttons <- c("clus_rec_1","clus_rec_2","clus_rec_3","clus_rec_4")
       
+      for(i in c(1:4)){
+        updateActionButton(session,inputId = clus_buttons[i],label = opt_k[i])
+      }
       # toc()
       
       # plan(multiprocess(workers=4)) ## using 4 processors
@@ -307,10 +312,34 @@ function(input, output, session) {
       toc()
       
     }else{
-      opt_params <- data.frame(alpha=0.2,k=50)
+      sample_k <- sort(sample(c(5:200),4,replace = FALSE))
+      opt_params <- data.frame(alpha=rep(0.2,4),k=sample_k)
+      
+      clus_buttons <- c("clus_rec_1","clus_rec_2","clus_rec_3","clus_rec_4")
+      
+      for(i in c(1:4)){
+        updateActionButton(session,inputId = clus_buttons[i],label = sample_k[i])
+      }
+      
     }
     return(opt_params)
   })
+  
+  observeEvent({input$clus_rec_1},
+               {op <- optimized_params()
+               updateSliderInput(session,"num_clusters",value=op$k[1])})
+  
+  observeEvent({input$clus_rec_2},
+               {op <- optimized_params()
+               updateSliderInput(session,"num_clusters",value=op$k[2])})
+  
+  observeEvent({input$clus_rec_3},
+               {op <- optimized_params()
+               updateSliderInput(session,"num_clusters",value=op$k[3])})
+  
+  observeEvent({input$clus_rec_4},
+               {op <- optimized_params()
+               updateSliderInput(session,"num_clusters",value=op$k[4])})
   
   alpha_for_k <- reactive({
     op <- optimized_params()
@@ -353,8 +382,15 @@ function(input, output, session) {
     cluster_pop <- cluster_vals %>% group_by(cl) %>% summarise(pop = sum(pop_2010),n = n())
     
     ## Going from rates back to total cases to make cluster aggregation easier
-    if(sum(grepl("rate",feature_set)) > 0){
-      cluster_vals[,grepl("rate",colnames(cluster_vals))] <- cluster_vals[,grepl("rate",colnames(cluster_vals))]*cluster_vals$pop_2010/1000
+    feature_info <- process_features_json()
+    rate_features <- feature_info$column_name[feature_info$is_rate]
+    rate_features <- rate_features[rate_features %in% feature_set]
+    user_rate_features <- feature_set[grepl("USER",feature_set)]
+    user_rate_features <- user_rate_features[grepl("rate",user_rate_features)]
+    rate_features <- c(rate_features,user_rate_features)
+    
+    if(length(rate_features) > 0){
+      cluster_vals[,rate_features] <- cluster_vals[,rate_features]*cluster_vals$pop_2010/1000
     }
     
     ## Summarising over each cluster and calculating mean statistics

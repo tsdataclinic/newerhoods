@@ -326,13 +326,25 @@ download_dropdown <- dropdownButton(
                            placement="top")
 )
 
+clus_rec_1 <- actionLink("clus_rec_1",5)
+clus_rec_2 <- actionLink("clus_rec_2",50)
+clus_rec_3 <- actionLink("clus_rec_3",100)
+clus_rec_4 <- actionLink("clus_rec_4",170)
 
+cluster_reco_links <- div(class="flex subtitle-label","Recommended",
+  div(class="links flex",
+      div(class="mainlink",clus_rec_1),
+      div(class="mainslink",clus_rec_2),
+      div(class="mainslink",clus_rec_3),
+      div(class="mainslink",clus_rec_4)
+  ))
 
 
 map_control_panel <- function(){div(
   class="flex flex-between map-control", 
   div(class="xsflex", 
       input_clusters(),
+      cluster_reco_links,
       input_baseline()
   ),
   div(

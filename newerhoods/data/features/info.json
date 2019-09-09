@@ -1,7 +1,6 @@
 {
   "datasets" : [  
     { "file_name"       : "crime_rates",
-      "input_id"        : "crime_features",
       "create_ui"       : true,
       "category_name"   : "Crime",
       "feature_columns" : [
@@ -29,7 +28,6 @@
       },
       
     { "file_name"       : "nyc311_rates",
-      "input_id"        : "call_features",
       "category_name"   : "311 Complaints",
       "create_ui"       : true,
       "feature_columns" : [
@@ -57,7 +55,6 @@
       },
       
     { "file_name"       : "sales_features",
-      "input_id"        : "housing",
       "category_name"   : "Housing",
       "create_ui"       : false,
       "feature_columns" : [
@@ -65,7 +62,7 @@
                         "checkbox_name" :"1y average",
                         "legend_name"   :"2017 Median Sale Price",
                         "legend_units"  :"/sq.ft.",
-                        "is_rate"       :true
+                        "is_rate"       :false
                         },
                         
                       { "column_name"   :"med_price_3y",

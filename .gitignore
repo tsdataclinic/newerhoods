@@ -31,6 +31,7 @@ settings_local.R
 # RStudio files
 .Rproj.user/
 .Rproj.user
+newer hoods.Rproj
 
 # produced vignettes
 vignettes/*.html

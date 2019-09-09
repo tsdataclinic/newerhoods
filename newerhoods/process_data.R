@@ -3,7 +3,7 @@ library(stringr)
 source("support_functions.R")
 
 ### Construct pre-merged rds files for the datasets of interest from a collection of local files
-shiny_data <- function(){
+generate_data <- function(){
   
   #### Load data files
   
@@ -43,20 +43,20 @@ shiny_data <- function(){
   
   ##### subsetting tracts to cluster
   census_tracts$density <- census_tracts$pop_2010*10^4/census_tracts$shape_area
-  tracts_to_exclude <- c(census_pop$boro_ct201[census_tracts$density < 0.3])
+  tracts_to_exclude <- census_tracts$boro_ct201[census_tracts$density < 0.3]
   reduced_tracts <- census_tracts[!(census_tracts$boro_ct201 %in% tracts_to_exclude),]
   
   ## Merge data sets with census
   # features <- left_join(sales_features,crime_rates,by="boro_ct201")
   # features <- left_join(features,nyc311_rates,by="boro_ct201")
   features <- left_join(features,census_pop[,c("boro_ct201","pop_2010")],by="boro_ct201")
+  features <- features[!(features$boro_ct201 %in% tracts_to_exclude),]
   features <- features[match(reduced_tracts$boro_ct201,features$boro_ct201),]
   
   ## Pre-compute D1 for clustering
   tract_centroids <- gCentroid(reduced_tracts,byid=TRUE)
   D1c <- dist(tract_centroids@coords) ## euclidean distance between tract centroids
   
-  features <- features[!(features$boro_ct201 %in% tracts_to_exclude),]
   list.nb <- poly2nb(reduced_tracts)
   ## adjecency between tracts, 1 if tracts adjescent, 0 if not
   A <- nb2mat(list.nb,style = "B",zero.policy = TRUE) 
@@ -87,14 +87,12 @@ process_features_json <- function(){
       feature_set_info <- cbind(feature_columns_info[[i]],
                            file_name=info_json$datasets$file_name[i],
                            category_name=info_json$datasets$category_name[i],
-                           inputID=info_json$datasets$input_id[i],
                            create_ui_expr=info_json$datasets$create_ui[i],
                            stringsAsFactors = FALSE)
     }else{
       tmp <- cbind(feature_columns_info[[i]],
                    file_name=info_json$datasets$file_name[i],
                    category_name=info_json$datasets$category_name[i],
-                   inputID=info_json$datasets$input_id[i],
                    create_ui_expr=info_json$datasets$create_ui[i],
                    stringsAsFactors = FALSE)
       feature_set_info <- rbind(feature_set_info,tmp)
@@ -104,20 +102,13 @@ process_features_json <- function(){
   feature_set_info$label_html <- paste0("<strong>",feature_set_info$legend_name,
                                     ": </strong> %g ",feature_set_info$legend_units)
   feature_set_info$category_slug <- slugify(feature_set_info$category_name)
+  feature_set_info$inputID <- feature_set_info$category_slug
+  
+  feature_set_info$inputID[grepl("^[[:digit:]]",feature_set_info$inputID)] <- str_c("x",feature_set_info$inputID[
+    grepl("^[[:digit:]]",feature_set_info$inputID)])
+  
   return(feature_set_info)
 }
-
-
-'input_crime <- function(){
-  checkboxGroupInput(
-    inputId = "crime_features", label="CRIME",
-    choices = c("Violations"="violation_rate",
-      "Felonies"="felony_rate",
-      "Misdemeanors"="misdemeanor_rate"
-    )
-  )
-}'
-
 
 get_features_ui <- function(feature_set_info){
   categories <- unique(feature_set_info$category_name[feature_set_info$create_ui_expr])
