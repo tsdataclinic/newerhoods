@@ -629,11 +629,28 @@ function(input, output, session) {
       tt <- tidy(nh,region = "cl")
       tt <- as.data.frame(tt, stringsAsFactors = FALSE)
       
-      p <- ggmap(map_dl) +
+      p <- ggmap(map_dl)
+      
+      p <- p +
         geom_polygon(data = fortify(tt),
                      aes(long, lat, group = group, fill=id),
-                     colour = "white", alpha = 0.6) +
+                     alpha = 0.6, size = 0) +
+        scale_fill_manual(values=nh$colour) +
         theme(legend.position="none")
+      
+      if(input$baseline != "none"){
+        bl_sp <- get(input$baseline)
+        # Coerce the baseline spatial df into a regular df suitable for geom_polygon
+        # TODO get rid of "binding character and factor vector, coercing into character vector" warnings
+        bl_sp@data$id <- rownames(bl_sp@data)
+        bl_df <- tidy(bl_sp, region = "id")
+        bl_df <- as.data.frame(bl_df, stringsAsFactors = FALSE)
+        p <- p +
+          geom_polygon(data = bl_df, 
+                       aes(long, lat, group = group, fill = NA), 
+                       colour = "white", linetype = "dashed", size = 0.5)
+      }
+
       ggsave(file, plot = p, device = "png")
     }
   )
