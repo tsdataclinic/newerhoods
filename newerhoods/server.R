@@ -260,7 +260,7 @@ function(input, output, session) {
       
       #### Finding optimal parameters
       # plan(multisession) ## using 4 processors
-      # plan(multiprocess(workers=4)) ## using 4 processors
+      plan(multiprocess(workers=4)) ## using 4 processors
       tic()
       
       range_k <-seq(5,200,by=1)
