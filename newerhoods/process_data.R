@@ -40,10 +40,12 @@ generate_data <- function(){
   census_pop$boro_ct201 <- paste0(census_pop$borough_code,census_pop$`2010_tract`)
   
   census_tracts <- merge(census_tracts,census_pop[,c("boro_ct201","pop_2010")],by="boro_ct201")
+  # census_tracts <- census_tracts[order(census_tracts$boro_ct201),]
   
   ##### subsetting tracts to cluster
   census_tracts$density <- census_tracts$pop_2010*10^4/census_tracts$shape_area
-  tracts_to_exclude <- census_tracts$boro_ct201[census_tracts$density < 0.3]
+  # tracts_to_exclude <- census_tracts$boro_ct201[census_tracts$density < 0.3]
+  tracts_to_exclude <- census_tracts$boro_ct201[census_tracts$pop_2010 < 500]
   reduced_tracts <- census_tracts[!(census_tracts$boro_ct201 %in% tracts_to_exclude),]
   
   ## Merge data sets with census

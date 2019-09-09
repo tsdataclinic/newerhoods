@@ -67,6 +67,18 @@ a:hover {
   cursor: pointer;
 }
 
+.recolink {
+  color: #0099a6;
+  padding-right: 15px;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.recolink:hint {
+  color: #0099a6;
+}
+
+
 /* custom checkbox */
 .checkbox input[type="checkbox"] {
   opacity: 0;
@@ -226,6 +238,7 @@ a:hover {
 .heat-map-label {
   position: relative;
   left: -10px;
+  top: 8px;
 }
 
 .navbar-subtitle {
@@ -235,6 +248,11 @@ a:hover {
   color: #1d1e1f;
   letter-spacing: 1.1px;
   padding-top: 4px;
+}
+
+.irs-bar-edge {
+  border: 1px solid #0099a6;
+  background: #0099a6;
 }
 
 .main {
@@ -284,7 +302,8 @@ a:hover {
   opacity: 1;
   font-size: 12px;
   font-weight: 900;
-  margin-top: 0px;
+  margin-top: 7px;
+  padding-right:60px;
 }
 
 .btn-custom {
@@ -460,11 +479,26 @@ a:hover {
 }
 
 .custom .form-group {
-  margin-bottom: 16px;
+  margin-bottom: 0px;
   margin-top: 16px;
   display: flex;
   align-items: center;
 }
+
+.clus-form-group {
+  margin-bottom: 0px;
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+}
+
+.reco-form-group {
+  margin-bottom: 16px;
+  margin-top: 0px;
+  display: flex;
+  align-items: center;
+}
+
 
 .custom label {
   min-width: 60px;
@@ -483,7 +517,7 @@ a:hover {
 
 .selectize-control {
   margin-bottom: 0;
-  min-width: 275px;
+  min-width: 200px;
 }
 
 .auto .form-group {
@@ -527,6 +561,10 @@ a:hover {
   text-align: left;
 }
 
+.heatmap-tooltip {
+  position: relative;
+  top: 8px;
+}
 .radiogroup-custom {
   padding-left: 25px;
 }

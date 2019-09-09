@@ -59,7 +59,7 @@ load(file="data/features/processed/pre_compiled_data.RData")
 
 merged_features <- features
 
-optimize_params <- FALSE
+optimize_params <- TRUE
 ## Server
 function(input, output, session) {
   
@@ -263,15 +263,16 @@ function(input, output, session) {
       # plan(multiprocess(workers=4)) ## using 4 processors
       tic()
       
-      range_k <-seq(5,200,by=15)
+      range_k <-seq(5,200,by=1)
       res <- hclust(D0, method = "ward.D")
       avg_sil <- range_k %>% future_map_dbl(get_sil_width,D0,res)
       
       cl_metric <- data.frame(k=range_k,avg_sil=avg_sil)
-      cl_metric$groups <- cut(range_k,breaks=4)
+      cl_metric$groups <- cut(range_k,breaks=c(4,50,100,150,200))
       s <- cl_metric %>% group_by(groups) %>% summarize(K=max(k),k_opt=k[which.max(avg_sil)])
       
       opt_k <- s$k_opt
+      print(opt_k)
       clus_buttons <- c("clus_rec_1","clus_rec_2","clus_rec_3","clus_rec_4")
       
       for(i in c(1:4)){

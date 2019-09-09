@@ -9,7 +9,7 @@ social_links <- div(class="links flex",
                     div(class="imglink",medium_link),
                     div(class="imglink",github_link),
                     div(class="imglink",twitter_link)
-                    )
+)
 
 header_nav <- withTags(
   header(class ="header",
@@ -78,7 +78,7 @@ info <-
 ## Upload inputs
 
 upload_link <- actionButton("upload","Upload your data",icon=icon("upload",lib="font-awesome"),class="btn-custom")
-  #actionLink(inputId = "upload",label="Upload Data")
+#actionLink(inputId = "upload",label="Upload Data")
 
 # upload_switch<- materialSwitch(
 #   inputId = "upload",
@@ -162,7 +162,7 @@ modified_bsModal <- function(id, title, trigger, ..., size) {
                                                                            shiny::tags$button(type = "button", class = "close", "data-dismiss" = "modal", shiny::tags$span(shiny::HTML("&times;"))),
                                                                            shiny::tags$h4(class = "modal-title", title)
                                                            ),
-                                                            shiny::tags$div(class = "modal-body", list(...))#,
+                                                           shiny::tags$div(class = "modal-body", list(...))#,
                                                            # shiny::tags$div(class = "modal-footer",
                                                            #                 shiny::tags$button(type = "button", class = "btn btn-default", "data-dismiss" = "modal", "Close")
                                                            # )
@@ -281,8 +281,8 @@ input_baseline <- function(){
 #               multiple=TRUE))
 
 input_user_features <- conditionalPanel(condition = "output.nrows",
-                        checkboxGroupInput(inputId = 'user_features',label="GENERATED FEATURES",
-                                    choices=NULL))
+                                        checkboxGroupInput(inputId = 'user_features',label="GENERATED FEATURES",
+                                                           choices=NULL))
 
 
 myDownloadButton <- function(outputId,label,class=NULL,icon=icon("download"), ...){
@@ -301,9 +301,9 @@ myactionButton <- function (inputId, label, icon = NULL, width = NULL,class, ...
 
 myDownloadBttn <- function(outputId, label = "Download",icon = icon("download"),action_class){
   bttn <- myactionButton(inputId = paste0(outputId, "_bttn"), 
-                     label = tags$a(id = outputId, class = "shiny-download-link", 
-                                    href = "", target = "_blank", download = NA, label),
-                     icon = icon,class=action_class)
+                         label = tags$a(id = outputId, class = "shiny-download-link", 
+                                        href = "", target = "_blank", download = NA, label),
+                         icon = icon,class=action_class)
   bttn
 }
 
@@ -312,10 +312,10 @@ download_dropdown <- dropdownButton(
                  icon=icon("file-download",lib="font-awesome"),action_class="btn-download"),
   br(),
   myDownloadBttn(outputId = "downloadGEOJson",label="GeoJSON",
-                   icon=icon("file-archive",lib="font-awesome"),action_class="btn-download"),
+                 icon=icon("file-archive",lib="font-awesome"),action_class="btn-download"),
   br(),
   myDownloadBttn(outputId ="downloadPNG",label="Image",
-                   icon=icon("file-image",lib="font-awesome"),action_class="btn-download"),
+                 icon=icon("file-image",lib="font-awesome"),action_class="btn-download"),
   br(),
   bookmarkButton(label="Share",icon=icon("link",lib="font-awesome"),class="btn-download"),
   
@@ -326,32 +326,36 @@ download_dropdown <- dropdownButton(
                            placement="top")
 )
 
-clus_rec_1 <- actionLink("clus_rec_1",5)
-clus_rec_2 <- actionLink("clus_rec_2",50)
-clus_rec_3 <- actionLink("clus_rec_3",100)
-clus_rec_4 <- actionLink("clus_rec_4",170)
+clus_rec_1 <- actionLink("clus_rec_1",50)
+clus_rec_2 <- actionLink("clus_rec_2",100)
+clus_rec_3 <- actionLink("clus_rec_3",150)
+clus_rec_4 <- actionLink("clus_rec_4",200)
 
-cluster_reco_links <- div(class="flex subtitle-label","Recommended",
-  div(class="links flex",
-      div(class="mainlink",clus_rec_1),
-      div(class="mainslink",clus_rec_2),
-      div(class="mainslink",clus_rec_3),
-      div(class="mainslink",clus_rec_4)
-  ))
+cluster_reco_links <- div(class="reco-form-group shiny-input-container",
+                          tags$label("Recommended",class="subtitle-label"),
+                          # div(class="subtitle-label","Recommended"),
+                          span(class="links flex",
+                               div(class="recolink",clus_rec_1),
+                               div(class="recolink",clus_rec_2),
+                               div(class="recolink",clus_rec_3),
+                               div(class="recolink",clus_rec_4)
+                          ))
 
 
 map_control_panel <- function(){div(
   class="flex flex-between map-control", 
   div(class="xsflex", 
       input_clusters(),
-      cluster_reco_links,
-      input_baseline()
+      cluster_reco_links
   ),
-  div(
-    class="flex flex-end auto heatmap-group", 
-    input_enable_heatmap(),
-    div(class="heat-map-label", "Heat map"),
-    info_plot_type
+  div(class="xsflex", 
+      input_baseline(),
+      div(
+        class="flex flex-end auto heatmap-group",
+        input_enable_heatmap(),
+        div(class="heat-map-label", "Heat map"),
+        div(class="heatmap-tooltip",info_plot_type)
+      )
   )
 )
 }
