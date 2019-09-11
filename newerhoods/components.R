@@ -349,13 +349,14 @@ map_control_panel <- function(){div(
       cluster_reco_links
   ),
   div(class="xsflex", 
-      input_baseline(),
       div(
         class="flex flex-end auto heatmap-group",
         input_enable_heatmap(),
         div(class="heat-map-label", "Heat map"),
         div(class="heatmap-tooltip",info_plot_type)
-      )
+      ),
+      input_baseline(),
+      h5(textOutput("overlap"))
   )
 )
 }

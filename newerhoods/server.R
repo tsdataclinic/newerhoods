@@ -59,7 +59,7 @@ load(file="data/features/processed/pre_compiled_data.RData")
 
 merged_features <- features
 
-optimize_params <- TRUE
+optimize_params <- FALSE
 ## Server
 function(input, output, session) {
   
@@ -313,14 +313,14 @@ function(input, output, session) {
       toc()
       
     }else{
-      sample_k <- sort(sample(c(5:200),4,replace = FALSE))
-      opt_params <- data.frame(alpha=rep(0.2,4),k=sample_k)
+      # sample_k <- sort(sample(c(5:200),4,replace = FALSE))
+      opt_params <- data.frame(alpha=rep(0.2,4),k=100)
       
-      clus_buttons <- c("clus_rec_1","clus_rec_2","clus_rec_3","clus_rec_4")
+      # clus_buttons <- c("clus_rec_1","clus_rec_2","clus_rec_3","clus_rec_4")
       
-      for(i in c(1:4)){
-        updateActionButton(session,inputId = clus_buttons[i],label = sample_k[i])
-      }
+      # for(i in c(1:4)){
+      #   updateActionButton(session,inputId = clus_buttons[i],label = sample_k[i])
+      # }
       
     }
     return(opt_params)
@@ -486,6 +486,7 @@ function(input, output, session) {
       #   accessToken = Sys.getenv('MAPBOX_ACCESS_TOKEN'))
       # ) %>%
       addProviderTiles("Stamen.TonerLite") %>%
+      addMapPane("newerhoods", zIndex = 410) %>%
       addPolygons(data=newerhoods(),
                   fillColor = newerhoods()$colour,
                   stroke = TRUE,
@@ -506,11 +507,12 @@ function(input, output, session) {
                     style = list("font-weight"="normal",
                                  padding = "3px 8px"),
                     textsize = "15px",
-                    direction = "auto")
+                    direction = "auto"),
+                  options = pathOptions(pane = "newerhoods")
       )
   })
   
-  output$map <-renderLeaflet({
+  output$map <- renderLeaflet({
     map_reactive()  
   })
   
@@ -558,13 +560,15 @@ function(input, output, session) {
       # readRDS(file=paste0(source_folder,files[i]))
       proxy <- leafletProxy("map")
       proxy %>%
+        addMapPane("baseline", zIndex = 420) %>%
         addPolylines(data=baseline_map,
                      stroke=TRUE,
                      weight=2,
                      opacity=0.75,
                      color="white",
                      dashArray="5",
-                     group = baselines[i])
+                     group = baselines[i],
+                     options = pathOptions(pane = "baseline"))
       if(baselines[i] != input$baseline){
         proxy %>% hideGroup(baselines[i])
       }
@@ -573,6 +577,48 @@ function(input, output, session) {
   
   observeEvent({input$enable_heatmap},{add_baselines()})
   observeEvent({clus_res()},{add_baselines()})
+  
+  overlap <- reactive({
+    if(input$baseline != "none"){
+      baseline_map <- get(input$baseline)
+      jaccard_insights <- get_jaccard_index(newerhoods(),baseline_map,j_threshold = 0.748)
+      baseline_highlight_areas <- jaccard_insights$highlight_area
+      baseline_highlight_hatch <- jaccard_insights$hatch
+      jaccard_index <- 100*round(jaccard_insights$jaccard_index,4)
+      
+      proxy <- leafletProxy("map")
+      proxy %>% 
+        addMapPane("highlight_lines", zIndex = 430) %>%
+        # addMapPane("highlight", zIndex = 390) %>%
+        # addPolygons(data=baseline_highlight_areas,
+        #             fillColor = "black",
+        #             fillOpacity = 0,
+        #             stroke=TRUE,
+        #             weight=2,
+        #             opacity=0.75,
+        #             color="orange",
+        #             options = pathOptions(pane = "highlight")) %>%
+        addPolylines(data=baseline_highlight_hatch,
+                     color=ifelse(input$enable_heatmap,"grey","#f58131"),
+                     weight=2,
+                     opacity = 0.8,
+                     options = pathOptions(pane = "highlight_lines"))
+      
+      
+      # print(round(jaccard_index,2))
+    }else{
+      jaccard_index <- ""
+    }
+    return(jaccard_index)
+  })
+  
+  output$overlap <- renderText({
+    if(overlap() != ""){
+      paste0("Overlap: ",overlap(),"%")  
+    }else{
+      overlap()
+    }
+  })
   
   observeEvent(input$baseline,{
     if(input$baseline != "none"){
@@ -650,7 +696,7 @@ function(input, output, session) {
                        aes(long, lat, group = group, fill = NA), 
                        colour = "white", linetype = "dashed", size = 0.5)
       }
-
+      
       ggsave(file, plot = p, device = "png")
     }
   )
