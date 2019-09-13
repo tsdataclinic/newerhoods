@@ -56,10 +56,10 @@ options(future.globals.maxSize= 750*1024^2)
 
 ## loading pre-cleaned data
 load(file="data/features/processed/pre_compiled_data.RData")
-
+load(file="data/saved_params.RData")
 merged_features <- features
 
-optimize_params <- FALSE
+optimize_params <- TRUE
 ## Server
 function(input, output, session) {
   
@@ -251,78 +251,81 @@ function(input, output, session) {
   },ignoreNULL = FALSE)
   
   optimized_params <- reactive({
-    
-    if(optimize_params){
-      
-      ##
-      D0 <- dist_mat()/max(dist_mat())
-      D1 <- D1/max(D1)
-      
-      #### Finding optimal parameters
-      # plan(multisession) ## using 4 processors
-      plan(multiprocess(workers=4)) ## using 4 processors
-      tic()
-      
-      range_k <-seq(5,200,by=1)
-      res <- hclust(D0, method = "ward.D")
-      avg_sil <- range_k %>% future_map_dbl(get_sil_width,D0,res)
-      
-      cl_metric <- data.frame(k=range_k,avg_sil=avg_sil)
-      cl_metric$groups <- cut(range_k,breaks=c(4,50,100,150,200))
-      s <- cl_metric %>% group_by(groups) %>% summarize(K=max(k),k_opt=k[which.max(avg_sil)])
-      
-      opt_k <- s$k_opt
-      print(opt_k)
-      clus_buttons <- c("clus_rec_1","clus_rec_2","clus_rec_3","clus_rec_4")
-      
-      for(i in c(1:4)){
-        updateActionButton(session,inputId = clus_buttons[i],label = opt_k[i])
-      }
-      # toc()
-      
-      # plan(multiprocess(workers=4)) ## using 4 processors
-      # tic()
-      range_alpha <- c(0,seq(0.1,0.5,by=0.05),1)
-      
-      grid_search <- expand.grid(k=opt_k,alpha=range_alpha)
-      
-      D0_sq <- as.matrix((D0))^2
-      D1_sq <- as.matrix((D1))^2
-      n <- dim(D0_sq)[1]
-      T0 <- (sum(D0_sq)/(2*n^2))
-      T1 <- (sum(D1_sq)/(2*n^2))
-      
-      cl_stat <- grid_search %>% future_pmap(.f=get_homogeneity,D0=D0,D1=D1,D0_sq=D0_sq,
-                                             D1_sq=D1_sq,T0=T0,T1=T1)
-      
-      rm("D0_sq","D1_sq","T0","T1") ## removing large objects
-      
-      grid_search <- cbind(grid_search,data.frame(matrix(unlist(cl_stat),ncol=2,byrow=TRUE)))
-      colnames(grid_search)[3:4] <- c("Q0","Q1")
-      
-      # print(grid_search)
-      
-      opt_params <- grid_search %>% group_by(k) %>% 
-        mutate(Q0norm=Q0/max(Q0),Q1norm=Q1/max(Q1)) %>%
-        mutate(Q0gain=(Q0norm-lag(Q0norm,1))/Q0,Q1gain=(Q1norm-lag(Q1norm,1))/Q1) %>%
-        mutate(tot_gain=(Q0gain+Q1gain)) %>%
-        filter(alpha > 0, alpha < 1) %>%
-        group_by(k) %>%
-        mutate(opt_alpha=get_opt(alpha,tot_gain)) %>%
-        summarise(alpha=mean(opt_alpha))
-      toc()
-      
+    if(sum(user_selection() %in% saved_params$features)*1L > 0){
+      opt_params <- saved_params[saved_params$features == user_selection(),]
     }else{
-      # sample_k <- sort(sample(c(5:200),4,replace = FALSE))
-      opt_params <- data.frame(alpha=rep(0.2,4),k=100)
-      
-      # clus_buttons <- c("clus_rec_1","clus_rec_2","clus_rec_3","clus_rec_4")
-      
-      # for(i in c(1:4)){
-      #   updateActionButton(session,inputId = clus_buttons[i],label = sample_k[i])
-      # }
+      if(optimize_params){
+        ##
+        D0 <- dist_mat()/max(dist_mat())
+        D1 <- D1/max(D1)
+        
+        #### Finding optimal parameters
+        # plan(multisession) ## using 4 processors
+        plan(multiprocess(workers=4)) ## using 4 processors
+        tic()
+        
+        range_k <-seq(5,200,by=1)
+        res <- hclust(D0, method = "ward.D")
+        avg_sil <- range_k %>% future_map_dbl(get_sil_width,D0,res)
+        
+        cl_metric <- data.frame(k=range_k,avg_sil=avg_sil)
+        cl_metric$groups <- cut(range_k,breaks=c(4,50,100,150,200))
+        s <- cl_metric %>% group_by(groups) %>% summarize(K=max(k),k_opt=k[which.max(avg_sil)])
+        
+        opt_k <- s$k_opt
+        print(opt_k)
+        
+        # toc()
+        
+        # plan(multiprocess(workers=4)) ## using 4 processors
+        # tic()
+        range_alpha <- c(0,seq(0.1,0.5,by=0.05),1)
+        
+        grid_search <- expand.grid(k=opt_k,alpha=range_alpha)
+        
+        D0_sq <- as.matrix((D0))^2
+        D1_sq <- as.matrix((D1))^2
+        n <- dim(D0_sq)[1]
+        T0 <- (sum(D0_sq)/(2*n^2))
+        T1 <- (sum(D1_sq)/(2*n^2))
+        
+        cl_stat <- grid_search %>% future_pmap(.f=get_homogeneity,D0=D0,D1=D1,D0_sq=D0_sq,
+                                               D1_sq=D1_sq,T0=T0,T1=T1)
+        
+        rm("D0_sq","D1_sq","T0","T1") ## removing large objects
+        
+        grid_search <- cbind(grid_search,data.frame(matrix(unlist(cl_stat),ncol=2,byrow=TRUE)))
+        colnames(grid_search)[3:4] <- c("Q0","Q1")
+        
+        # print(grid_search)
+        
+        opt_params <- grid_search %>% group_by(k) %>% 
+          mutate(Q0norm=Q0/max(Q0),Q1norm=Q1/max(Q1)) %>%
+          mutate(Q0gain=(Q0norm-lag(Q0norm,1))/Q0,Q1gain=(Q1norm-lag(Q1norm,1))/Q1) %>%
+          mutate(tot_gain=(Q0gain+Q1gain)) %>%
+          filter(alpha > 0, alpha < 1) %>%
+          group_by(k) %>%
+          mutate(opt_alpha=get_opt(alpha,tot_gain)) %>%
+          summarise(alpha=mean(opt_alpha))
+        toc()
+        
+        opt_params$features <- user_selection()
+        saved_params <- rbind(saved_params,opt_params)
+        print(saved_params)
+        save(saved_params,file="data/saved_params.RData")
+        
+      }else{
+        opt_params <- data.frame(alpha=rep(0.2,4),k=c(50,100,150,200))
+      }
       
     }
+    opt_params <- opt_params[order(opt_params$k),]
+    clus_buttons <- c("clus_rec_1","clus_rec_2","clus_rec_3","clus_rec_4")
+    
+    for(i in c(1:4)){
+      updateActionButton(session,inputId = clus_buttons[i],label = opt_params$k[i])
+    }
+    
     return(opt_params)
   })
   
