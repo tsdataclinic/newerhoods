@@ -325,7 +325,7 @@ function(input, output, session) {
     for(i in c(1:4)){
       updateActionButton(session,inputId = clus_buttons[i],label = opt_params$k[i])
     }
-    
+    print(opt_params)
     return(opt_params)
   })
   
