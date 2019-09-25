@@ -55,6 +55,10 @@ options(shiny.maxRequestSize=500*1024^2)
 options(future.globals.maxSize= 750*1024^2)
 # enableBookmarking(store="url")
 
+# read it back with readRDS
+token <- readRDS("sheetstoken.rds")
+gs_auth(token=token)
+
 ## loading pre-cleaned data
 load(file="data/features/processed/pre_compiled_data.RData")
 params_file <- gs_key("1YPQdPGVzZX_c9qQn5hnVm5aU_mEd_BqsVrQI8NxcfCc")
