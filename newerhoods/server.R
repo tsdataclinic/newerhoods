@@ -14,6 +14,7 @@ library(stringr)
 library(jsonlite)
 library(furrr)
 library(tictoc)
+library(googlesheets)
 
 ## UI/UX packages
 library(shiny)
@@ -56,8 +57,16 @@ options(future.globals.maxSize= 750*1024^2)
 
 ## loading pre-cleaned data
 load(file="data/features/processed/pre_compiled_data.RData")
-load(file="data/saved_params.RData")
+params_file <- gs_key("1YPQdPGVzZX_c9qQn5hnVm5aU_mEd_BqsVrQI8NxcfCc")
+saved_params <- gs_read(params_file)
 merged_features <- features
+
+saveData <- function(data) {
+  # Grab the Google Sheet
+  sheet <- gs_key("1YPQdPGVzZX_c9qQn5hnVm5aU_mEd_BqsVrQI8NxcfCc")
+  # Add the data as a new row
+  sheet %>% gs_add_row(ws="Sheet1", input=data)
+}
 
 optimize_params <- TRUE
 ## Server
@@ -311,8 +320,9 @@ function(input, output, session) {
         
         opt_params$features <- user_selection()
         saved_params <- rbind(saved_params,opt_params)
-        print(saved_params)
-        save(saved_params,file="data/saved_params.RData")
+        # print(saved_params)
+        # save(saved_params,file="data/saved_params.RData")
+        saveData(opt_params)
         
       }else{
         opt_params <- data.frame(alpha=rep(0.2,4),k=c(50,100,150,200))
