@@ -1,4 +1,5 @@
 
+newerhoods/sheetstoken.rds
 
 ## Don't want to push data folder to github
 data/raw/
