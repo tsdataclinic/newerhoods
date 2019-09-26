@@ -25,7 +25,7 @@ source("components.R")
 # UI
 ui <- function(request){
   bootstrapPage(
-    # useShinyjs(),
+    # shinyjs::useShinyjs(),
     useShinyFeedback(),
     theme = "custom.css",
     title = "NewerHoods",
@@ -71,7 +71,11 @@ ui <- function(request){
         div(
           class="map custom",
           download_dropdown,
-          withSpinner(leafletOutput("map", height = "535"),type=3,
+          # fluidRow(column(3, 
+          #                 shinyjs::hidden(div(id = 'loading', 
+          #                                     addSpinner(div(), spin = "fading-circle", color = "#0099a6"))))),
+          
+          custom_withSpinner(leafletOutput("map", height = "535"),type=3,
                       color.background = "white",color="#0099a6"),
           map_control_panel()
         ),

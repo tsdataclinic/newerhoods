@@ -73,6 +73,8 @@ saveData <- function(data) {
 }
 
 optimize_params <- TRUE
+
+
 ## Server
 function(input, output, session) {
   
@@ -221,6 +223,10 @@ function(input, output, session) {
   
   
   user_selection <- eventReactive(input$select,{
+    ## Send message to show spinner
+    
+    session$sendCustomMessage("spinner-on", "True")
+    
     inputs <- paste0("c(",paste(feature_inputs$input_ids,collapse = ","),")")
     selection <- eval(parse(text=inputs))
     # c(input$crime_features,input$housing,input$call_features)
@@ -263,6 +269,7 @@ function(input, output, session) {
     return(D0)
   },ignoreNULL = FALSE)
   
+
   optimized_params <- reactive({
     if(sum(user_selection() %in% saved_params$features)*1L > 0){
       opt_params <- saved_params[saved_params$features == user_selection(),]
@@ -496,6 +503,7 @@ function(input, output, session) {
   
   ##### Interactive Map #####
   map_reactive <- reactive({
+    
     leaflet() %>%
       setView(-73.885,40.71,11) %>%
       # addProviderTiles("MapBox", options = providerTileOptions(
@@ -530,7 +538,7 @@ function(input, output, session) {
   })
   
   output$map <- renderLeaflet({
-    map_reactive()  
+    map_reactive()
   })
   
   ## To do: Simplify this. Feels like too many observes
@@ -552,8 +560,12 @@ function(input, output, session) {
       proxy %>% clearControls()}
   }
   
-  observe({add_legend(input$enable_heatmap)})
-  observeEvent(clus_res(),{add_legend(input$enable_heatmap)})
+  observe({add_legend(input$enable_heatmap)
+    # shinyjs::hideElement(id = 'loading')
+    })
+  observeEvent(clus_res(),{add_legend(input$enable_heatmap)
+    # shinyjs::hideElement(id = 'loading')
+    })
   
   
   ### Baseline Map
@@ -592,16 +604,18 @@ function(input, output, session) {
     }
   }
   
-  observeEvent({input$enable_heatmap},{add_baselines()})
-  observeEvent({clus_res()},{add_baselines()})
+  observeEvent({input$enable_heatmap},{add_baselines()
+    session$sendCustomMessage("spinner-off", "True")})
+  observeEvent({clus_res()},{add_baselines()
+    session$sendCustomMessage("spinner-off", "True")})
   
   overlap <- reactive({
     if(input$baseline != "none"){
       baseline_map <- get(input$baseline)
-      jaccard_insights <- get_jaccard_index(newerhoods(),baseline_map,j_threshold = 0.748)
-      baseline_highlight_areas <- jaccard_insights$highlight_area
-      baseline_highlight_hatch <- jaccard_insights$hatch
-      jaccard_index <- 100*round(jaccard_insights$jaccard_index,4)
+      # jaccard_insights <- get_jaccard_index(newerhoods(),baseline_map,j_threshold = 0.748)
+      # baseline_highlight_areas <- jaccard_insights$highlight_area
+      # baseline_highlight_hatch <- jaccard_insights$hatch
+      # jaccard_index <- 100*round(jaccard_insights$jaccard_index,4)
       
       proxy <- leafletProxy("map")
       proxy %>% 
@@ -623,10 +637,11 @@ function(input, output, session) {
       
       
       # print(round(jaccard_index,2))
-    }else{
-      jaccard_index <- ""
     }
-    return(jaccard_index)
+    # else{
+    #   jaccard_index <- ""
+    # }
+    # return(jaccard_index)
   })
   
   output$overlap <- renderText({
