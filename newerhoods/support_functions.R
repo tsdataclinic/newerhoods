@@ -165,8 +165,6 @@ get_labels <- function(df){
   
   content <- matrix(NA,nrow=dim(df)[1],ncol=dim(label_df)[1])
   for(i in c(1:(dim(label_df)[1]))){
-    print(label_df$label_html[i])
-    print(round(unlist(head(df[,label_df$column_name[i]])),2))
     content[,i] <- sprintf(label_df$label_html[i],
                            round(unlist(df[,label_df$column_name[i]]),2))
   }
