@@ -105,6 +105,7 @@ function(input, output, session) {
       raw_user_df <- as.data.frame(raw_user_df)
     }
     # merged_features <<- features
+    print(basename(input$file$name))
     raw_user_df
   })
   
@@ -209,7 +210,7 @@ function(input, output, session) {
       colnames(user_df) <- c("boro_ct201",paste0("USER_",input$user_columns))
       user_df$boro_ct201 <- as.character(user_df$boro_ct201)
     }
-    
+    print(colnames(user_df))
     generated_feature_names <- gsub("USER_","",colnames(user_df))
     generated_feature_names <- generated_feature_names[generated_feature_names != "boro_ct201"]
     pretty_names <- get_pretty_names(generated_feature_names,type="checkbox")

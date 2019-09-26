@@ -156,7 +156,8 @@ get_labels <- function(df){
     user_columns_legends <- get_pretty_names(gsub("USER_","",user_columns),
                                              type="legend")
     
-    user_label_df <- data.frame(column_name=user_columns,label_html=user_columns_legends)
+    user_label_df <- data.frame(column_name=user_columns,label_html=user_columns_legends,
+                                stringsAsFactors = FALSE)
     label_df <- rbind(label_df,user_label_df)
   }
   
@@ -164,6 +165,8 @@ get_labels <- function(df){
   
   content <- matrix(NA,nrow=dim(df)[1],ncol=dim(label_df)[1])
   for(i in c(1:(dim(label_df)[1]))){
+    print(label_df$label_html[i])
+    print(round(unlist(head(df[,label_df$column_name[i]])),2))
     content[,i] <- sprintf(label_df$label_html[i],
                            round(unlist(df[,label_df$column_name[i]]),2))
   }
@@ -196,14 +199,14 @@ get_pretty_names <- function(feature_names,type){
   checkbox_names <- x
   checkbox_names[median] <- str_c("Median ",checkbox_names[median])
   checkbox_names[count] <- "Count"
-  checkbox_names[rate_pop & grepl("[:alnum:]",x)] <- str_c("Rate of ",
-                                                           checkbox_names[rate_pop & grepl("[:alnum:]",x)],
+  checkbox_names[rate_pop & grepl("[[:alnum:]]",x)] <- str_c("Rate of ",
+                                                           checkbox_names[rate_pop & grepl("[[:alnum:]]",x)],
                                                            " (by pop)")
-  checkbox_names[rate_area & grepl("[:alnum:]",x)] <- str_c("Rate of ",
-                                                            checkbox_names[rate_area & grepl("[:alnum:]",x)],
+  checkbox_names[rate_area & grepl("[[:alnum:]]",x)] <- str_c("Rate of ",
+                                                            checkbox_names[rate_area & grepl("[[:alnum:]]",x)],
                                                             " (by area)")
-  checkbox_names[rate_pop & !grepl("[:alnum:]",x)] <- "Rate (by pop)"
-  checkbox_names[rate_area & !grepl("[:alnum:]",x)] <- "Rate (by area)"
+  checkbox_names[rate_pop & !grepl("[[:alnum:]]",x)] <- "Rate (by pop)"
+  checkbox_names[rate_area & !grepl("[[:alnum:]]",x)] <- "Rate (by area)"
   checkbox_names[!(median | count | rate_pop | rate_area)] <- paste(toupper(substr(checkbox_names[!(median | count | rate_pop | rate_area)], 1, 1)), 
                                                                     substr(checkbox_names[!(median | count | rate_pop | rate_area)], 2, nchar(checkbox_names[!(median | count | rate_pop | rate_area)])), sep="")
   
@@ -219,14 +222,14 @@ get_pretty_names <- function(feature_names,type){
   legend_names <- x
   legend_names[median] <- str_c("<strong>Median ",legend_names[median],": </strong> %g")
   legend_names[count] <- "<strong>Count: </strong> %g"
-  legend_names[rate_pop & grepl("[:alnum:]",x)] <- str_c("<strong>Rate of ",
-                                                         legend_names[rate_pop & grepl("[:alnum:]",x)],
+  legend_names[rate_pop & grepl("[[:alnum:]]",x)] <- str_c("<strong>Rate of ",
+                                                         legend_names[rate_pop & grepl("[[:alnum:]]",x)],
                                                          ": </strong> %g /1000 people")
-  legend_names[rate_area & grepl("[:alnum:]",x)] <- str_c("<strong>Rate of ",
-                                                          legend_names[rate_area & grepl("[:alnum:]",x)],
+  legend_names[rate_area & grepl("[[:alnum:]]",x)] <- str_c("<strong>Rate of ",
+                                                          legend_names[rate_area & grepl("[[:alnum:]]",x)],
                                                           ": </strong> %g /sq. mile")
-  legend_names[rate_pop & !grepl("[:alnum:]",x)] <- "<strong>Rate: </strong> %g /1000 people"
-  legend_names[rate_area & !grepl("[:alnum:]",x)] <- "<strong>Rate: </strong> %g /sq. mile"
+  legend_names[rate_pop & !grepl("[[:alnum:]]",x)] <- "<strong>Rate: </strong> %g /1000 people"
+  legend_names[rate_area & !grepl("[[:alnum:]]",x)] <- "<strong>Rate: </strong> %g /sq. mile"
   legend_names[!(median | count | rate_pop | rate_area)] <- paste("<strong>",
                                                                   toupper(substr(checkbox_names[!(median | count | rate_pop | rate_area)], 1, 1)), 
                                                                   substr(checkbox_names[!(median | count | rate_pop | rate_area)], 2, nchar(checkbox_names[!(median | count | rate_pop | rate_area)])),
