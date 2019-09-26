@@ -105,7 +105,7 @@ function(input, output, session) {
       raw_user_df <- as.data.frame(raw_user_df)
     }
     # merged_features <<- features
-    print(basename(input$file$name))
+    # print(basename(input$file$name))
     raw_user_df
   })
   
