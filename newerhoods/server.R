@@ -58,11 +58,11 @@ options(future.globals.maxSize= 750*1024^2)
 # read it back with readRDS
 token <- readRDS("sheetstoken.rds")
 gs_auth(token=token)
+params_file <- gs_key("1YPQdPGVzZX_c9qQn5hnVm5aU_mEd_BqsVrQI8NxcfCc")
+saved_params <- gs_read(params_file)
 
 ## loading pre-cleaned data
 load(file="data/features/processed/pre_compiled_data.RData")
-params_file <- gs_key("1YPQdPGVzZX_c9qQn5hnVm5aU_mEd_BqsVrQI8NxcfCc")
-saved_params <- gs_read(params_file)
 merged_features <- features
 
 saveData <- function(data) {
@@ -172,6 +172,7 @@ function(input, output, session) {
     })
   
   user_data <- observeEvent(input$upload_done,{
+    saved_params <- gs_read(params_file)
     req(input$file)
     # toggleModal(session,modalId = "modal_upload",toggle="close")
     # removeModal(session,modalId = "modal_upload")
@@ -293,7 +294,7 @@ function(input, output, session) {
         s <- cl_metric %>% group_by(groups) %>% summarize(K=max(k),k_opt=k[which.max(avg_sil)])
         
         opt_k <- s$k_opt
-        print(opt_k)
+        # print(opt_k)
         
         # toc()
         
@@ -331,9 +332,14 @@ function(input, output, session) {
         
         opt_params$features <- user_selection()
         saved_params <- rbind(saved_params,opt_params)
-        # print(saved_params)
+        
+        if(!grepl("USER_",user_selection())){
+          saveData(opt_params)  
+        }
+        
+        print(saved_params)
         # save(saved_params,file="data/saved_params.RData")
-        saveData(opt_params)
+        
         
       }else{
         opt_params <- data.frame(alpha=rep(0.2,4),k=c(50,100,150,200))
@@ -346,7 +352,7 @@ function(input, output, session) {
     for(i in c(1:4)){
       updateActionButton(session,inputId = clus_buttons[i],label = opt_params$k[i])
     }
-    print(opt_params)
+    # print(opt_params)
     return(opt_params)
   })
   
