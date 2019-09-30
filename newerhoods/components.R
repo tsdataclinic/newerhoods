@@ -457,3 +457,75 @@ custom_withSpinner <- function (ui_element, type = getOption("spinner.type", def
                                                                             type), shiny::div(id = id, class = "loader", 
                                                                                               "Loading...")), proxy_element, ui_element))
 }
+
+
+custom_withLoader <- function (ui_element, type = "html", loader = "dnaspin", 
+                               proxy.height = if (grepl("height:\\s*\\d", ui_element)) NULL else "400px") 
+{
+  stopifnot(type %in% c("html", "image", "text"))
+  proxy_element <- shiny::tagList()
+  if (!is.null(proxy.height)) {
+    proxy_element <- shiny::div(style = glue::glue("height:{ifelse(is.null(proxy.height),'100%',proxy.height)}"), 
+                                class = "shiny-loader-placeholder")
+  }
+  if (type == "image") {
+    shiny::tagList(shiny::singleton(shiny::tags$head(shiny::tags$link(rel = "stylesheet", 
+                                                                      href = "custom-loader.css"))), shiny::singleton(shiny::tags$script(src = "custom_spinner.js")), 
+                   shiny::singleton(shiny::tags$head(shiny::tags$link(rel = "stylesheet", 
+                                                                      href = "css-loaders/css/imgcustom-fallback.css"))), 
+                   shiny::div(class = "shiny-loader-output-container", 
+                              shiny::div(class = "load-container", shiny::img(class = "loader-img", 
+                                                                              src = loader)), proxy_element, ui_element))
+  }
+  else if (type == "html") {
+    if (loader %in% c("dnaspin", "pacman", "loader1", "loader2", 
+                      "loader3", "loader4", "loader5", "loader6", "loader7", 
+                      "loader8", "loader9", "loader10")) {
+      htmlfile <- system.file(package = "shinycustomloader", 
+                              paste0("css-loaders/html/", loader, ".html"))
+      shiny::tagList(shiny::singleton(shiny::tags$head(shiny::tags$link(rel = "stylesheet", 
+                                                                        href = "custom-loader.css"))), shiny::singleton(shiny::tags$script(src = "custom_spinner.js")), 
+                     shiny::singleton(shiny::tags$head(shiny::tags$link(rel = "stylesheet", 
+                                                                        href = "css-loaders/css/imgcustom-fallback.css"))), 
+                     shiny::singleton(shiny::tags$head(shiny::tags$link(rel = "stylesheet", 
+                                                                        href = paste0("css-loaders/css/", loader, ".css")))), 
+                     shiny::div(class = "shiny-loader-output-container", 
+                                shiny::div(class = "load-container", shiny::includeHTML(htmlfile)), 
+                                proxy_element, ui_element))
+    }
+    else {
+      htmlfile <- paste0("", loader, ".html")
+      shiny::tagList(shiny::singleton(shiny::tags$head(shiny::tags$link(rel = "stylesheet", 
+                                                                        href = "custom-loader.css"))), shiny::singleton(shiny::tags$script(src = "custom_spinner.js")), 
+                     shiny::singleton(shiny::tags$head(shiny::tags$link(rel = "stylesheet", 
+                                                                        href = "css-loaders/css/imgcustom-fallback.css"))), 
+                     shiny::singleton(shiny::tags$head(shiny::tags$link(rel = "stylesheet", 
+                                                                        href = paste0(loader, ".css")))), shiny::div(class = "shiny-loader-output-container", 
+                                                                                                                     shiny::div(class = "load-container", shiny::includeHTML(htmlfile)), 
+                                                                                                                     proxy_element, ui_element))
+    }
+  }
+  else if (type == "text") {
+    if (!is.list(loader)) {
+      textout <- "<marquee behavior=\"scroll\" direction=\"left\" scrollamount=\"1\" width=\"100%\">Loading...</marquee>\n    <marquee behavior=\"scroll\" direction=\"down\" scrollamount=\"20\" height=\"50px\" width=\"100%\">Loading</marquee>\n      <marquee behavior=\"scroll\" direction=\"right\" scrollamount=\"20\" width=\"100%\">Loading!</marquee>\n      <marquee behavior=\"scroll\" direction=\"left\" scrollamount=\"100\" width=\"100%\">Loading</marquee>"
+    }
+    else {
+      textout <- ""
+      for (amarquee in loader) {
+        textout <- paste0(textout, "<marquee ")
+        textout <- paste0(textout, paste0(paste0(names(amarquee)[names(amarquee) != 
+                                                                   "content"], "=\"", unlist(amarquee)[names(amarquee) != 
+                                                                                                         "content"], "\""), collapse = " "))
+        textout <- paste0(textout, ">", amarquee[names(amarquee) == 
+                                                   "content"], "</marquee>\n ")
+      }
+    }
+    shiny::tagList(shiny::singleton(shiny::tags$head(shiny::tags$link(rel = "stylesheet", 
+                                                                      href = "custom-loader.css"))), shiny::singleton(shiny::tags$script(src = "custom_spinner.js")), 
+                   shiny::singleton(shiny::tags$head(shiny::tags$link(rel = "stylesheet", 
+                                                                      href = "css-loaders/css/imgcustom-fallback.css"))), 
+                   shiny::div(class = "shiny-loader-output-container", 
+                              shiny::div(class = "load-container", style = "text-align:center; width:100%", 
+                                         shiny::HTML(textout)), proxy_element, ui_element))
+  }
+}

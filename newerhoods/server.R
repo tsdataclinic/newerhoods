@@ -512,7 +512,7 @@ function(input, output, session) {
   map_reactive <- reactive({
     
     leaflet() %>%
-      setView(-73.885,40.71,11) %>%
+      setView(-74.02,40.72,11) %>%
       # addProviderTiles("MapBox", options = providerTileOptions(
       #   id= "mapbox.light",
       #   accessToken = Sys.getenv('MAPBOX_ACCESS_TOKEN'))
