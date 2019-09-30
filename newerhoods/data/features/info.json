@@ -31,23 +31,23 @@
       "category_name"   : "311 Complaints",
       "create_ui"       : true,
       "feature_columns" : [
-                      { "column_name"   :"party_rate",
-                        "checkbox_name" :"Loud music/party",
-                        "legend_name"   :"Loud Music/Parties",
+                      { "column_name"   :"noise_rate",
+                        "checkbox_name" :"Noise related",
+                        "legend_name"   :"Noise related complaints",
                         "legend_units"  :"/1000 people",
                         "is_rate"       :true
                         },
                         
-                      { "column_name"   :"animal_rate",
-                        "checkbox_name" :"Barking dog",
-                        "legend_name"   :"Barking Dogs",
+                      { "column_name"   :"housing_rate",
+                        "checkbox_name" :"Housing related",
+                        "legend_name"   :"Housing related complaints",
                         "legend_units"  :"/1000 people",
                         "is_rate"       :true
                         },
                         
-                      { "column_name"   :"icecream_rate",
-                        "checkbox_name" :"Ice cream truck",
-                        "legend_name"   :"Noisy Ice Cream Trucks",
+                      { "column_name"   :"street_rate",
+                        "checkbox_name" :"Street/Sidewalk related",
+                        "legend_name"   :"Street/Sidewalk related complaints",
                         "legend_units"  :"/1000 people",
                         "is_rate"       :true
                         }

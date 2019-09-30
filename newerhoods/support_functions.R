@@ -1,4 +1,5 @@
 library(HatchedPolygons)
+library(sp)
 
 points_to_feature <- function(df,col1,col2,colname){
   ## function to take a data frame with lat and lon columns and convert to a rate of

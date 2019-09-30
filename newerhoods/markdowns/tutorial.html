@@ -7,6 +7,7 @@
 <meta charset="utf-8" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
 
@@ -254,9 +255,7 @@ h6 {
 </style>
 
 
-</head>
 
-<body>
 
 <style type="text/css">
 .main-container {
@@ -270,7 +269,6 @@ code {
 }
 img {
   max-width:100%;
-  height: auto;
 }
 .tabbed-pane {
   padding-top: 12px;
@@ -287,8 +285,6 @@ summary {
 </style>
 
 
-
-<div class="container-fluid main-container">
 
 <!-- tabsets -->
 
@@ -346,20 +342,17 @@ summary {
 }
 </style>
 
-<script>
-$(document).ready(function () {
-  window.buildTabsets("TOC");
-});
-
-$(document).ready(function () {
-  $('.tabset-dropdown > .nav-tabs > li').click(function () {
-    $(this).parent().toggleClass('nav-tabs-open')
-  });
-});
-</script>
-
 <!-- code folding -->
 
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
 
 
 
@@ -405,7 +398,13 @@ $(document).ready(function () {
 </div>
 <div id="calls" class="section level5">
 <h5>311 Calls</h5>
-<p>One of the largest categories of complaints received on 311 in NYC has to do with noise. In this case, we look at just a few sub-categories of noise complaints (ice cream trucks, barking dogs, and loud music/parties). As with crime statistics, these are aggregated for each region and scaled by the population.</p>
+<p>NYC receives several million calls on 311 each year regarding civic issues. Unsurprisingly, a large majority of these calls have to do with complaints about noise, housing issues, and issues with public spaces like streets/sidewalks. We’ve attempted to condense the many different categories of complaints into easier to digest groupings defined below:</p>
+<ul>
+<li><p>Noise complaint types: Noise - House of Worship, Noise - Residential, Noise - Vehicle, Noise - Commercial, Noise - Street/Sidewalk, Noise - Park, Noise, Noise - Helicopter, Collection Truck Noise</p></li>
+<li><p>Housing complaint types: Plumbing, Heat/hot water, Rodent, General construction/plumbing, Dirty conditions, Elevator, Paint/plaster</p></li>
+<li><p>Street/Sidewalk complaint types: Illegal parking, Blocked driveway, Sanitation condition, Derelict vehicles, Street condition, Request large bulky item collection, Missed collection (all materials), Snow, Sidewalk condition, Damaged tree, New tree request, Overgrown tree/branches, Broken muni meter, Street sign - damaged&quot;</p></li>
+</ul>
+<p>As with crime statistics, these are aggregated for each region and scaled by the population.</p>
 </div>
 </div>
 <div id="step-2-choose-number-of-new-neighborhoods" class="section level4">
@@ -449,6 +448,23 @@ $(document).ready(function () {
 
 
 </script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>

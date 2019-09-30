@@ -1,6 +1,7 @@
 # library(igraph)
 library(stringr)
 source("support_functions.R")
+library(dplyr)
 
 ### Construct pre-merged rds files for the datasets of interest from a collection of local files
 generate_data <- function(){
