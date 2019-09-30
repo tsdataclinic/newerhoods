@@ -15,7 +15,7 @@
       "source"  : "https://data.cityofnewyork.us/Public-Safety/Police-Precincts/78dh-3ptz"
     },
     
-    { "folder"  : "Public Use Microdata Areas (PUMA)",
+    { "folder"  : "PUMA",
       "name"    : "Public use Microdata Areas",
       "source"  : "https://data.cityofnewyork.us/Housing-Development/Public-Use-Microdata-Areas-PUMA-/cwiz-gcty"
     },

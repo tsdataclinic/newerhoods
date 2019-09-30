@@ -1,3 +1,6 @@
+library(HatchedPolygons)
+library(sp)
+
 points_to_feature <- function(df,col1,col2,colname){
   ## function to take a data frame with lat and lon columns and convert to a rate of
   ## counts for each census tract.
@@ -16,7 +19,7 @@ points_to_feature <- function(df,col1,col2,colname){
   res <- over(df, census_tracts)
   df_rates <- as.data.frame(table(res$boro_ct201),stringsAsFactors = FALSE)
   colnames(df_rates) <- c("boro_ct201","count")
-
+  
   ## loading population to get rates
   census_pop <- read_xlsx("./data/census/2010census_population.xlsx",skip=7,
                           col_names=c("borough","county_code","borough_code",
@@ -27,7 +30,7 @@ points_to_feature <- function(df,col1,col2,colname){
   
   df_rates <- merge(df_rates,census_pop,by="boro_ct201")
   df_rates$var_rate <- df_rates$count*1000/df_rates$pop_2010
-
+  
   df_rates <- df_rates[df_rates$pop_2010 >= 500,]
   df_rates <- merge(census_tracts@data,df_rates,by="boro_ct201",all.x=TRUE)
   df_rates <- df_rates[,c("boro_ct201","var_rate")]
@@ -71,7 +74,7 @@ point_data_to_feature_columns <- function(df,lat,lon,cols=NULL){
   
   ## merging observations with tracts
   res <- over(df, census_tracts)
-
+  
   if(!is.null(cols)){
     cols_to_merge <- as.data.frame(df[,cols])
     res <- cbind(res$boro_ct201,cols_to_merge)
@@ -135,44 +138,36 @@ eucd_dist <- function(df){
 
 
 get_labels <- function(df){
-
+  
   stats_selected <- colnames(df)[grepl("_mean",colnames(df))]
   stats_names <- gsub("_mean","",stats_selected)
-  excluded_stats <- c("sd_price_1y","sd_price_3y","sd_price_5y")
   
-  stats_names <- stats_names[!(stats_names %in% excluded_stats)]
+  ### Columns defined in feature dictionary
   
-  pretty_names <- c("<strong>2017 Median Sale Price: </strong> $%g /sq.ft.",
-                    "<strong>2015-17 Median Sale Price: </strong> $%g /sq.ft.",
-                    "<strong>2013-17 Median Sale Price: </strong> $%g /sq.ft.",
-                    "<strong># Residential units: </strong> %g ",
-                    "<strong>Building Age: </strong> %g years",
-                    "<strong>Violations: </strong> %g /1000 people",
-                    "<strong>Felonies: </strong> %g /1000 people",
-                    "<strong>Misdemeanors: </strong> %g /1000 people",
-                    "<strong>Noisy Ice Cream Trucks: </strong> %g /1000 people",
-                    "<strong>Barking Dogs: </strong> %g /1000 people",
-                    "<strong>Loud Music/Parties: </strong> %g /1000 people")
+  # get feature dict
+  feature_info <- process_features_json()
   
-  all_stats <- c("med_price_1y","med_price_3y","med_price_5y","res_units","bldg_age",
-  "violation_rate","felony_rate","misdemeanor_rate","icecream_rate","animal_rate","party_rate")
+  # subset to ones in stats selected
+  label_df <- feature_info[feature_info$column_name %in% stats_names
+                           ,c("column_name","label_html")]
   
-  ## matching columns with existing ones
-  matched_columns <- match(stats_names,all_stats)
-  # matched_columns <- matched_columns[!is.na(matched_columns)]
-  label_names <- rep(NA,length(matched_columns))
-  label_names[!is.na(matched_columns)] <- pretty_names[matched_columns[!is.na(matched_columns)]]
-  label_names[is.na(matched_columns)] <- get_pretty_names(gsub("USER_","",stats_names[is.na(matched_columns)]),
-                                                          type="legend")
+  ### Columns from user uploaded data
+  user_columns <- stats_names[grepl("USER_",stats_names)]
+  if(length(user_columns) > 0){
+    user_columns_legends <- get_pretty_names(gsub("USER_","",user_columns),
+                                             type="legend")
     
-  # paste0("<strong>",gsub("USER_","",stats_names[is.na(matched_columns)]),": </strong> %g")
+    user_label_df <- data.frame(column_name=user_columns,label_html=user_columns_legends,
+                                stringsAsFactors = FALSE)
+    label_df <- rbind(label_df,user_label_df)
+  }
   
-  stat_columns <- paste0(stats_names,"_mean")
+  label_df$column_name <- paste0(label_df$column_name,"_mean")
   
-  content <- matrix(NA,nrow=dim(df)[1],ncol=length(matched_columns))
-  for(i in c(1:length(matched_columns))){
-    content[,i] <- sprintf(label_names[i],
-                           round(unlist(df[,stat_columns[i]]),2))
+  content <- matrix(NA,nrow=dim(df)[1],ncol=dim(label_df)[1])
+  for(i in c(1:(dim(label_df)[1]))){
+    content[,i] <- sprintf(label_df$label_html[i],
+                           round(unlist(df[,label_df$column_name[i]]),2))
   }
   
   labels <- apply(content,1,FUN= function(x) {paste(x,collapse="<br/>")})
@@ -203,17 +198,17 @@ get_pretty_names <- function(feature_names,type){
   checkbox_names <- x
   checkbox_names[median] <- str_c("Median ",checkbox_names[median])
   checkbox_names[count] <- "Count"
-  checkbox_names[rate_pop & grepl("[:alnum:]",x)] <- str_c("Rate of ",
-                                                           checkbox_names[rate_pop & grepl("[:alnum:]",x)],
+  checkbox_names[rate_pop & grepl("[[:alnum:]]",x)] <- str_c("Rate of ",
+                                                           checkbox_names[rate_pop & grepl("[[:alnum:]]",x)],
                                                            " (by pop)")
-  checkbox_names[rate_area & grepl("[:alnum:]",x)] <- str_c("Rate of ",
-                                                           checkbox_names[rate_area & grepl("[:alnum:]",x)],
-                                                           " (by area)")
-  checkbox_names[rate_pop & !grepl("[:alnum:]",x)] <- "Rate (by pop)"
-  checkbox_names[rate_area & !grepl("[:alnum:]",x)] <- "Rate (by area)"
+  checkbox_names[rate_area & grepl("[[:alnum:]]",x)] <- str_c("Rate of ",
+                                                            checkbox_names[rate_area & grepl("[[:alnum:]]",x)],
+                                                            " (by area)")
+  checkbox_names[rate_pop & !grepl("[[:alnum:]]",x)] <- "Rate (by pop)"
+  checkbox_names[rate_area & !grepl("[[:alnum:]]",x)] <- "Rate (by area)"
   checkbox_names[!(median | count | rate_pop | rate_area)] <- paste(toupper(substr(checkbox_names[!(median | count | rate_pop | rate_area)], 1, 1)), 
                                                                     substr(checkbox_names[!(median | count | rate_pop | rate_area)], 2, nchar(checkbox_names[!(median | count | rate_pop | rate_area)])), sep="")
-                                                           
+  
   ### Legend
   ## X_median -> Median X
   ## count -> Count
@@ -226,14 +221,14 @@ get_pretty_names <- function(feature_names,type){
   legend_names <- x
   legend_names[median] <- str_c("<strong>Median ",legend_names[median],": </strong> %g")
   legend_names[count] <- "<strong>Count: </strong> %g"
-  legend_names[rate_pop & grepl("[:alnum:]",x)] <- str_c("<strong>Rate of ",
-                                                           legend_names[rate_pop & grepl("[:alnum:]",x)],
-                                                           ": </strong> %g /1000 people")
-  legend_names[rate_area & grepl("[:alnum:]",x)] <- str_c("<strong>Rate of ",
-                                                            legend_names[rate_area & grepl("[:alnum:]",x)],
-                                                            ": </strong> %g /sq. mile")
-  legend_names[rate_pop & !grepl("[:alnum:]",x)] <- "<strong>Rate: </strong> %g /1000 people"
-  legend_names[rate_area & !grepl("[:alnum:]",x)] <- "<strong>Rate: </strong> %g /sq. mile"
+  legend_names[rate_pop & grepl("[[:alnum:]]",x)] <- str_c("<strong>Rate of ",
+                                                         legend_names[rate_pop & grepl("[[:alnum:]]",x)],
+                                                         ": </strong> %g /1000 people")
+  legend_names[rate_area & grepl("[[:alnum:]]",x)] <- str_c("<strong>Rate of ",
+                                                          legend_names[rate_area & grepl("[[:alnum:]]",x)],
+                                                          ": </strong> %g /sq. mile")
+  legend_names[rate_pop & !grepl("[[:alnum:]]",x)] <- "<strong>Rate: </strong> %g /1000 people"
+  legend_names[rate_area & !grepl("[[:alnum:]]",x)] <- "<strong>Rate: </strong> %g /sq. mile"
   legend_names[!(median | count | rate_pop | rate_area)] <- paste("<strong>",
                                                                   toupper(substr(checkbox_names[!(median | count | rate_pop | rate_area)], 1, 1)), 
                                                                   substr(checkbox_names[!(median | count | rate_pop | rate_area)], 2, nchar(checkbox_names[!(median | count | rate_pop | rate_area)])),
@@ -326,3 +321,31 @@ get_opt <- function(alpha,gain){
   }
   return(df$alpha[nrow(df)])
 }
+
+
+get_jaccard_index <- function(nh,sp,j_threshold=0.8){
+  nh$area_y <- raster::area(nh)
+  sp$area_x <- raster::area(sp)
+  sp <- gBuffer(sp, byid=TRUE, width=0)
+  sp$base_id <- as.numeric(row.names(sp@data))
+  intersection <- raster::intersect(sp,nh)
+  intersection$area_xy <- raster::area(intersection)
+  intersection$area_xuy <- intersection$area_x + intersection$area_y - intersection$area_xy
+  intersection$J_k <- intersection$area_xy/intersection$area_xuy
+  jaccard_data <- intersection@data
+  if("cl.1" %in% colnames(jaccard_data)){
+    jaccard_data$cl <- jaccard_data$cl.1  
+  }
+  jaccard_data <- jaccard_data %>% group_by(base_id) %>% summarise(area=mean(area_x),J_k=max(J_k))
+  jaccard_index <- sum(jaccard_data$area*jaccard_data$J_k)/sum(jaccard_data$area)
+  tmp <- jaccard_data[order(jaccard_data$J_k,decreasing = TRUE),]
+  print(tmp[1:5,])
+  highlight_ids <- jaccard_data$base_id[jaccard_data$J_k >= j_threshold]
+  highlight_areas <- sp[sp$base_id %in% highlight_ids,]
+  highlight_areas_hatch<-hatched.SpatialPolygons(highlight_areas,density=250,angle=45);
+  proj4string(highlight_areas_hatch)<-proj4string(highlight_areas)
+  highlight_areas_hatch <- spTransform(highlight_areas_hatch, CRS("+proj=longlat +datum=WGS84"))
+  
+  return(list(jaccard_index=jaccard_index,highlight_area=highlight_areas,hatch=highlight_areas_hatch))
+}
+

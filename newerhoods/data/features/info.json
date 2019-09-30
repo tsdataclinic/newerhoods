@@ -1,0 +1,91 @@
+{
+  "datasets" : [  
+    { "file_name"       : "crime_rates",
+      "create_ui"       : true,
+      "category_name"   : "Crime",
+      "feature_columns" : [
+                      { "column_name"   :"violation_rate",
+                        "checkbox_name" :"Violations",
+                        "legend_name"   :"Violations",
+                        "legend_units"  :"/1000 people",
+                        "is_rate"       :true
+                        },
+                        
+                      { "column_name"   :"felony_rate",
+                        "checkbox_name" :"Felonies",
+                        "legend_name"   :"Felonies",
+                        "legend_units"  :"/1000 people",
+                        "is_rate"       :true
+                        },
+                        
+                      { "column_name"   :"misdemeanor_rate",
+                        "checkbox_name" :"Misdemeanors",
+                        "legend_name"   :"Misdemeanors",
+                        "legend_units"  :"/1000 people",
+                        "is_rate"       :true
+                        }
+                    ]
+      },
+      
+    { "file_name"       : "nyc311_rates",
+      "category_name"   : "311 Complaints",
+      "create_ui"       : true,
+      "feature_columns" : [
+                      { "column_name"   :"noise_rate",
+                        "checkbox_name" :"Noise related",
+                        "legend_name"   :"Noise related complaints",
+                        "legend_units"  :"/1000 people",
+                        "is_rate"       :true
+                        },
+                        
+                      { "column_name"   :"housing_rate",
+                        "checkbox_name" :"Housing related",
+                        "legend_name"   :"Housing related complaints",
+                        "legend_units"  :"/1000 people",
+                        "is_rate"       :true
+                        },
+                        
+                      { "column_name"   :"street_rate",
+                        "checkbox_name" :"Street/Sidewalk related",
+                        "legend_name"   :"Street/Sidewalk related complaints",
+                        "legend_units"  :"/1000 people",
+                        "is_rate"       :true
+                        }
+                    ]
+      },
+      
+    { "file_name"       : "sales_features",
+      "category_name"   : "Housing",
+      "create_ui"       : false,
+      "feature_columns" : [
+                      { "column_name"   :"med_price_1y",
+                        "checkbox_name" :"1y average",
+                        "legend_name"   :"2017 Median Sale Price",
+                        "legend_units"  :"/sq.ft.",
+                        "is_rate"       :false
+                        },
+                        
+                      { "column_name"   :"med_price_3y",
+                        "checkbox_name" :"3y average",
+                        "legend_name"   :"2015-17 Median Sale Price",
+                        "legend_units"  :"/sq.ft.",
+                        "is_rate"       :false
+                        },
+                        
+                      { "column_name"   :"med_price_5y",
+                        "checkbox_name" :"5y average",
+                        "legend_name"   :"2013-17 Median Sale Price",
+                        "legend_units"  :"/sq.ft.",
+                        "is_rate"       :false
+                        },
+                      { "column_name"   :"bldg_age",
+                        "checkbox_name" :"Age of buildings",
+                        "legend_name"   :"Building age",
+                        "legend_units"  :"years",
+                        "is_rate"       :false
+                        }  
+                    ]
+      }
+    
+  ]
+}

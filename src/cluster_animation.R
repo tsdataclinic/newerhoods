@@ -9,12 +9,12 @@ require(stringr)
 require(dplyr)
 require(ClustGeo)
 
-load(file="newerhoods/clean_data/pre_compiled_data.RData")
+load(file="newerhoods/data/features/processed/pre_compiled_data.RData")
 
 features$boro <- as.numeric(substr(features$boro_ct201,1,1))
 # features <- features[features$boro == 5,]
-features_to_use <- grepl("med_price_1y|sd_price_1y",colnames(features))
-feature_set <- unlist(strsplit("med_price_1y|sd_price_1y","\\|"))
+features_to_use <- grepl("med_price_3y|sd_price_3y",colnames(features))
+feature_set <- unlist(strsplit("med_price_3y|sd_price_3y","\\|"))
 
 ### Clustering the data based on selected features
 D0 <- dist(scale(features[,features_to_use]))
@@ -22,7 +22,7 @@ D0 <- dist(scale(features[,features_to_use]))
 # D2 <- as.dist(as.matrix(D1)[si_tracts,si_tracts])
 set.seed(1729)
 alpha=0.15
-tree <- hclustgeo(D0,D1,alpha=0.15)
+tree <- hclustgeo(D0,D1,alpha=0.1)
 # plot(tree,labels=FALSE)
 
 K <- 100
@@ -53,16 +53,16 @@ for(i in c(1:length(x))){
                                  aes(long, lat, group = group, fill=as.factor(as.numeric(id))),
                                  colour = "white", alpha = 0.75) + 
     theme(legend.position="none") + ggtitle(label=paste0("Number of neighborhoods = ",x[i]))
-  ggsave(filename = paste0("./fig_output/nyc2/nyc_",str_pad(i,4,side="left",pad="0"),".png"),
-         width = 8,height=8,dpi = 150)
+  ggsave(filename = paste0("./fig_output/nyc3/nyc_",str_pad(i,4,side="left",pad="0"),".png"),
+         width = 8,height=8,dpi = 300)
 }
 
-list.files(path = "./fig_output/nyc2/", pattern = "*.png", full.names = T) %>% 
+list.files(path = "./fig_output/nyc3/", pattern = "*.png", full.names = T) %>% 
   sort(decreasing = TRUE) %>% 
   map(image_read) %>% # reads each path file
   image_join() %>% # joins image
   image_animate(fps=2) %>% # animates, can opt for number of loops
-  image_write("nyc_clustering2.gif")
+  image_write("fig_output/nyc_clustering3.gif")
 
 
 

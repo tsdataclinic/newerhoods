@@ -32,7 +32,15 @@ Crimes are categorized into three levels of offense: felony, misdemeanor, and vi
 
 
 ##### 311 Calls
-One of the largest categories of complaints received on 311 in NYC has to do with noise. In this case, we look at just a few sub-categories of noise complaints (ice cream trucks, barking dogs, and loud music/parties). As with crime statistics, these are aggregated for each region and scaled by the population.
+NYC receives several million calls on 311 each year regarding civic issues. Unsurprisingly, a large majority of these calls have to do with complaints about noise, housing issues, and issues with public spaces like streets/sidewalks. We've attempted to condense the many different categories of complaints into easier to digest groupings defined below: 
+
+- Noise complaint types: Noise - House of Worship, Noise - Residential, Noise - Vehicle, Noise - Commercial, Noise - Street/Sidewalk, Noise - Park, Noise, Noise - Helicopter, Collection Truck Noise
+
+- Housing complaint types: Plumbing, Heat/hot water, Rodent, General construction/plumbing, Dirty conditions, Elevator, Paint/plaster
+
+- Street/Sidewalk complaint types: Illegal parking, Blocked driveway, Sanitation condition, Derelict vehicles, Street condition, Request large bulky item collection, Missed collection (all materials), Snow, Sidewalk condition, Damaged tree, New tree request, Overgrown tree/branches, Broken muni meter, Street sign - damaged"
+
+As with crime statistics, these are aggregated for each region and scaled by the population.
 
 #### Step 2 Choose number of new neighborhoods
 Next, you can use the slider to choose the number of NewerHoods into which you want to divide New York City. The map automatically updates every time you change the number to neighborhoods to view. As a starting point, consider settings that correspond to the city’s existing administrative divisions.
