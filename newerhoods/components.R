@@ -17,7 +17,7 @@ header_nav <- withTags(
              div(class="navbar-wrapper", 
                  a(href="https://www.twosigma.com/about/data-clinic/", target="_blank",
                    div(class="navbar-title", "NewerHoods"),
-                   div(class="navbar-subtitle", "FROM TWO SIGMA DATA CLINIC")
+                   div(class="navbar-subtitle", img(src="site-logo.png",height="20px"))
                  ),
                  div(class="social-header",social_links)
              )
