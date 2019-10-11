@@ -13,10 +13,12 @@
     width: 100%;
 }
 .loader-img{
+  position: relative;
   display: block;
   margin-left: auto;
-  margin-right: auto;
-  width: 100%;
+  margin-right: 0px;
+  width: auto;
+  height: 535px;
 }
 .shiny-loader-hidden {
   position: absolute;

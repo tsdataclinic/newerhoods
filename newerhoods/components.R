@@ -465,7 +465,7 @@ custom_withLoader <- function (ui_element, type = "html", loader = "dnaspin",
   stopifnot(type %in% c("html", "image", "text"))
   proxy_element <- shiny::tagList()
   if (!is.null(proxy.height)) {
-    proxy_element <- shiny::div(style = glue::glue("height:{ifelse(is.null(proxy.height),'100%',proxy.height)}"), 
+    proxy_element <- shiny::div(style = glue::glue("height:{ifelse(is.null(proxy.height),'535px',proxy.height)}"), 
                                 class = "shiny-loader-placeholder")
   }
   if (type == "image") {
