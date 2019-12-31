@@ -1,9 +1,9 @@
 source("support_functions.R")
 source("process_data.R")
 
-medium_link <- tags$a(icon("medium", lib = "font-awesome"),href="https://medium.com/@dataclinic", target="_blank")
-github_link <- tags$a(icon("github-square", lib = "font-awesome"),href="https://github.com/tsdataclinic/newerhoods", target="_blank")
-twitter_link <- tags$a(icon("twitter-square", lib = "font-awesome"),href="https://twitter.com/tsdataclinic?lang=en", target="_blank")
+medium_link <- tags$a(class="a-white",icon("medium", lib = "font-awesome"),href="https://medium.com/@dataclinic", target="_blank")
+github_link <- tags$a(class="a-white",icon("github-square", lib = "font-awesome"),href="https://github.com/tsdataclinic/newerhoods", target="_blank")
+twitter_link <- tags$a(class="a-white",icon("twitter-square", lib = "font-awesome"),href="https://twitter.com/tsdataclinic?lang=en", target="_blank")
 
 social_links <- div(class="links flex",
                     div(class="imglink",medium_link),
@@ -13,17 +13,21 @@ social_links <- div(class="links flex",
 
 header_nav <- withTags(
   header(class ="header",
-         div(class="content col-xs-11", 
-             div(class="navbar-wrapper", 
+         div(class="content col-xs-11",
+             div(class="navbar-wrapper",
                  a(href="https://www.twosigma.com/about/data-clinic/", target="_blank",
-                   div(class="navbar-title", "NewerHoods"),
-                   div(class="navbar-subtitle", img(src="site-logo.png",height="20px"))
-                 ),
-                 div(class="social-header",social_links)
-             )
+                   div(class="navbar-title", 
+                       img(class="main-logo",
+                           src="site-logo.png",height="35px"),
+                       span(class="verticalLine"),"NewerHoods")
+                 )
+             ),
+             span(class="links-header",intro_links)
          )
   )
 )
+
+
 ### Modals
 modal_features <- 
   bsModal(
@@ -206,10 +210,10 @@ input_housing_sales <- function(){
   conditionalPanel(condition="input.housing.includes('sale_price')",
                    radioButtons(
                      inputId = 'sales_features',label='',
-                     choices=c('1y average'='med_price_1y|sd_price_1y',
-                               '3y average'='med_price_3y|sd_price_3y',
-                               '5y average'='med_price_5y|sd_price_5y'
-                     ),selected = 'med_price_3y|sd_price_3y'))
+                     choices=c('1y average'='med_price_1y',
+                               '3y average'='med_price_3y',
+                               '5y average'='med_price_5y'
+                     ),selected = 'med_price_3y'))
 }
 
 feature_inputs <- get_features_ui(process_features_json())
@@ -361,29 +365,33 @@ map_control_panel <- function(){div(
 )
 }
 
-help_link <- actionLink(inputId = "Help",label="Help")
-feedback_link <- actionLink(inputId = 'Feedback',label="Feedback")
-credits_link <- actionLink(inputId = 'Credits',label="About")
+help_link <- actionLink(class="a-grey",inputId = "Help",label="Help")
+feedback_link <- actionLink(class="a-grey",inputId = 'Feedback',label="Feedback")
+credits_link <- actionLink(class="a-grey",inputId = 'Credits',label="About")
 # example_link <- actionLink(inputId = 'Example',label="Examples")
 
 intro_links <- 
   div(class="links flex",
-      div(class="mainlink",credits_link),
-      div(class="mainslink",help_link),
+      div(class="headerlink",credits_link),
+      div(class="headerlink",help_link),
       # div(class="mainslink",example_link),
-      div(class="mainslink",feedback_link)
+      div(class="headerlink",feedback_link)
   )
 
 footer <-
   div(class="footer", 
-      div(class="content flex-between col-xs-11 xsflex",
-          div(class="links", a(href="https://www.twosigma.com/about/data-clinic/", "© 2019 Data Clinic. All rights reserved.")),
-          div(class="flex",
-              div(class="links", a(href="https://www.twosigma.com/legal-disclosure/", "Legal Disclosure", target="_blank")),
-              div(class="slink links", a(href="https://www.twosigma.com/legal-disclosure/privacy-policy/", "Privacy Policy", target="_blank"))
-          )
+      div(class="footer-content col-xs-11",
+          span(class="ts-img",img(src="ts_logo.svg")),
+          span(class="copyright", 
+               a(class="a-white",
+                 href="https://www.twosigma.com/about/data-clinic/", 
+                 "© 2019 Two Sigma Investments, LP. All rights reserved.")),
+          span(class="social-header",social_links))
+          # div(class="flex",
+          #     div(class="links", a(href="https://www.twosigma.com/legal-disclosure/", "Legal Disclosure", target="_blank")),
+          #     div(class="slink links", a(href="https://www.twosigma.com/legal-disclosure/privacy-policy/", "Privacy Policy", target="_blank"))
+          #)
       )
-  )
 
 
 

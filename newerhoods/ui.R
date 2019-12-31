@@ -63,8 +63,7 @@ ui <- function(request){
           snackbar(
             id = "FeatureSelection",
             message = "Please select atleast one feature!")
-        ),
-        intro_links
+        )
       ),
       div(
         class="map-content",
