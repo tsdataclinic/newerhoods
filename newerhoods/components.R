@@ -11,6 +11,19 @@ social_links <- div(class="links flex",
                     div(class="imglink",twitter_link)
 )
 
+help_link <- actionLink(class="a-grey",inputId = "Help",label="Help")
+feedback_link <- actionLink(class="a-grey",inputId = 'Feedback',label="Feedback")
+credits_link <- actionLink(class="a-grey",inputId = 'Credits',label="About")
+# example_link <- actionLink(inputId = 'Example',label="Examples")
+
+intro_links <- 
+  div(class="links flex",
+      div(class="headerlink",credits_link),
+      div(class="headerlink",help_link),
+      # div(class="mainslink",example_link),
+      div(class="headerlink",feedback_link)
+  )
+
 header_nav <- withTags(
   header(class ="header",
          div(class="content col-xs-11",
@@ -364,19 +377,6 @@ map_control_panel <- function(){div(
   )
 )
 }
-
-help_link <- actionLink(class="a-grey",inputId = "Help",label="Help")
-feedback_link <- actionLink(class="a-grey",inputId = 'Feedback',label="Feedback")
-credits_link <- actionLink(class="a-grey",inputId = 'Credits',label="About")
-# example_link <- actionLink(inputId = 'Example',label="Examples")
-
-intro_links <- 
-  div(class="links flex",
-      div(class="headerlink",credits_link),
-      div(class="headerlink",help_link),
-      # div(class="mainslink",example_link),
-      div(class="headerlink",feedback_link)
-  )
 
 footer <-
   div(class="footer", 
