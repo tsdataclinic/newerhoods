@@ -516,7 +516,7 @@ function(input, output, session) {
       #   id= "mapbox.light",
       #   accessToken = Sys.getenv('MAPBOX_ACCESS_TOKEN'))
       # ) %>%
-      addProviderTiles("Stamen.TonerLite") %>%
+      addProviderTiles("CartoDB.Positron") %>%
       addMapPane("newerhoods", zIndex = 410) %>%
       addPolygons(data=newerhoods(),
                   fillColor = newerhoods()$colour,

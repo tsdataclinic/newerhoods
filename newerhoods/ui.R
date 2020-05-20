@@ -31,7 +31,8 @@ ui <- function(request){
     theme = "custom.css",
     title = "NewerHoods",
     tags$head(
-      tags$link(rel = "stylesheet", type = "text/css", href = "https://fonts.googleapis.com/css?family=Lato:300,400,400italic,500,500italic,700,700italic,900")
+      tags$link(rel = "stylesheet", type = "text/css", href = "https://fonts.googleapis.com/css?family=Lato:300,400,400italic,500,500italic,700,700italic,900"),
+      tags$script(src="https://www.twosigma.com/wp-content/themes/twosigma-public/static/dist/netnav.js")
     ),
     header_nav,
     div(
@@ -63,8 +64,7 @@ ui <- function(request){
           snackbar(
             id = "FeatureSelection",
             message = "Please select atleast one feature!")
-        ),
-        intro_links
+        )
       ),
       div(
         class="map-content",
@@ -79,7 +79,7 @@ ui <- function(request){
           # custom_withSpinner(leafletOutput("map", height = "535"),type=3,
           #             color.background = "white",color="#0099a6"),
           custom_withLoader(leafletOutput("map", height = "535"),type="image",
-                            loader="NewerHoods.gif"),
+                            loader="NewerHoods_cropped.gif"),
           map_control_panel()
         ),
         bsTooltip("select", "Click to select or update features to be used for clustering",
