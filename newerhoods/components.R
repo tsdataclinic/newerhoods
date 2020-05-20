@@ -9,7 +9,7 @@ social_links <- div(class="links flex",
                     div(class="imglink",medium_link),
                     div(class="imglink",github_link),
                     div(class="imglink",twitter_link)
-                    )
+)
 
 header_nav <- withTags(
   header(class ="header",
@@ -78,7 +78,7 @@ info <-
 ## Upload inputs
 
 upload_link <- actionButton("upload","Upload your data",icon=icon("upload",lib="font-awesome"),class="btn-custom")
-  #actionLink(inputId = "upload",label="Upload Data")
+#actionLink(inputId = "upload",label="Upload Data")
 
 # upload_switch<- materialSwitch(
 #   inputId = "upload",
@@ -162,7 +162,7 @@ modified_bsModal <- function(id, title, trigger, ..., size) {
                                                                            shiny::tags$button(type = "button", class = "close", "data-dismiss" = "modal", shiny::tags$span(shiny::HTML("&times;"))),
                                                                            shiny::tags$h4(class = "modal-title", title)
                                                            ),
-                                                            shiny::tags$div(class = "modal-body", list(...))#,
+                                                           shiny::tags$div(class = "modal-body", list(...))#,
                                                            # shiny::tags$div(class = "modal-footer",
                                                            #                 shiny::tags$button(type = "button", class = "btn btn-default", "data-dismiss" = "modal", "Close")
                                                            # )
@@ -281,8 +281,8 @@ input_baseline <- function(){
 #               multiple=TRUE))
 
 input_user_features <- conditionalPanel(condition = "output.nrows",
-                        checkboxGroupInput(inputId = 'user_features',label="GENERATED FEATURES",
-                                    choices=NULL))
+                                        checkboxGroupInput(inputId = 'user_features',label="GENERATED FEATURES",
+                                                           choices=NULL))
 
 
 myDownloadButton <- function(outputId,label,class=NULL,icon=icon("download"), ...){
@@ -301,9 +301,9 @@ myactionButton <- function (inputId, label, icon = NULL, width = NULL,class, ...
 
 myDownloadBttn <- function(outputId, label = "Download",icon = icon("download"),action_class){
   bttn <- myactionButton(inputId = paste0(outputId, "_bttn"), 
-                     label = tags$a(id = outputId, class = "shiny-download-link", 
-                                    href = "", target = "_blank", download = NA, label),
-                     icon = icon,class=action_class)
+                         label = tags$a(id = outputId, class = "shiny-download-link", 
+                                        href = "", target = "_blank", download = NA, label),
+                         icon = icon,class=action_class)
   bttn
 }
 
@@ -312,10 +312,10 @@ download_dropdown <- dropdownButton(
                  icon=icon("file-download",lib="font-awesome"),action_class="btn-download"),
   br(),
   myDownloadBttn(outputId = "downloadGEOJson",label="GeoJSON",
-                   icon=icon("file-archive",lib="font-awesome"),action_class="btn-download"),
+                 icon=icon("file-archive",lib="font-awesome"),action_class="btn-download"),
   br(),
   myDownloadBttn(outputId ="downloadPNG",label="Image",
-                   icon=icon("file-image",lib="font-awesome"),action_class="btn-download"),
+                 icon=icon("file-image",lib="font-awesome"),action_class="btn-download"),
   br(),
   bookmarkButton(label="Share",icon=icon("link",lib="font-awesome"),class="btn-download"),
   
@@ -326,20 +326,37 @@ download_dropdown <- dropdownButton(
                            placement="top")
 )
 
+clus_rec_1 <- actionLink("clus_rec_1",50)
+clus_rec_2 <- actionLink("clus_rec_2",100)
+clus_rec_3 <- actionLink("clus_rec_3",150)
+clus_rec_4 <- actionLink("clus_rec_4",200)
 
+cluster_reco_links <- div(class="reco-form-group shiny-input-container",
+                          tags$label("Recommended",class="subtitle-label"),
+                          # div(class="subtitle-label","Recommended"),
+                          span(class="links flex",
+                               div(class="recolink",clus_rec_1),
+                               div(class="recolink",clus_rec_2),
+                               div(class="recolink",clus_rec_3),
+                               div(class="recolink",clus_rec_4)
+                          ))
 
 
 map_control_panel <- function(){div(
   class="flex flex-between map-control", 
   div(class="xsflex", 
       input_clusters(),
-      input_baseline()
+      cluster_reco_links
   ),
-  div(
-    class="flex flex-end auto heatmap-group", 
-    input_enable_heatmap(),
-    div(class="heat-map-label", "Heat map"),
-    info_plot_type
+  div(class="xsflex", 
+      div(
+        class="flex flex-end auto heatmap-group",
+        input_enable_heatmap(),
+        div(class="heat-map-label", "Heat map"),
+        div(class="heatmap-tooltip",info_plot_type)
+      ),
+      input_baseline()
+      # h5(textOutput("overlap"))
   )
 )
 }
@@ -367,3 +384,148 @@ footer <-
           )
       )
   )
+
+
+
+
+custom_withSpinner <- function (ui_element, type = getOption("spinner.type", default = 1), 
+          color = getOption("spinner.color", default = "#0275D8"), 
+          size = getOption("spinner.size", default = 1), color.background = getOption("spinner.color.background"), 
+          custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", 
+                                                       ui_element)) NULL else "400px") 
+{
+  stopifnot(type %in% 1:8)
+  if (grepl("rgb", color, fixed = TRUE)) {
+    stop("Color should be given in hex format")
+  }
+  id <- paste0("spinner-", digest::digest(ui_element))
+  add_style <- function(x) {
+    shiny::tags$head(shiny::tags$style(shiny::HTML(x)))
+  }
+  css_size <- css_color <- shiny::tagList()
+  if (!custom.css) {
+    color.alpha <- sprintf("rgba(%s,0)", paste(grDevices::col2rgb(color), 
+                                               collapse = ","))
+    if (type == 1) {
+      css_color <- add_style(glue::glue("#{id}, #{id}:before, #{id}:after {{background: {color}}} #{id} {{color: {color}}}"))
+    }
+    if (type %in% c(2, 3) && is.null(color.background)) {
+      stop("For spinner types 2 & 3 you need to specify manually a background color. This should match the background color of the container.")
+    }
+    if (type == 2) {
+      css_color <- add_style(glue::glue("#{id} {{color: {color}}} #{id}:before, #{id}:after {{background: {color.background};}}"))
+    }
+    if (type == 3) {
+      css_color <- add_style(glue::glue("#{id} {{\n  background: -moz-linear-gradient(left, {color} 10%, {color.alpha} 42%);\n  background: -webkit-linear-gradient(left, {color} 10%, {color.alpha} 42%);\n  background: -o-linear-gradient(left, {color} 10%, {color.alpha} 42%);\n  background: -ms-linear-gradient(left, {color} 10%, {color.alpha} 42%);\n  background: linear-gradient(to right, {color} 10%, {color.alpha} 42%);\n}} \n#{id}:before {{\n   background: {color}\n}}  \n#{id}:after {{\n  background: {color.background};\n}}\n"))
+    }
+    if (type %in% c(4, 6, 7)) {
+      css_color <- add_style(glue::glue("#{id} {{color: {color}}}"))
+    }
+    if (type == 5) {
+      base_css <- paste(readLines(system.file("css-loaders/css/load5.css", 
+                                              package = "shinycssloaders")), collapse = " ")
+      base_css <- gsub(".load5 .loader", paste0("#", id), 
+                       base_css)
+      base_css <- gsub("load5", paste0("load5-", id), base_css, 
+                       fixed = TRUE)
+      base_css <- gsub("255, 255, 255", paste(grDevices::col2rgb(color), 
+                                              collapse = ","), base_css, fixed = TRUE)
+      base_css <- gsub("#ffffff", color, base_css, fixed = TRUE)
+      css_color <- add_style(base_css)
+    }
+    if (type == 8) {
+      css_color <- add_style(glue::glue("\n#{id} {{\n      border-top: 1.1em solid rgba({paste(grDevices::col2rgb(color),collapse=',')}, 0.2);\n      border-right: 1.1em solid rgba({paste(grDevices::col2rgb(color),collapse=',')}, 0.2);\n      border-bottom: 1.1em solid rgba({paste(grDevices::col2rgb(color),collapse=',')}, 0.2);\n      border-left: 1.1em solid {color};\n}}\n      "))
+    }
+    size <- round(c(11, 11, 10, 20, 25, 90, 10, 10)[type] * 
+                    size * 0.75)
+    css_size <- add_style(glue::glue("#{id} {{font-size: {size}px}}", 
+                                     id, size))
+  }
+  proxy_element <- shiny::tagList()
+  if (!is.null(proxy.height)) {
+    proxy_element <- shiny::div(style = glue::glue("height:{ifelse(is.null(proxy.height),'100%',proxy.height)}"), 
+                                class = "shiny-spinner-placeholder")
+  }
+  shiny::tagList(shiny::singleton(shiny::tags$head(shiny::tags$link(rel = "stylesheet", 
+                                                                    href = "assets/spinner.css"))), shiny::singleton(shiny::tags$script(src = "custom_spinner.js")), 
+                 shiny::singleton(shiny::tags$head(shiny::tags$link(rel = "stylesheet", 
+                                                                    href = sprintf("css-loaders/css/fallback.css", type)))), 
+                 shiny::singleton(shiny::tags$head(shiny::tags$link(rel = "stylesheet", 
+                                                                    href = sprintf("css-loaders/css/load%s.css", type)))), 
+                 css_color, css_size, shiny::div(class = "shiny-spinner-output-container", 
+                                                 shiny::div(class = sprintf("load-container load%s", 
+                                                                            type), shiny::div(id = id, class = "loader", 
+                                                                                              "Loading...")), proxy_element, ui_element))
+}
+
+
+custom_withLoader <- function (ui_element, type = "html", loader = "dnaspin", 
+                               proxy.height = if (grepl("height:\\s*\\d", ui_element)) NULL else "400px") 
+{
+  stopifnot(type %in% c("html", "image", "text"))
+  proxy_element <- shiny::tagList()
+  if (!is.null(proxy.height)) {
+    proxy_element <- shiny::div(style = glue::glue("height:{ifelse(is.null(proxy.height),'100%',proxy.height)}"), 
+                                class = "shiny-loader-placeholder")
+  }
+  if (type == "image") {
+    shiny::tagList(shiny::singleton(shiny::tags$head(shiny::tags$link(rel = "stylesheet", 
+                                                                      href = "custom-loader.css"))), shiny::singleton(shiny::tags$script(src = "custom_spinner.js")), 
+                   shiny::singleton(shiny::tags$head(shiny::tags$link(rel = "stylesheet", 
+                                                                      href = "css-loaders/css/imgcustom-fallback.css"))), 
+                   shiny::div(class = "shiny-loader-output-container", 
+                              shiny::div(class = "load-container", shiny::img(class = "loader-img", 
+                                                                              src = loader)), proxy_element, ui_element))
+  }
+  else if (type == "html") {
+    if (loader %in% c("dnaspin", "pacman", "loader1", "loader2", 
+                      "loader3", "loader4", "loader5", "loader6", "loader7", 
+                      "loader8", "loader9", "loader10")) {
+      htmlfile <- system.file(package = "shinycustomloader", 
+                              paste0("css-loaders/html/", loader, ".html"))
+      shiny::tagList(shiny::singleton(shiny::tags$head(shiny::tags$link(rel = "stylesheet", 
+                                                                        href = "custom-loader.css"))), shiny::singleton(shiny::tags$script(src = "custom_spinner.js")), 
+                     shiny::singleton(shiny::tags$head(shiny::tags$link(rel = "stylesheet", 
+                                                                        href = "css-loaders/css/imgcustom-fallback.css"))), 
+                     shiny::singleton(shiny::tags$head(shiny::tags$link(rel = "stylesheet", 
+                                                                        href = paste0("css-loaders/css/", loader, ".css")))), 
+                     shiny::div(class = "shiny-loader-output-container", 
+                                shiny::div(class = "load-container", shiny::includeHTML(htmlfile)), 
+                                proxy_element, ui_element))
+    }
+    else {
+      htmlfile <- paste0("", loader, ".html")
+      shiny::tagList(shiny::singleton(shiny::tags$head(shiny::tags$link(rel = "stylesheet", 
+                                                                        href = "custom-loader.css"))), shiny::singleton(shiny::tags$script(src = "custom_spinner.js")), 
+                     shiny::singleton(shiny::tags$head(shiny::tags$link(rel = "stylesheet", 
+                                                                        href = "css-loaders/css/imgcustom-fallback.css"))), 
+                     shiny::singleton(shiny::tags$head(shiny::tags$link(rel = "stylesheet", 
+                                                                        href = paste0(loader, ".css")))), shiny::div(class = "shiny-loader-output-container", 
+                                                                                                                     shiny::div(class = "load-container", shiny::includeHTML(htmlfile)), 
+                                                                                                                     proxy_element, ui_element))
+    }
+  }
+  else if (type == "text") {
+    if (!is.list(loader)) {
+      textout <- "<marquee behavior=\"scroll\" direction=\"left\" scrollamount=\"1\" width=\"100%\">Loading...</marquee>\n    <marquee behavior=\"scroll\" direction=\"down\" scrollamount=\"20\" height=\"50px\" width=\"100%\">Loading</marquee>\n      <marquee behavior=\"scroll\" direction=\"right\" scrollamount=\"20\" width=\"100%\">Loading!</marquee>\n      <marquee behavior=\"scroll\" direction=\"left\" scrollamount=\"100\" width=\"100%\">Loading</marquee>"
+    }
+    else {
+      textout <- ""
+      for (amarquee in loader) {
+        textout <- paste0(textout, "<marquee ")
+        textout <- paste0(textout, paste0(paste0(names(amarquee)[names(amarquee) != 
+                                                                   "content"], "=\"", unlist(amarquee)[names(amarquee) != 
+                                                                                                         "content"], "\""), collapse = " "))
+        textout <- paste0(textout, ">", amarquee[names(amarquee) == 
+                                                   "content"], "</marquee>\n ")
+      }
+    }
+    shiny::tagList(shiny::singleton(shiny::tags$head(shiny::tags$link(rel = "stylesheet", 
+                                                                      href = "custom-loader.css"))), shiny::singleton(shiny::tags$script(src = "custom_spinner.js")), 
+                   shiny::singleton(shiny::tags$head(shiny::tags$link(rel = "stylesheet", 
+                                                                      href = "css-loaders/css/imgcustom-fallback.css"))), 
+                   shiny::div(class = "shiny-loader-output-container", 
+                              shiny::div(class = "load-container", style = "text-align:center; width:100%", 
+                                         shiny::HTML(textout)), proxy_element, ui_element))
+  }
+}

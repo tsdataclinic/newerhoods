@@ -14,6 +14,7 @@ library(stringr)
 library(jsonlite)
 library(furrr)
 library(tictoc)
+library(googlesheets)
 
 ## UI/UX packages
 library(shiny)
@@ -54,12 +55,25 @@ options(shiny.maxRequestSize=500*1024^2)
 options(future.globals.maxSize= 750*1024^2)
 # enableBookmarking(store="url")
 
+# read it back with readRDS
+token <- readRDS("sheetstoken.rds")
+gs_auth(token=token)
+params_file <- gs_key("1YPQdPGVzZX_c9qQn5hnVm5aU_mEd_BqsVrQI8NxcfCc")
+saved_params <- gs_read(params_file)
+
 ## loading pre-cleaned data
 load(file="data/features/processed/pre_compiled_data.RData")
-
 merged_features <- features
 
+saveData <- function(data) {
+  # Grab the Google Sheet
+  sheet <- gs_key("1YPQdPGVzZX_c9qQn5hnVm5aU_mEd_BqsVrQI8NxcfCc")
+  # Add the data as a new row
+  sheet %>% gs_add_row(ws="Sheet1", input=data)
+}
+
 optimize_params <- TRUE
+
 ## Server
 function(input, output, session) {
   
@@ -90,6 +104,7 @@ function(input, output, session) {
       raw_user_df <- as.data.frame(raw_user_df)
     }
     # merged_features <<- features
+    # print(basename(input$file$name))
     raw_user_df
   })
   
@@ -157,6 +172,7 @@ function(input, output, session) {
     })
   
   user_data <- observeEvent(input$upload_done,{
+    saved_params <- gs_read(params_file)
     req(input$file)
     # toggleModal(session,modalId = "modal_upload",toggle="close")
     # removeModal(session,modalId = "modal_upload")
@@ -193,7 +209,7 @@ function(input, output, session) {
       colnames(user_df) <- c("boro_ct201",paste0("USER_",input$user_columns))
       user_df$boro_ct201 <- as.character(user_df$boro_ct201)
     }
-    
+    # print(colnames(user_df))
     generated_feature_names <- gsub("USER_","",colnames(user_df))
     generated_feature_names <- generated_feature_names[generated_feature_names != "boro_ct201"]
     pretty_names <- get_pretty_names(generated_feature_names,type="checkbox")
@@ -208,6 +224,10 @@ function(input, output, session) {
   
   
   user_selection <- eventReactive(input$select,{
+    ## Send message to show spinner
+    
+    session$sendCustomMessage("spinner-on", "True")
+    
     inputs <- paste0("c(",paste(feature_inputs$input_ids,collapse = ","),")")
     selection <- eval(parse(text=inputs))
     # c(input$crime_features,input$housing,input$call_features)
@@ -250,68 +270,107 @@ function(input, output, session) {
     return(D0)
   },ignoreNULL = FALSE)
   
+
   optimized_params <- reactive({
-    
-    if(optimize_params){
-      
-      ##
-      D0 <- dist_mat()/max(dist_mat())
-      D1 <- D1/max(D1)
-      
-      #### Finding optimal parameters
-      # plan(multisession) ## using 4 processors
-      plan(multiprocess(workers=4)) ## using 4 processors
-      tic()
-      
-      range_k <-seq(5,200,by=5)
-      res <- hclust(D0, method = "ward.D")
-      avg_sil <- range_k %>% future_map_dbl(get_sil_width,D0,res)
-      
-      cl_metric <- data.frame(k=range_k,avg_sil=avg_sil)
-      cl_metric$groups <- cut(range_k,breaks=4)
-      s <- cl_metric %>% group_by(groups) %>% summarize(K=max(k),k_opt=k[which.max(avg_sil)])
-      
-      opt_k <- s$k_opt
-      
-      # toc()
-      
-      # plan(multiprocess(workers=4)) ## using 4 processors
-      # tic()
-      range_alpha <- c(0,seq(0.1,0.5,by=0.05),1)
-      
-      grid_search <- expand.grid(k=opt_k,alpha=range_alpha)
-      
-      D0_sq <- as.matrix((D0))^2
-      D1_sq <- as.matrix((D1))^2
-      n <- dim(D0_sq)[1]
-      T0 <- (sum(D0_sq)/(2*n^2))
-      T1 <- (sum(D1_sq)/(2*n^2))
-      
-      cl_stat <- grid_search %>% future_pmap(.f=get_homogeneity,D0=D0,D1=D1,D0_sq=D0_sq,
-                                             D1_sq=D1_sq,T0=T0,T1=T1)
-      
-      rm("D0_sq","D1_sq","T0","T1") ## removing large objects
-      
-      grid_search <- cbind(grid_search,data.frame(matrix(unlist(cl_stat),ncol=2,byrow=TRUE)))
-      colnames(grid_search)[3:4] <- c("Q0","Q1")
-      
-      # print(grid_search)
-      
-      opt_params <- grid_search %>% group_by(k) %>% 
-        mutate(Q0norm=Q0/max(Q0),Q1norm=Q1/max(Q1)) %>%
-        mutate(Q0gain=(Q0norm-lag(Q0norm,1))/Q0,Q1gain=(Q1norm-lag(Q1norm,1))/Q1) %>%
-        mutate(tot_gain=(Q0gain+Q1gain)) %>%
-        filter(alpha > 0, alpha < 1) %>%
-        group_by(k) %>%
-        mutate(opt_alpha=get_opt(alpha,tot_gain)) %>%
-        summarise(alpha=mean(opt_alpha))
-      toc()
-      
+    if(sum(user_selection() %in% saved_params$features)*1L > 0){
+      opt_params <- saved_params[saved_params$features == user_selection(),]
     }else{
-      opt_params <- data.frame(alpha=0.2,k=50)
+      if(optimize_params){
+        ##
+        D0 <- dist_mat()/max(dist_mat())
+        D1 <- D1/max(D1)
+        
+        #### Finding optimal parameters
+        # plan(multisession) ## using 4 processors
+        plan(multiprocess(workers=4)) ## using 4 processors
+        tic()
+        
+        range_k <-seq(5,200,by=1)
+        res <- hclust(D0, method = "ward.D")
+        avg_sil <- range_k %>% future_map_dbl(get_sil_width,D0,res)
+        
+        cl_metric <- data.frame(k=range_k,avg_sil=avg_sil)
+        cl_metric$groups <- cut(range_k,breaks=c(4,50,100,150,200))
+        s <- cl_metric %>% group_by(groups) %>% summarize(K=max(k),k_opt=k[which.max(avg_sil)])
+        
+        opt_k <- s$k_opt
+        # print(opt_k)
+        
+        # toc()
+        
+        # plan(multiprocess(workers=4)) ## using 4 processors
+        # tic()
+        range_alpha <- c(0,seq(0.1,0.5,by=0.05),1)
+        
+        grid_search <- expand.grid(k=opt_k,alpha=range_alpha)
+        
+        D0_sq <- as.matrix((D0))^2
+        D1_sq <- as.matrix((D1))^2
+        n <- dim(D0_sq)[1]
+        T0 <- (sum(D0_sq)/(2*n^2))
+        T1 <- (sum(D1_sq)/(2*n^2))
+        
+        cl_stat <- grid_search %>% future_pmap(.f=get_homogeneity,D0=D0,D1=D1,D0_sq=D0_sq,
+                                               D1_sq=D1_sq,T0=T0,T1=T1)
+        
+        rm("D0_sq","D1_sq","T0","T1") ## removing large objects
+        
+        grid_search <- cbind(grid_search,data.frame(matrix(unlist(cl_stat),ncol=2,byrow=TRUE)))
+        colnames(grid_search)[3:4] <- c("Q0","Q1")
+        
+        # print(grid_search)
+        
+        opt_params <- grid_search %>% group_by(k) %>% 
+          mutate(Q0norm=Q0/max(Q0),Q1norm=Q1/max(Q1)) %>%
+          mutate(Q0gain=(Q0norm-lag(Q0norm,1))/Q0,Q1gain=(Q1norm-lag(Q1norm,1))/Q1) %>%
+          mutate(tot_gain=(Q0gain+Q1gain)) %>%
+          filter(alpha > 0, alpha < 1) %>%
+          group_by(k) %>%
+          mutate(opt_alpha=get_opt(alpha,tot_gain)) %>%
+          summarise(alpha=mean(opt_alpha))
+        toc()
+        
+        opt_params$features <- user_selection()
+        saved_params <- rbind(saved_params,opt_params)
+        
+        if(!grepl("USER_",user_selection())){
+          saveData(opt_params)  
+        }
+        
+        # print(saved_params)
+        # save(saved_params,file="data/saved_params.RData")
+        
+        
+      }else{
+        opt_params <- data.frame(alpha=rep(0.2,4),k=c(50,100,150,200))
+      }
+      
     }
+    opt_params <- opt_params[order(opt_params$k),]
+    clus_buttons <- c("clus_rec_1","clus_rec_2","clus_rec_3","clus_rec_4")
+    
+    for(i in c(1:4)){
+      updateActionButton(session,inputId = clus_buttons[i],label = opt_params$k[i])
+    }
+    # print(opt_params)
     return(opt_params)
   })
+  
+  observeEvent({input$clus_rec_1},
+               {op <- optimized_params()
+               updateSliderInput(session,"num_clusters",value=op$k[1])})
+  
+  observeEvent({input$clus_rec_2},
+               {op <- optimized_params()
+               updateSliderInput(session,"num_clusters",value=op$k[2])})
+  
+  observeEvent({input$clus_rec_3},
+               {op <- optimized_params()
+               updateSliderInput(session,"num_clusters",value=op$k[3])})
+  
+  observeEvent({input$clus_rec_4},
+               {op <- optimized_params()
+               updateSliderInput(session,"num_clusters",value=op$k[4])})
   
   alpha_for_k <- reactive({
     op <- optimized_params()
@@ -450,13 +509,15 @@ function(input, output, session) {
   
   ##### Interactive Map #####
   map_reactive <- reactive({
+    
     leaflet() %>%
-      setView(-73.885,40.71,11) %>%
+      setView(-74.02,40.72,11) %>%
       # addProviderTiles("MapBox", options = providerTileOptions(
       #   id= "mapbox.light",
       #   accessToken = Sys.getenv('MAPBOX_ACCESS_TOKEN'))
       # ) %>%
       addProviderTiles("Stamen.TonerLite") %>%
+      addMapPane("newerhoods", zIndex = 410) %>%
       addPolygons(data=newerhoods(),
                   fillColor = newerhoods()$colour,
                   stroke = TRUE,
@@ -477,12 +538,13 @@ function(input, output, session) {
                     style = list("font-weight"="normal",
                                  padding = "3px 8px"),
                     textsize = "15px",
-                    direction = "auto")
+                    direction = "auto"),
+                  options = pathOptions(pane = "newerhoods")
       )
   })
   
-  output$map <-renderLeaflet({
-    map_reactive()  
+  output$map <- renderLeaflet({
+    map_reactive()
   })
   
   ## To do: Simplify this. Feels like too many observes
@@ -504,8 +566,12 @@ function(input, output, session) {
       proxy %>% clearControls()}
   }
   
-  observe({add_legend(input$enable_heatmap)})
-  observeEvent(clus_res(),{add_legend(input$enable_heatmap)})
+  observe({add_legend(input$enable_heatmap)
+    # shinyjs::hideElement(id = 'loading')
+    })
+  observeEvent(clus_res(),{add_legend(input$enable_heatmap)
+    # shinyjs::hideElement(id = 'loading')
+    })
   
   
   ### Baseline Map
@@ -529,21 +595,68 @@ function(input, output, session) {
       # readRDS(file=paste0(source_folder,files[i]))
       proxy <- leafletProxy("map")
       proxy %>%
+        addMapPane("baseline", zIndex = 420) %>%
         addPolylines(data=baseline_map,
                      stroke=TRUE,
                      weight=2,
                      opacity=0.75,
                      color="white",
                      dashArray="5",
-                     group = baselines[i])
+                     group = baselines[i],
+                     options = pathOptions(pane = "baseline"))
       if(baselines[i] != input$baseline){
         proxy %>% hideGroup(baselines[i])
       }
     }
   }
   
-  observeEvent({input$enable_heatmap},{add_baselines()})
-  observeEvent({clus_res()},{add_baselines()})
+  observeEvent({input$enable_heatmap},{add_baselines()
+    session$sendCustomMessage("spinner-off", "True")})
+  observeEvent({clus_res()},{add_baselines()
+    session$sendCustomMessage("spinner-off", "True")})
+  
+  overlap <- reactive({
+    if(input$baseline != "none"){
+      baseline_map <- get(input$baseline)
+      # jaccard_insights <- get_jaccard_index(newerhoods(),baseline_map,j_threshold = 0.748)
+      # baseline_highlight_areas <- jaccard_insights$highlight_area
+      # baseline_highlight_hatch <- jaccard_insights$hatch
+      # jaccard_index <- 100*round(jaccard_insights$jaccard_index,4)
+      
+      proxy <- leafletProxy("map")
+      proxy %>% 
+        addMapPane("highlight_lines", zIndex = 430) %>%
+        # addMapPane("highlight", zIndex = 390) %>%
+        # addPolygons(data=baseline_highlight_areas,
+        #             fillColor = "black",
+        #             fillOpacity = 0,
+        #             stroke=TRUE,
+        #             weight=2,
+        #             opacity=0.75,
+        #             color="orange",
+        #             options = pathOptions(pane = "highlight")) %>%
+        addPolylines(data=baseline_highlight_hatch,
+                     color=ifelse(input$enable_heatmap,"grey","#f58131"),
+                     weight=2,
+                     opacity = 0.8,
+                     options = pathOptions(pane = "highlight_lines"))
+      
+      
+      # print(round(jaccard_index,2))
+    }
+    # else{
+    #   jaccard_index <- ""
+    # }
+    # return(jaccard_index)
+  })
+  
+  output$overlap <- renderText({
+    if(overlap() != ""){
+      paste0("Overlap: ",overlap(),"%")  
+    }else{
+      overlap()
+    }
+  })
   
   observeEvent(input$baseline,{
     if(input$baseline != "none"){
@@ -600,11 +713,28 @@ function(input, output, session) {
       tt <- tidy(nh,region = "cl")
       tt <- as.data.frame(tt, stringsAsFactors = FALSE)
       
-      p <- ggmap(map_dl) +
+      p <- ggmap(map_dl)
+      
+      p <- p +
         geom_polygon(data = fortify(tt),
                      aes(long, lat, group = group, fill=id),
-                     colour = "white", alpha = 0.6) +
+                     alpha = 0.6, size = 0) +
+        scale_fill_manual(values=nh$colour) +
         theme(legend.position="none")
+      
+      if(input$baseline != "none"){
+        bl_sp <- get(input$baseline)
+        # Coerce the baseline spatial df into a regular df suitable for geom_polygon
+        # TODO get rid of "binding character and factor vector, coercing into character vector" warnings
+        bl_sp@data$id <- rownames(bl_sp@data)
+        bl_df <- tidy(bl_sp, region = "id")
+        bl_df <- as.data.frame(bl_df, stringsAsFactors = FALSE)
+        p <- p +
+          geom_polygon(data = bl_df, 
+                       aes(long, lat, group = group, fill = NA), 
+                       colour = "white", linetype = "dashed", size = 0.5)
+      }
+      
       ggsave(file, plot = p, device = "png")
     }
   )

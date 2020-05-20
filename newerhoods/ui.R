@@ -17,6 +17,7 @@ library(shinyWidgets)
 library(leaflet)
 library(markdown)
 library(shinycssloaders)
+library(shinycustomloader)
 library(shinyFeedback)
 
 ### Definitions
@@ -25,7 +26,7 @@ source("components.R")
 # UI
 ui <- function(request){
   bootstrapPage(
-    # useShinyjs(),
+    # shinyjs::useShinyjs(),
     useShinyFeedback(),
     theme = "custom.css",
     title = "NewerHoods",
@@ -71,8 +72,14 @@ ui <- function(request){
         div(
           class="map custom",
           download_dropdown,
-          withSpinner(leafletOutput("map", height = "535"),type=3,
-                      color.background = "white",color="#0099a6"),
+          # fluidRow(column(3, 
+          #                 shinyjs::hidden(div(id = 'loading', 
+          #                                     addSpinner(div(), spin = "fading-circle", color = "#0099a6"))))),
+          
+          # custom_withSpinner(leafletOutput("map", height = "535"),type=3,
+          #             color.background = "white",color="#0099a6"),
+          custom_withLoader(leafletOutput("map", height = "535"),type="image",
+                            loader="NewerHoods.gif"),
           map_control_panel()
         ),
         bsTooltip("select", "Click to select or update features to be used for clustering",
