@@ -59,7 +59,7 @@ load(file="data/features/processed/pre_compiled_data.RData")
 
 merged_features <- features
 
-optimize_params <- FALSE
+optimize_params <- TRUE
 ## Server
 function(input, output, session) {
   
