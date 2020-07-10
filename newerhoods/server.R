@@ -12,9 +12,9 @@ library(readxl)
 library(broom)
 library(stringr)
 library(jsonlite)
-library(furrr)
-library(tictoc)
-library(googlesheets)
+#library(furrr)
+#library(tictoc)
+#library(googlesheets4)
 
 ## UI/UX packages
 library(shiny)
@@ -55,25 +55,26 @@ options(shiny.maxRequestSize=500*1024^2)
 options(future.globals.maxSize= 750*1024^2)
 # enableBookmarking(store="url")
 
-# read it back with readRDS
-token <- readRDS("sheetstoken.rds")
-gs_auth(token=token)
-params_file <- gs_key("1YPQdPGVzZX_c9qQn5hnVm5aU_mEd_BqsVrQI8NxcfCc")
-saved_params <- gs_read(params_file)
+#saved_params <- 
+load('data/saved_params.RData')
+saved_params <- saved_params[!duplicated(saved_params),]
 
 ## loading pre-cleaned data
 load(file="data/features/processed/pre_compiled_data.RData")
 merged_features <- features
+merged_features <- merged_features[complete.cases(merged_features),]
 
 saveData <- function(data) {
   # Grab the Google Sheet
-  sheet <- gs_key("1YPQdPGVzZX_c9qQn5hnVm5aU_mEd_BqsVrQI8NxcfCc")
+  # sheet <- gs_key("1YPQdPGVzZX_c9qQn5hnVm5aU_mEd_BqsVrQI8NxcfCc")
   # Add the data as a new row
-  sheet %>% gs_add_row(ws="Sheet1", input=data)
+  # sheet %>% gs_add_row(ws="Sheet1", input=data)
+  data <- data[!duplicated(data),]
+  #data %>% sheet_write('https://docs.google.com/spreadsheets/d/1YPQdPGVzZX_c9qQn5hnVm5aU_mEd_BqsVrQI8NxcfCc/edit#gid=0')
+  save(data,'data/saved_params.RData')
 }
 
 optimize_params <- TRUE
-
 
 ## Server
 function(input, output, session) {
@@ -284,7 +285,7 @@ function(input, output, session) {
         #### Finding optimal parameters
         # plan(multisession) ## using 4 processors
         plan(multiprocess(workers=4)) ## using 4 processors
-        tic()
+        #tic()
         
         range_k <-seq(5,200,by=1)
         res <- hclust(D0, method = "ward.D")
@@ -329,7 +330,7 @@ function(input, output, session) {
           group_by(k) %>%
           mutate(opt_alpha=get_opt(alpha,tot_gain)) %>%
           summarise(alpha=mean(opt_alpha))
-        toc()
+        #toc()
         
         opt_params$features <- user_selection()
         saved_params <- rbind(saved_params,opt_params)

@@ -1,12 +1,19 @@
-FROM rocker/geospatial:3.5.0
+FROM rocker/shiny
 
+RUN apt-get update; apt-get install -y inotify-tools; apt-get install -y libssl-dev
 
-
-RUN apt-get update; apt-get install -y inotify-tools
-
-ADD . /app
-WORKDIR /app
+#ADD . /app
+#WORKDIR /app
 RUN Rscript ./newerhoods/setup.R
 
-RUN chmod u+x entrypoint.sh
-ENTRYPOINT /app/entrypoint.sh
+EXPOSE 8080
+
+COPY shiny-server.conf /etc/shiny-server/shiny-server.conf
+
+## assume shiny app is in build folder /shiny
+COPY ./newerhoods/ /srv/shiny-server/shiny/
+
+#RUN chmod u+x entrypoint.sh
+#ENTRYPOINT /app/entrypoint.sh
+
+
