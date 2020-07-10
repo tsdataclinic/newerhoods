@@ -26,6 +26,33 @@
                         }
                     ]
       },
+    
+    { "file_name"       : "census_rates_cleaned",
+      "create_ui"       : true,
+      "category_name"   : "Census 2020",
+      "feature_columns" : [
+                      { "column_name"   :"CRRALL",
+                        "checkbox_name" :"Total Response Rate ",
+                        "legend_name"   :"Total Response Rate ",
+                        "legend_units"  :"%",
+                        "is_rate"       :true
+                        },
+                        
+                      { "column_name"   :"CRRINT",
+                        "checkbox_name" :"Internet Response Rate ",
+                        "legend_name"   :"Internet Response Rate ",
+                        "legend_units"  :"%",
+                        "is_rate"       :true
+                        },
+                        
+                      { "column_name"   :"diff_2020_2010",
+                        "checkbox_name" :"Difference from 2010",
+                        "legend_name"   :"Difference from 2010",
+                        "legend_units"  :"%",
+                        "is_rate"       :true
+                        }
+                    ]
+      },
       
     { "file_name"       : "nyc311_rates",
       "category_name"   : "311 Complaints",

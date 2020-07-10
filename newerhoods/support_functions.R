@@ -1,4 +1,4 @@
-library(HatchedPolygons)
+# library(HatchedPolygons)
 library(sp)
 
 points_to_feature <- function(df,col1,col2,colname){

@@ -14,7 +14,7 @@ library(stringr)
 library(jsonlite)
 library(furrr)
 library(tictoc)
-library(googlesheets)
+library(googlesheets4)
 
 ## UI/UX packages
 library(shiny)
@@ -56,20 +56,24 @@ options(future.globals.maxSize= 750*1024^2)
 # enableBookmarking(store="url")
 
 # read it back with readRDS
-token <- readRDS("sheetstoken.rds")
-gs_auth(token=token)
-params_file <- gs_key("1YPQdPGVzZX_c9qQn5hnVm5aU_mEd_BqsVrQI8NxcfCc")
-saved_params <- gs_read(params_file)
+# token <- readRDS("sheetstoken.rds")
+# gs_auth(token=token)
+# params_file <- gs_key("1YPQdPGVzZX_c9qQn5hnVm5aU_mEd_BqsVrQI8NxcfCc")
+saved_params <- read_sheet('https://docs.google.com/spreadsheets/d/1YPQdPGVzZX_c9qQn5hnVm5aU_mEd_BqsVrQI8NxcfCc/edit#gid=0')
+saved_params <- saved_params[!duplicated(saved_params),]
 
 ## loading pre-cleaned data
 load(file="data/features/processed/pre_compiled_data.RData")
 merged_features <- features
+merged_features <- merged_features[complete.cases(merged_features),]
 
 saveData <- function(data) {
   # Grab the Google Sheet
-  sheet <- gs_key("1YPQdPGVzZX_c9qQn5hnVm5aU_mEd_BqsVrQI8NxcfCc")
+  # sheet <- gs_key("1YPQdPGVzZX_c9qQn5hnVm5aU_mEd_BqsVrQI8NxcfCc")
   # Add the data as a new row
-  sheet %>% gs_add_row(ws="Sheet1", input=data)
+  # sheet %>% gs_add_row(ws="Sheet1", input=data)
+  data <- data[!duplicated(data),]
+  data %>% sheet_write('https://docs.google.com/spreadsheets/d/1YPQdPGVzZX_c9qQn5hnVm5aU_mEd_BqsVrQI8NxcfCc/edit#gid=0')
 }
 
 optimize_params <- TRUE
@@ -335,7 +339,7 @@ function(input, output, session) {
         saved_params <- rbind(saved_params,opt_params)
         
         if(!grepl("USER_",user_selection())){
-          saveData(opt_params)  
+          saveData(saved_params)  
         }
         
         # print(saved_params)

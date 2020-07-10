@@ -19,7 +19,7 @@ generate_data <- function(){
       features <- read.csv(file_path) 
     }else{
       tmp <-read.csv(file_path) 
-      features <- left_join(features,tmp,by="boro_ct201")  
+      features <- inner_join(features,tmp,by="boro_ct201")  
     }
   }
   
@@ -55,7 +55,7 @@ generate_data <- function(){
   features <- left_join(features,census_pop[,c("boro_ct201","pop_2010")],by="boro_ct201")
   features <- features[!(features$boro_ct201 %in% tracts_to_exclude),]
   features <- features[match(reduced_tracts$boro_ct201,features$boro_ct201),]
-  
+  features <- features[complete.cases(features),]
   ## Pre-compute D1 for clustering
   tract_centroids <- gCentroid(reduced_tracts,byid=TRUE)
   D1c <- dist(tract_centroids@coords) ## euclidean distance between tract centroids
