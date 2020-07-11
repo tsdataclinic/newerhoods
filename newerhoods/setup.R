@@ -10,7 +10,7 @@ packages <- c("dplyr","readxl","shiny","shinyWidgets","shinyjs",
               "raster","shinyFeedback","ggmap","tmap","tmaptools","shinycustomloader")
 
 ## installing required packages
-install.packages(packages,quiet = TRUE)
+install.packages(packages,quiet = FALSE)
 
 ## installing required packages
 if (!require(gpclib)) {

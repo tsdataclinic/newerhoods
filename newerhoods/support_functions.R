@@ -1,5 +1,6 @@
 # library(HatchedPolygons)
 library(sp)
+library(sf)
 
 points_to_feature <- function(df,col1,col2,colname){
   ## function to take a data frame with lat and lon columns and convert to a rate of
@@ -347,5 +348,77 @@ get_jaccard_index <- function(nh,sp,j_threshold=0.8){
   highlight_areas_hatch <- spTransform(highlight_areas_hatch, CRS("+proj=longlat +datum=WGS84"))
   
   return(list(jaccard_index=jaccard_index,highlight_area=highlight_areas,hatch=highlight_areas_hatch))
+}
+
+
+map_coloring <- function(x, algorithm="greedy", ncols=NA, minimize=FALSE, palette=NULL, contrast=1) {
+  if (inherits(x, "Spatial")) x <- as(x, "sf")
+  if (inherits(x, "sf")) {
+    # get adjacency list
+    adj <- get_neighbours(x)
+  } else if (is.list(x)) {
+    adj <- x
+  } else stop("Unknown x argument")
+  
+  if (!is.null(palette)) {
+    # reverse palette
+    if (length(palette)==1 && substr(palette[1], 1, 1)=="-") {
+      revPal <- function(p)rev(p)
+      palette <- substr(palette, 2, nchar(palette))
+    } else revPal <- function(p)p
+    
+    if (palette[1] %in% rownames(RColorBrewer::brewer.pal.info)) {
+      if (is.na(ncols)) ncols <- RColorBrewer::brewer.pal.info[palette, "maxcolors"]
+      palette2 <- revPal(suppressWarnings(get_brewer_pal(palette, ncols, contrast, plot = FALSE)))
+    } else {
+      if (is.na(ncols)) ncols <- length(palette)
+      palette2 <- rep(palette, length.out=ncols)
+    }
+  } else if (is.na(ncols)) ncols <- 8
+  
+  k <- length(adj)
+  
+  if (algorithm=="greedy") {
+    # list of occupied colors
+    occ <- as.list(rep(0, k))
+    
+    # vector of output colors
+    cols <- rep(NA, k)
+    
+    # order of degree (starting with the highest)
+    ord <- order(sapply(adj, length), decreasing = TRUE)
+    
+    showWarn <- FALSE
+    for (i in ord) {
+      sel <- setdiff(1:ncols, occ[[i]])
+      
+      if (!length(sel)) {
+        sel <- 1
+        showWarn <- TRUE
+      }
+      z <- if (minimize) sel[1] else sample(sel, 1)
+      
+      for (j in ord) if (i %in% adj[[j]]) occ[[j]] <- c(occ[[j]], z)
+      cols[i] <- z
+    }
+  } else stop("Unknown algorithm")
+  
+  if (showWarn) warning("Unable to color with ", ncols, " colors. Adjacent polygons may have the same color.", call. = FALSE)
+  
+  if (!is.null(palette)) {
+    palette2[cols]
+  } else {
+    cols
+  }
+}
+
+get_neighbours <- function(x) {
+  y <- sf::st_intersects(x, x)
+  n <- length(y)
+  
+  mapply(function(yi, i) {
+    setdiff(yi, i)
+  }, y, 1L:n, SIMPLIFY = FALSE)
+  
 }
 

@@ -12,7 +12,8 @@ library(readxl)
 library(broom)
 library(stringr)
 library(jsonlite)
-#library(furrr)
+library(rdrop2)
+library(furrr)
 #library(tictoc)
 #library(googlesheets4)
 
@@ -24,7 +25,7 @@ library(leaflet)
 library(htmltools)
 library(grDevices)
 library(raster)
-library(shinyFeedback)
+# library(shinyFeedback)
 ## Spatial packages
 
 ## spatial libraries with issues in deployment
@@ -37,15 +38,16 @@ library(rgdal)
 library(maptools)
 library(sp)
 library(spdep)
-library(mapview)
+# library(mapview)
 library(ggmap)
-library(tmap)
-library(tmaptools)
+# library(tmap)
+# library(tmaptools)
 
 ## clustering
 library(cluster)
-library(fpc)
+# library(fpc)
 library(ClustGeo)
+
 
 source("settings_local.R")
 source("support_functions.R")
@@ -55,8 +57,12 @@ options(shiny.maxRequestSize=500*1024^2)
 options(future.globals.maxSize= 750*1024^2)
 # enableBookmarking(store="url")
 
-#saved_params <- 
-load('data/saved_params.RData')
+token <- readRDS("token.rds")
+# Then pass the token to each drop_ function
+# drop_acc(dtoken = token)
+
+saved_params <- drop_read_csv("newerhoods/saved_params.csv",dtoken = token)
+# load('data/saved_params.RData')
 saved_params <- saved_params[!duplicated(saved_params),]
 
 ## loading pre-cleaned data
@@ -71,7 +77,10 @@ saveData <- function(data) {
   # sheet %>% gs_add_row(ws="Sheet1", input=data)
   data <- data[!duplicated(data),]
   #data %>% sheet_write('https://docs.google.com/spreadsheets/d/1YPQdPGVzZX_c9qQn5hnVm5aU_mEd_BqsVrQI8NxcfCc/edit#gid=0')
-  save(data,'data/saved_params.RData')
+  # save(data,'data/saved_params.RData')
+  file_path <- file.path(tempdir(), 'saved_params.csv')
+  write.csv(data, file_path, row.names = FALSE)
+  drop_upload(file_path, path = 'newerhoods/', dtoken=token)
 }
 
 optimize_params <- TRUE
@@ -283,8 +292,8 @@ function(input, output, session) {
         D1 <- D1/max(D1)
         
         #### Finding optimal parameters
-        # plan(multisession) ## using 4 processors
-        plan(multiprocess(workers=4)) ## using 4 processors
+        plan(multisession) ## using 4 processors
+        # plan(multiprocess(workers=4)) ## using 4 processors
         #tic()
         
         range_k <-seq(5,200,by=1)
@@ -518,7 +527,8 @@ function(input, output, session) {
       #   id= "mapbox.light",
       #   accessToken = Sys.getenv('MAPBOX_ACCESS_TOKEN'))
       # ) %>%
-      addProviderTiles("CartoDB.Positron") %>%
+      # addProviderTiles("CartoDB.Positron") %>%
+      addProviderTiles("Stamen.TonerLite") %>%
       addMapPane("newerhoods", zIndex = 410) %>%
       addPolygons(data=newerhoods(),
                   fillColor = newerhoods()$colour,

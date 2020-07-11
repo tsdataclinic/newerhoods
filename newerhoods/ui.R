@@ -18,7 +18,7 @@ library(leaflet)
 library(markdown)
 library(shinycssloaders)
 library(shinycustomloader)
-library(shinyFeedback)
+# library(shinyFeedback)
 
 ### Definitions
 source("components.R")
@@ -27,7 +27,7 @@ source("components.R")
 ui <- function(request){
   bootstrapPage(
     # shinyjs::useShinyjs(),
-    useShinyFeedback(),
+    # useShinyFeedback(),
     theme = "custom.css",
     title = "NewerHoods",
     tags$head(
@@ -60,10 +60,10 @@ ui <- function(request){
           # input_crime(),
           # input_noise(),
           input_user_features,
-          actionButton("select","Apply",class="btn-custom"),
-          snackbar(
-            id = "FeatureSelection",
-            message = "Please select atleast one feature!")
+          actionButton("select","Apply",class="btn-custom")#,
+          # showToast(
+          #   "error",
+          #   message = "Please select atleast one feature!")
         )
       ),
       div(
