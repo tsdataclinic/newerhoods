@@ -523,12 +523,12 @@ function(input, output, session) {
     
     leaflet() %>%
       setView(-74.02,40.72,11) %>%
-      # addProviderTiles("MapBox", options = providerTileOptions(
-      #   id= "mapbox.light",
-      #   accessToken = Sys.getenv('MAPBOX_ACCESS_TOKEN'))
-      # ) %>%
+      addProviderTiles("MapBox", options = providerTileOptions(
+        id= "mapbox.light",
+        accessToken = Sys.getenv('MAPBOX_ACCESS_TOKEN'))
+      ) %>%
       # addProviderTiles("CartoDB.Positron") %>%
-      addProviderTiles("Stamen.TonerLite") %>%
+      # addProviderTiles("Stamen.TonerLite") %>%
       addMapPane("newerhoods", zIndex = 410) %>%
       addPolygons(data=newerhoods(),
                   fillColor = newerhoods()$colour,

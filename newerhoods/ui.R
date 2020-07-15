@@ -32,7 +32,8 @@ ui <- function(request){
     title = "NewerHoods",
     tags$head(
       tags$link(rel = "stylesheet", type = "text/css", href = "https://fonts.googleapis.com/css?family=Lato:300,400,400italic,500,500italic,700,700italic,900"),
-      tags$script(src="https://www.twosigma.com/wp-content/themes/twosigma-public/static/dist/netnav.js")
+      tags$script(src="https://www.twosigma.com/wp-content/themes/twosigma-public/static/dist/netnav.js"),
+      tags$script(src="leaflet.js"),
     ),
     header_nav,
     div(
